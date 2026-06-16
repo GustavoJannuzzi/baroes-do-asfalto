@@ -10,8 +10,9 @@ Site **100% estático** — HTML, CSS e JavaScript puro, sem build. Abre direto 
 
 - Navegação por seções (SPA com hash routing)
 - **Rolador de dados interativo** (ensina a mecânica do pool de d6)
-- **Mapa real do Rio** (Leaflet + OpenStreetMap/CARTO) com as 10 regiões, pontos de jogo do bicho, milícias e facções
-- Diagramas, fluxogramas e tabelas
+- **Mapa real do Rio** (Leaflet + OpenStreetMap/CARTO) com as 10 regiões em **limites reais** (bairros do data.rio + municípios do IBGE), pontos de jogo do bicho, milícias e facções
+- Seções de **NPCs** ("Quem você encontra") e **Campanha & Missões**
+- Diagramas, fluxogramas e tabelas (incl. quadrante Heat×Exposição e pirâmide de proteção)
 
 ## Rodar localmente
 
@@ -24,7 +25,9 @@ Basta abrir o `index.html` no navegador. Não precisa de servidor.
 ├── index.html          # página principal
 ├── assets/
 │   ├── styles.css      # tema visual
-│   └── app.js          # conteúdo, navegação, mapa e interatividade
+│   ├── app.js          # conteúdo, navegação, mapa e interatividade
+│   └── regioes-geo.js  # limites reais das 10 regiões (embutido p/ funcionar via file://)
+├── _build/             # scripts que geram regioes-geo.js (data.rio + IBGE); não é servido
 ├── COMO-ABRIR.md       # guia rápido de uso
 └── README.md
 ```

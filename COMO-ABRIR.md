@@ -17,13 +17,13 @@ Uma navegação por seções (menu à esquerda; no celular, botão ☰ no topo):
 | **Começo aqui** | Abertura · O que é o jogo |
 | **As regras** | O sistema de dados (com **rolador de dados interativo**) · Personagem & Arquétipos · As 5 métricas |
 | **O império** | Economia & Jogo do Bicho · Lavagem & Casa-Cofre · Sistema de Favores |
-| **As ruas** | Território (**mapa do Rio clicável**) · Facções & Proteção · Combate & Segurança |
-| **Bora jogar** | Como começar |
+| **As ruas** | Território (**mapa do Rio clicável**) · Facções & Proteção · **Quem você encontra** (NPCs) · Combate & Segurança |
+| **Bora jogar** | **Campanha & Missões** · Como começar |
 
 ## Recursos interativos
 
 - **Rolador de dados** (seção "O sistema de dados"): ajuste o tamanho do pool e a dificuldade e role — vê os sucessos, as explosões do 6 e o grau de resultado na hora.
-- **Mapa real do Rio** (seção "Território"): mapa de verdade (Leaflet + OpenStreetMap), com as 10 regiões delineadas em tracejado e marcadores dos **pontos de jogo do bicho** ($), das **áreas de milícia** (▣) e dos **redutos de facção** (✊). Passe o mouse para ver o nome; clique para abrir os detalhes. Use as caixas de **Camadas** no topo para ligar/desligar cada tipo.
+- **Mapa real do Rio** (seção "Território"): mapa de verdade (Leaflet + OpenStreetMap), com as 10 regiões em **limites reais** — bairros oficiais da cidade (data.rio) e municípios da Baixada e de Niterói/São Gonçalo (IBGE), delineados em tracejado — e marcadores dos **pontos de jogo do bicho** ($), das **áreas de milícia** (▣) e dos **redutos de facção** (✊). Passe o mouse para ver o nome; clique para abrir os detalhes. Use as caixas de **Camadas** no topo para ligar/desligar cada tipo. A região "Complexos de Favelas" aparece espalhada (hachura), por não ser uma zona contígua.
 - Diagramas e fluxogramas: como os sistemas se conectam, o loop da sessão, o fluxo do dinheiro, o ciclo de um favor e a resolução de combate.
 
 > **Sobre o mapa:** ele usa internet para carregar o mapa do Rio. Sem internet, a seção cai automaticamente num mapa estilizado (diagrama) das 10 regiões, e o resto da apresentação funciona normalmente.

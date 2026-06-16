@@ -7,3 +7,8 @@ Thumbs.db
 
 # Dependências (não usadas, mas por garantia)
 node_modules/
+
+# Dados intermediários do pipeline do mapa (baixados/gerados pelos scripts em _build/)
+_build/data/
+_build/node_modules/
+_build/package-lock.json

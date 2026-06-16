@@ -23,7 +23,7 @@
       pol:2, pot:7, custo:"Taxa + 25–30% da renda", desc:"Domínio absoluto das facções (CV/TCP). Polícia só entra em operação. A facção é a lei de fato.", frase:"Quem sobe sem avisar não desce." },
     { id:8, nome:"Região Portuária", bicho:"Elefante", controle:"Sindicatos + facções", cor:"#2C5F7C",
       pol:6, pot:6, custo:"R$ 40–80 mil", desc:"O porto move tudo. Trabalhadores com bom salário, logística clandestina e dinheiro circulando.", frase:"Carga pesada, dinheiro vivo." },
-    { id:9, nome:"Barra e Recreio", bicho:"Tigre", controle:"Bicheiros empresariais", cor:"#C9A227",
+    { id:9, nome:"Barra da Tijuca e Recreio", bicho:"Tigre", controle:"Bicheiros empresariais", cor:"#C9A227",
       pol:8, pot:5, custo:"R$ 120 mil+", desc:"Crime de camisa polo. Muito dinheiro, mas baixa tradição do bicho e segurança privada pesada.", frase:"Crime de camisa polo." },
     { id:10, nome:"Niterói / São Gonçalo", bicho:"Camelo", controle:"Bicheiros + CV", cor:"#2C5F7C",
       pol:6, pot:8, custo:"R$ 40–100 mil", desc:"Do outro lado da Baía. Niterói tradicional e classe média; São Gonçalo, volume gigante e perigoso.", frase:"A travessia da Baía." }
@@ -82,9 +82,9 @@
   /* Áreas de domínio de facção */
   const FACCAO_POINTS = [
     {n:"Complexo do Alemão", fac:"CV", det:"Comando Vermelho. Polícia só entra em operação.", lat:-22.8660, lng:-43.2700},
-    {n:"Maré", fac:"CV × TCP", det:"Guerra ativa entre facções. Território perigosíssimo.", lat:-22.8600, lng:-43.2400},
-    {n:"Rocinha", fac:"CV", det:"A maior favela do Rio, na divisa da Zona Sul.", lat:-22.9880, lng:-43.2450},
-    {n:"Jacarezinho", fac:"TCP", det:"Reduto do Terceiro Comando Puro.", lat:-22.8780, lng:-43.2620},
+    {n:"Maré", fac:"CV × TCP", det:"Guerra ativa entre facções. Território perigosíssimo.", lat:-22.8520, lng:-43.2447},
+    {n:"Rocinha", fac:"CV", det:"A maior favela do Rio, na divisa da Zona Sul.", lat:-22.9891, lng:-43.2484},
+    {n:"Jacarezinho", fac:"TCP", det:"Reduto do Terceiro Comando Puro.", lat:-22.8893, lng:-43.2566},
     {n:"Providência", fac:"TCP", det:"Primeira favela do Brasil, hoje sob o TCP.", lat:-22.8970, lng:-43.1900},
     {n:"Cidade de Deus", fac:"CV", det:"Domínio do CV na Zona Oeste.", lat:-22.9490, lng:-43.3620}
   ];
@@ -101,8 +101,10 @@
     { id:"favores",    group:"O império",   ix:"07", label:"Sistema de Favores",      render:renderFavores },
     { id:"territorio", group:"As ruas",     ix:"08", label:"Território (mapa)",       render:renderTerritorio },
     { id:"faccoes",    group:"As ruas",     ix:"09", label:"Facções & Proteção",      render:renderFaccoes },
-    { id:"combate",    group:"As ruas",     ix:"10", label:"Combate & Segurança",     render:renderCombate },
-    { id:"comecar",    group:"Bora jogar",  ix:"11", label:"Como começar",            render:renderComecar }
+    { id:"npcs",       group:"As ruas",     ix:"10", label:"Quem você encontra",      render:renderNPCs },
+    { id:"combate",    group:"As ruas",     ix:"11", label:"Combate & Segurança",     render:renderCombate },
+    { id:"campanha",   group:"Bora jogar",  ix:"12", label:"Campanha & Missões",      render:renderCampanha },
+    { id:"comecar",    group:"Bora jogar",  ix:"13", label:"Como começar",            render:renderComecar }
   ];
 
   /* -------------------- HELPERS DE HTML -------------------- */
@@ -320,7 +322,7 @@
           <p class="muted" style="font-size:.78rem;margin-top:6px">Bicho-brasão sugerido: ${a[4]}</p>
         </div>`).join("")}
       </div>
-      <p class="muted" style="margin-top:14px">Há ainda um nono arquétipo, <strong>O Operador de Elite</strong> já listado, e variações que o mestre pode adaptar. Todos partem da mesma premissa: a sociedade dos três bicheiros.</p>
+      <p class="muted" style="margin-top:14px">Os <strong>9 arquétipos</strong> são modelos de partida — o mestre pode adaptá-los e criar variações. Todos convergem para a mesma premissa: a sociedade de bicheiros que vira império.</p>
       ${navButtons("personagem")}
     </section>`;
   }
@@ -351,13 +353,8 @@
       </div>
 
       <h2 class="block">Heat × Exposição: o jogo dentro do jogo</h2>
-      <p>As duas se combinam de um jeito perigoso. <span class="hl">Heat</span> é atenção ativa; <span class="hl">Exposição</span> é o quanto existe sobre você em registros.</p>
-      <div class="grid cols-2">
-        <div class="card"><h4 style="color:#7fe0a6">Heat baixo + Exposição baixa</h4><p>O operador inteligente. Invisível e fora do radar.</p></div>
-        <div class="card"><h4 style="color:var(--dourado-claro)">Heat baixo + Exposição alta</h4><p>Vulnerável: quando virar alvo, há muito para a polícia puxar.</p></div>
-        <div class="card"><h4 style="color:var(--dourado-claro)">Heat alto + Exposição baixa</h4><p>Procurado, mas difícil de pegar — é fantasma.</p></div>
-        <div class="card"><h4 style="color:var(--vermelho-claro)">Heat alto + Exposição alta</h4><p>Você está fodido. É só questão de tempo.</p></div>
-      </div>
+      <p>As duas se combinam de um jeito perigoso. <span class="hl">Heat</span> é atenção ativa (a polícia atrás de você agora); <span class="hl">Exposição</span> é o quanto existe sobre você em registros. Onde você cai neste quadrante decide a sua sobrevivência:</p>
+      <div class="diagram">${heatExpoSVG()}<div class="cap">O objetivo é viver no canto verde — invisível. O canto vermelho é só questão de tempo.</div></div>
 
       ${cenario("Regra especial · Colapso", `<p>Se a <strong>Pressão chega a 10</strong>, o personagem rola 1d6: <strong>1-2</strong> foge e desaparece · <strong>3-4</strong> se entrega às autoridades · <strong>5-6</strong> tem um surto violento (+4 Heat, consequências imprevisíveis). O crime cobra também da mente.</p>`, "note-red")}
       ${navButtons("metricas")}
@@ -551,6 +548,7 @@
         </div>
       </div>
       <p class="muted" style="font-size:.82rem;margin-top:8px">🟡 14 pontos físicos de bicho · ▣ 5 áreas de milícia · ✊ 6 redutos de facção. As 2 plataformas <em>online</em> (maior renda do jogo) não têm endereço — operam de qualquer lugar.</p>
+      <p class="muted" style="font-size:.82rem;margin-top:4px">Os contornos das regiões são <strong>limites reais</strong> (bairros oficiais do Rio + municípios da Baixada e de Niterói/São Gonçalo). A região <strong>Complexos de Favelas</strong> aparece <em>espalhada</em> pelo mapa (hachura densa), porque não é uma zona contígua — são redutos de facção dentro de outras zonas.</p>
 
       <h2 class="block">Como ler o território</h2>
       <div class="grid cols-3">
@@ -593,6 +591,8 @@
           <tr><td>Delegado</td><td class="t-center money">R$ 20–40 mil</td><td>Arquiva investigações, "perde" evidências</td></tr>
         </tbody>
       </table></div>
+
+      <div class="diagram">${protectionPyramidSVG()}<div class="cap">A cadeia de proteção — do aviso barato do PM ao delegado que arquiva tudo. Império grande paga vários níveis ao mesmo tempo.</div></div>
 
       ${cenario("A quebra de acordo", `<p>Atrasar a proteção tem um cronograma implacável: <strong>1ª semana</strong> aviso amigável → <strong>2ª</strong> ameaça direta → <strong>3ª</strong> pontos fechados à força → <strong>1 mês</strong> expulsão ou execução. Tentar operar sem pagar: morte imediata.</p>`, "note-red")}
 
@@ -721,6 +721,147 @@
     </section>`;
   }
 
+  function renderNPCs() {
+    // cat: cor da categoria · L: lealdade inicial · vermelha: linha vermelha/risco
+    const NPCS = [
+      { cat:"Autoridade", cor:"#2C5F7C", nome:"Delegado Bruno Sampaio", alc:"\"O Doutor\"", L:4,
+        oferece:"Arquiva inquérito, \"perde\" evidência, avisa de operação, solta preso em 24h.",
+        vermelha:"Não toca em caso que já virou mídia. Nada por escrito.",
+        fala:"Eu não vi nada, você não falou nada, e a gente continua amigo." },
+      { cat:"Autoridade", cor:"#A4161A", nome:"Invest. Cláudia Rangel", alc:"\"A Linha-Dura\"", L:0,
+        oferece:"Nada — é uma ameaça. Dá rosto ao Heat: a investigação que avança entre sessões.",
+        vermelha:"Não tem preço. Só pode ser enganada, distraída ou transferida.",
+        fala:"Cada real sujo deixa um rastro. Eu sigo rastro." },
+      { cat:"Autoridade", cor:"#C9A227", nome:"Vereadora Solange Pita", alc:"\"A Madrinha\"", L:5,
+        oferece:"Alvarás, vista grossa municipal, verba social desviável, blindagem na Câmara.",
+        vermelha:"Não rompe com a Igreja nem com a comunidade. Cobra fatia de tudo.",
+        fala:"Meu amor, política é troca. Você me dá, eu te dou." },
+      { cat:"Profissional", cor:"#C9A227", nome:"Dr. Said Khoury", alc:"Advogado", L:6,
+        oferece:"Defesa criminal de elite, habeas corpus relâmpago, ponte com juízes.",
+        vermelha:"Não entrega um cliente para salvar outro. O sigilo é sagrado.",
+        fala:"Culpado e condenado são coisas muito diferentes. Eu vivo do espaço entre elas." },
+      { cat:"Profissional", cor:"#2C5F7C", nome:"\"Bug\"", alc:"Hacker", L:3,
+        oferece:"Plataforma de apostas online, rastreamento digital, derrubar o site do rival.",
+        vermelha:"Nunca se encontra pessoalmente. Pânico de alvo federal.",
+        fala:"Tudo deixa log. Eu só sei apagar melhor que os outros." },
+      { cat:"Lavagem", cor:"#5fae7e", nome:"Dona Geralda", alc:"\"A Calculadora\"", L:6,
+        oferece:"Contabilidade criativa, fachada pequena/média, declarações que batem.",
+        vermelha:"Não trabalha para quem trata laranja mal.",
+        fala:"Meu filho, número não mente. Quem mente é gente." },
+      { cat:"Laranja", cor:"#5fae7e", nome:"\"Seu Hélio\"", alc:"Laranja profissional", L:7,
+        oferece:"Nome 100% limpo para empresas grandes; paciência sob pressão.",
+        vermelha:"Cale se preso — desde que cumpram o trato e cuidem da família dele.",
+        fala:"Se eu cair, vocês cuidam da Neusa. Acordo é acordo." },
+      { cat:"Laranja", cor:"#A4161A", nome:"Wesley", alc:"Laranja descartável", L:3,
+        oferece:"Nome para empresa descartável de curto prazo — barato.",
+        vermelha:"Fala demais quando bebe. Entra em pânico, pede mais, pode delatar.",
+        fala:"Relaxa, eu não falei pra ninguém! ...só pra um cara." },
+      { cat:"Submundo", cor:"#C9A227", nome:"Seu Anísio", alc:"Bicheiro da velha guarda", L:4,
+        oferece:"Legitimidade, mentoria, mediação entre bicheiros, ponte com a velha guarda.",
+        vermelha:"Nenhuma aliança com quem trai a palavra. Despreza métodos de facção.",
+        fala:"No meu tempo, a palavra valia mais que a bala. Ainda vale, para mim." }
+    ];
+    return `<section class="section">
+      ${secHead("As ruas · gente", "Quem você encontra", "O Rio é feito de gente. Estes são alguns rostos que vão cruzar o caminho da sociedade — aliados, ferramentas e ameaças.")}
+
+      <p class="lead">No submundo, <span class="hl">relacionamento é tudo</span>. Cada NPC tem uma <span class="hl">Lealdade</span> (0–10), um preço, o que oferece e uma <span class="hl-red">linha vermelha</span> que não cruza. Trate-os bem e eles te seguram; trate mal e a conta chega.</p>
+
+      <div class="npc-grid">
+        ${NPCS.map(n=>`<div class="npc-card" style="--cat:${n.cor}">
+          <div class="npc-top">
+            <span class="npc-cat">${n.cat}</span>
+            <span class="npc-leal" title="Lealdade inicial">❤ ${n.L}</span>
+          </div>
+          <h4>${n.nome}</h4>
+          <div class="npc-alc">${n.alc}</div>
+          <p class="npc-of"><b>Oferece:</b> ${n.oferece}</p>
+          <p class="npc-rv"><b>Linha vermelha:</b> ${n.vermelha}</p>
+          <p class="npc-fala">“${n.fala}”</p>
+        </div>`).join("")}
+      </div>
+
+      ${cenario("Como a lealdade muda tudo", `<p>Lealdade <strong>0–2</strong>: trai na primeira oportunidade. <strong>5–6</strong>: confiável se bem pago. <strong>7–8</strong>: arrisca por você. <strong>9–10</strong>: morre por você. Pagar em dia, proteger a família e respeitar o código sobem a lealdade; calote, mentira e humilhação derrubam.</p>`)}
+
+      <p class="muted">Este é um recorte. O livro do mestre traz um banco com <strong>30+ NPCs</strong> em cinco categorias — autoridades, profissionais do crime, empresários e laranjas, submundo e civis — além dos banqueiros de favores e especialistas de lavagem e segurança.</p>
+      ${navButtons("npcs")}
+    </section>`;
+  }
+
+  function renderCampanha() {
+    const arcos = ["A Herança do Banqueiro Morto","Operação Lava-Bets","A Guerra da Zona Oeste",
+      "O Político Inconveniente","O Traidor","A Invasão Digital","O Resgate Impossível","A Virada de Mesa"];
+    const missoes = [
+      { n:"O Ponto de Madureira", dif:"2/10", tipo:"inicial",
+        gancho:"Seu Milton quer se aposentar e vender a barraca histórica — mas a milícia quer o ponto de graça. Vocês têm uma semana.",
+        recompensa:"O primeiro ponto (~R$ 11 mil/mês) e a fundação do império." },
+      { n:"Proteção Necessária", dif:"3/10", tipo:"inicial",
+        gancho:"\"Sobe aqui pra gente conversar.\" O gerente da facção quer taxar a operação nova. Ignorar é suicídio; aceitar é ajoelhar.",
+        recompensa:"Proteção estável — e uma mensalidade no orçamento." },
+      { n:"O Contador Nervoso", dif:"2/10", tipo:"inicial",
+        gancho:"O dinheiro sujo se acumula e vira maldição. Um contador apavorado topa montar a primeira fachada — se tiver garantias contra a Rangel.",
+        recompensa:"A primeira estrutura de lavagem funcional." },
+      { n:"Operação Lava-Bets", dif:"7/10", tipo:"avançada",
+        gancho:"A Polícia Federal mira o mercado de apostas. A investigação ameaça todos os bicheiros — inclusive vocês.",
+        recompensa:"Se sobreviverem: Heat reduzido, rivais afundados e XP alto." },
+      { n:"Guerra da Zona Oeste", dif:"8/10", tipo:"avançada",
+        gancho:"A milícia dominante decide engolir os pontos do grupo. A taxa triplica, ou um operador é morto como recado. Guerra aberta.",
+        recompensa:"Território e Capital de Rua — mas Heat e Pressão altíssimos." },
+      { n:"Endgame", dif:"10/10", tipo:"avançada",
+        gancho:"Todos os inimigos acumulados convergem ao mesmo tempo: a vendetta, a investigação federal, os rivais e os traidores internos.",
+        recompensa:"O trono do submundo carioca — ou a queda épica." }
+    ];
+    const finais = [
+      ["Ascensão ao Topo","Ricos, respeitados, intocados — e agora todo mundo mira em você.","#5fae7e"],
+      ["Queda Trágica","Subiu rápido, caiu mais rápido. O Rio já esqueceu seu nome.","#A4161A"],
+      ["Fuga / Exílio","Vivos e com dinheiro, mas para sempre olhando por cima do ombro.","#C9A227"],
+      ["Redenção","Uma vida pequena e limpa, comprada com traição ao passado.","#2C5F7C"],
+      ["Traição Final","Quem traiu herda o império — e os fantasmas.","#C8A97E"],
+      ["Guerra sem Vencedores","Provaram quem era mais forte. E não sobrou nada para governar.","#7d7d7d"]
+    ];
+    return `<section class="section">
+      ${secHead("Bora jogar · campanha", "Campanha & Missões", "Barões do Asfalto é uma história de ascensão. De um ponto de rua ao topo do submundo — ou à queda no caminho.")}
+
+      <p class="lead">A campanha é a <span class="hl">ascensão de uma sociedade criminosa</span>. Nada é trilho: o mestre encaixa missões e arcos, e as escolhas da mesa empurram a história para um destino que <span class="hl">vocês</span> constroem.</p>
+
+      <h2 class="block">Três tamanhos de campanha</h2>
+      <div class="grid cols-3">
+        <div class="card"><div class="num">5–8 sessões</div><h4>A Ascensão</h4><p>Três operadores se juntam e fincam o primeiro território. Do nada ao primeiro respeito de rua: 3–4 pontos lucrativos e protegidos.</p></div>
+        <div class="card"><div class="num">12–20 sessões</div><h4>Guerra do Bicho</h4><p>O grupo já é um nome. A expansão colide com outros barões e facções. Três atos: expansão, o estopim, e a conta.</p></div>
+        <div class="card"><div class="num">20+ sessões</div><h4>Barões do Asfalto</h4><p>A epopeia: dos pontos de rua ao império que disputa a cidade inteira — e atrai poderes muito além da polícia local.</p></div>
+      </div>
+
+      <h2 class="block">A estrutura de uma guerra (3 atos)</h2>
+      <div class="flow">
+        <div class="step"><span class="n">1</span><h5>Expansão</h5><p>O grupo cresce para uma nova região. Cada ponto traz um novo poder a satisfazer.</p></div>
+        <div class="step"><span class="n">2</span><h5>O Estopim</h5><p>Uma morte ou traição acende a guerra. Facções escolhem lados; o Heat dispara.</p></div>
+        <div class="step"><span class="n">3</span><h5>A Conta</h5><p>A guerra cobra seu preço. Uma jogada decisiva — e a polícia bate à porta no pior momento.</p></div>
+      </div>
+
+      <h2 class="block">Arcos modulares</h2>
+      <p>Capítulos autocontidos (3–5 sessões) que o mestre encaixa onde quiser:</p>
+      <div class="chips">${arcos.map(a=>`<span class="chip">${a}</span>`).join("")}</div>
+
+      <h2 class="block">Missões de exemplo</h2>
+      <p>Do primeiro ponto ao confronto final — uma amostra do que espera a sociedade:</p>
+      <div class="grid cols-2">
+        ${missoes.map(m=>`<div class="card mission ${m.tipo}">
+          <div class="mission-head"><h4>${m.n}</h4><span class="dif">Dificuldade ${m.dif}</span></div>
+          <p class="mission-g"><b>Gancho:</b> ${m.gancho}</p>
+          <p class="mission-r"><b>Recompensa:</b> ${m.recompensa}</p>
+        </div>`).join("")}
+      </div>
+
+      <h2 class="block">Como termina</h2>
+      <p>Os finais não são "vitória/derrota" — são destinos, desenhados pelas escolhas do grupo:</p>
+      <div class="grid cols-3">
+        ${finais.map(f=>`<div class="card" style="border-left:4px solid ${f[2]}"><h4 style="color:${f[2]}">${f[0]}</h4><p>${f[1]}</p></div>`).join("")}
+      </div>
+
+      ${cenario("A reviravolta da primeira campanha", `<p>Na campanha curta, o contato que apresentou os três bicheiros — o NPC que costurou a sociedade — estava plantado por um poder maior (Seu Anísio testando, ou um rival armando). A sociedade descobre que foi <strong>peça num jogo alheio</strong> desde o começo.</p>`)}
+      ${navButtons("campanha")}
+    </section>`;
+  }
+
   /* ============================================================
      SVGs — diagramas e ilustrações
      ============================================================ */
@@ -753,49 +894,63 @@
   }
 
   function systemMapSVG() {
-    // hub central + engrenagens
-    const node = (x,y,w,label,sub,fill) =>
+    const cx = 410, cy = 215, Rx = 268, Ry = 150;
+    const node = (x,y,w,label,sub,fill,stroke) =>
       `<g transform="translate(${x},${y})">
-        <rect x="${-w/2}" y="-26" width="${w}" height="52" rx="10" fill="${fill||'#16291f'}" stroke="#C9A227" stroke-opacity=".5"/>
-        <text x="0" y="-4" text-anchor="middle" font-family="Anton, sans-serif" font-size="14" fill="#F4ECD8">${label}</text>
-        <text x="0" y="14" text-anchor="middle" font-family="Oswald, sans-serif" font-size="10" fill="#b8ad94">${sub}</text>
+        <rect x="${-w/2}" y="-27" width="${w}" height="54" rx="11" fill="${fill||'#16291f'}" stroke="${stroke||'#C9A227'}" stroke-opacity=".6" stroke-width="1.5"/>
+        <text x="0" y="-4" text-anchor="middle" font-family="Anton, sans-serif" font-size="15" fill="#F4ECD8">${label}</text>
+        <text x="0" y="15" text-anchor="middle" font-family="Oswald, sans-serif" font-size="11" fill="#cdbf9f">${sub}</text>
       </g>`;
-    const arrow = (x1,y1,x2,y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#C9A227" stroke-opacity=".4" stroke-width="2" marker-end="url(#arr)"/>`;
-    return `<svg viewBox="0 0 820 420" aria-label="Diagrama de como os sistemas se conectam">
+    // satélites em volta do hub; setas calculadas borda-a-borda
+    const sats = [
+      {a:-90,  w:188, label:"PONTOS DE BICHO", sub:"geram dinheiro sujo"},
+      {a:-30,  w:176, label:"FACÇÕES",         sub:"cobram proteção"},
+      {a:30,   w:176, label:"FAVORES",         sub:"moeda social"},
+      {a:90,   w:188, label:"COMBATE",         sub:"último recurso", fill:"#3a1414", stroke:"#A4161A"},
+      {a:150,  w:176, label:"LAVAGEM",         sub:"sujo → limpo"},
+      {a:210,  w:188, label:"TERRITÓRIO",      sub:"onde você opera"}
+    ];
+    let arrows = "", nodes = "";
+    sats.forEach(s => {
+      const rad = s.a*Math.PI/180, ux = Math.cos(rad), uy = Math.sin(rad);
+      const nx = cx + Rx*ux, ny = cy + Ry*uy;
+      const x1 = cx + 118*ux, y1 = cy + 70*uy;     // sai da borda do hub
+      const x2 = nx - 100*ux,  y2 = ny - 38*uy;     // chega na borda do satélite
+      arrows += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#C9A227" stroke-opacity=".45" stroke-width="2" marker-end="url(#arr)"/>`;
+      nodes += node(nx, ny, s.w, s.label, s.sub, s.fill, s.stroke);
+    });
+    return `<svg viewBox="0 0 820 430" aria-label="Diagrama de como os sistemas se conectam">
       <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
         <path d="M0,0 L8,4 L0,8 Z" fill="#C9A227" fill-opacity=".6"/></marker></defs>
-      ${arrow(410,180,410,118)}${arrow(410,232,250,300)}${arrow(410,232,570,300)}
-      ${arrow(300,206,180,150)}${arrow(520,206,640,150)}
-      ${arrow(250,330,150,330)}${arrow(570,330,690,330)}
-      ${node(410,206,210,"A SOCIEDADE","você e seus sócios","#1B4332")}
-      ${node(410,92,180,"PONTOS DE BICHO","geram dinheiro sujo")}
-      ${node(160,124,180,"TERRITÓRIO","onde você opera")}
-      ${node(660,124,170,"FACÇÕES","cobram proteção")}
-      ${node(250,330,180,"LAVAGEM","sujo → limpo")}
-      ${node(570,330,180,"FAVORES","moeda social")}
-      ${node(110,330,120,"HEAT","a conta sobe","#3a1414")}
-      ${node(710,330,120,"COMBATE","último recurso","#3a1414")}
+      ${arrows}
+      ${node(cx, cy, 220, "A SOCIEDADE", "você e seus sócios", "#1B4332")}
+      ${nodes}
     </svg>`;
   }
 
   function sessionLoopSVG() {
+    const r = 60;
+    const P = { tl:[180,95], tr:[500,95], br:[500,255], bl:[180,255] };
     const seg = (cx,cy,label,sub,col) =>
       `<g transform="translate(${cx},${cy})">
-        <circle r="54" fill="#13231b" stroke="${col}" stroke-width="2"/>
-        <text y="-4" text-anchor="middle" font-family="Anton, sans-serif" font-size="13" fill="#F4ECD8">${label}</text>
-        <text y="14" text-anchor="middle" font-family="Oswald" font-size="9.5" fill="#b8ad94">${sub}</text>
+        <circle r="${r}" fill="#13231b" stroke="${col}" stroke-width="2.5"/>
+        <text y="-6" text-anchor="middle" font-family="Anton, sans-serif" font-size="15" fill="#F4ECD8">${label}</text>
+        <text y="16" text-anchor="middle" font-family="Oswald" font-size="11" fill="#cdbf9f">${sub}</text>
       </g>`;
-    const curve = (d)=>`<path d="${d}" fill="none" stroke="#C9A227" stroke-opacity=".5" stroke-width="2" marker-end="url(#arr2)"/>`;
-    return `<svg viewBox="0 0 640 300" aria-label="Loop das quatro fases da sessão">
-      <defs><marker id="arr2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#C9A227" fill-opacity=".7"/></marker></defs>
-      ${curve("M150,90 Q260,40 360,80")}
-      ${curve("M430,140 Q470,200 410,230")}
-      ${curve("M300,250 Q200,260 160,210")}
-      ${curve("M95,160 Q70,120 110,95")}
-      ${seg(110,90,"① PLANEJAR","estratégia","#C9A227")}
-      ${seg(420,100,"② EXECUTAR","ação","#A4161A")}
-      ${seg(360,230,"③ CONSEQUÊNCIA","o mundo reage","#2C5F7C")}
-      ${seg(120,200,"④ ECONOMIA","fecha o mês","#5fae7e")}
+    // setas borda-a-borda formando o retângulo (sentido horário)
+    const A = (x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" fill="none" stroke="#C9A227" stroke-opacity=".6" stroke-width="2.5" marker-end="url(#arr2)"/>`;
+    return `<svg viewBox="0 0 680 350" aria-label="Loop das quatro fases da sessão">
+      <defs><marker id="arr2" markerWidth="9" markerHeight="9" refX="7.5" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#C9A227" fill-opacity=".8"/></marker></defs>
+      ${A(P.tl[0]+r, P.tl[1], P.tr[0]-r, P.tr[1])}
+      ${A(P.tr[0], P.tr[1]+r, P.br[0], P.br[1]-r)}
+      ${A(P.br[0]-r, P.br[1], P.bl[0]+r, P.bl[1])}
+      ${A(P.bl[0], P.bl[1]-r, P.tl[0], P.tl[1]+r)}
+      <text x="340" y="170" text-anchor="middle" font-family="Special Elite, monospace" font-size="12" fill="#7d7d7d">CICLO</text>
+      <text x="340" y="188" text-anchor="middle" font-family="Special Elite, monospace" font-size="12" fill="#7d7d7d">DA SESSÃO</text>
+      ${seg(P.tl[0],P.tl[1],"① PLANEJAR","estratégia","#C9A227")}
+      ${seg(P.tr[0],P.tr[1],"② EXECUTAR","ação","#A4161A")}
+      ${seg(P.br[0],P.br[1],"③ CONSEQUÊNCIA","o mundo reage","#2C5F7C")}
+      ${seg(P.bl[0],P.bl[1],"④ ECONOMIA","fecha o mês","#5fae7e")}
     </svg>`;
   }
 
@@ -856,6 +1011,49 @@
         <text y="-10" text-anchor="middle" font-family="Anton" font-size="13" fill="#D33A2C">FERIMENTO</text>
         <text y="10" text-anchor="middle" font-family="Oswald" font-size="9.5" fill="#b8ad94">+ bônus da arma</text>
         <text y="25" text-anchor="middle" font-family="Oswald" font-size="9.5" fill="#b8ad94">Leve→Mortal</text></g>
+    </svg>`;
+  }
+
+  function heatExpoSVG() {
+    const cell = (x,y,w,h,fill,stroke,title,desc) =>
+      `<g><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${fill}" fill-opacity=".16" stroke="${stroke}" stroke-width="1.5"/>
+        <text x="${x+w/2}" y="${y+h/2-6}" text-anchor="middle" font-family="Anton, sans-serif" font-size="15" fill="${stroke}">${title}</text>
+        <text x="${x+w/2}" y="${y+h/2+16}" text-anchor="middle" font-family="Oswald, sans-serif" font-size="11.5" fill="#cdbf9f">${desc}</text></g>`;
+    const GR="#5fae7e", GO="#C9A227", RD="#A4161A";
+    return `<svg viewBox="0 0 560 470" aria-label="Quadrante Heat versus Exposição">
+      <defs><marker id="axq" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#7d7d7d"/></marker></defs>
+      <!-- eixos -->
+      <line x1="74" y1="404" x2="74" y2="32" stroke="#7d7d7d" stroke-width="1.5" marker-end="url(#axq)"/>
+      <line x1="74" y1="404" x2="540" y2="404" stroke="#7d7d7d" stroke-width="1.5" marker-end="url(#axq)"/>
+      <text transform="translate(40,220) rotate(-90)" text-anchor="middle" font-family="Anton" font-size="14" fill="#b8ad94">HEAT (atenção ativa)</text>
+      <text x="305" y="438" text-anchor="middle" font-family="Anton" font-size="14" fill="#b8ad94">EXPOSIÇÃO (seu rastro legal)</text>
+      <text x="92" y="48" font-family="Oswald" font-size="11" fill="#7d7d7d">alto</text>
+      <text x="92" y="398" font-family="Oswald" font-size="11" fill="#7d7d7d">baixo</text>
+      <text x="96" y="420" font-family="Oswald" font-size="11" fill="#7d7d7d">baixa</text>
+      <text x="500" y="420" font-family="Oswald" font-size="11" fill="#7d7d7d">alta</text>
+      <!-- células -->
+      ${cell(90,52,210,164,GO,GO,"FANTASMA","procurado, difícil de achar")}
+      ${cell(312,52,210,164,RD,RD,"VOCÊ ESTÁ FODIDO","é só questão de tempo")}
+      ${cell(90,224,210,164,GR,GR,"INVISÍVEL","o operador inteligente")}
+      ${cell(312,224,210,164,GO,GO,"VULNERÁVEL","muito a puxar quando cair")}
+    </svg>`;
+  }
+
+  function protectionPyramidSVG() {
+    // trapézios empilhados — base barata/larga → topo caro/estreito
+    const cx = 310;
+    const tier = (y,h,wb,wt,fill,stroke,label,price) => {
+      const pts = `${cx-wb/2},${y+h} ${cx+wb/2},${y+h} ${cx+wt/2},${y} ${cx-wt/2},${y}`;
+      return `<g><polygon points="${pts}" fill="${fill}" fill-opacity=".82" stroke="${stroke}" stroke-width="1.5"/>
+        <text x="${cx}" y="${y+h/2-2}" text-anchor="middle" font-family="Anton, sans-serif" font-size="14" fill="#0d130f">${label}</text>
+        <text x="${cx}" y="${y+h/2+16}" text-anchor="middle" font-family="Oswald, sans-serif" font-size="11" fill="#0d130f">${price}</text></g>`;
+    };
+    return `<svg viewBox="0 0 620 360" aria-label="Pirâmide da cadeia de proteção">
+      ${tier(258,72,560,470,"#5fae7e","#7fe0a6","PM individual","R$ 1.500 · avisa batidas")}
+      ${tier(186,72,452,372,"#C9A227","#E3C353","Facção (por ponto)","R$ 3–5 mil · deixa operar")}
+      ${tier(114,72,354,266,"#C8A97E","#e0c9a8","Milícia / Comandante","R$ 5–30 mil · controla a área")}
+      ${tier(42,72,248,150,"#A4161A","#D33A2C","Delegado","R$ 20–40 mil · arquiva tudo")}
+      <text x="600" y="300" text-anchor="end" font-family="Special Elite, monospace" font-size="10.5" fill="#7d7d7d">mais alto = mais caro e mais poder</text>
     </svg>`;
   }
 
@@ -1003,18 +1201,33 @@
       return L.divIcon({ className:"mk-wrap", html:`<span class="mk mk-${kind}">${label}</span>`, iconSize:[26,26], iconAnchor:[13,13], popupAnchor:[0,-12] });
     }
 
-    /* Regiões (polígonos tracejados) */
+    /* Regiões — usa limites reais (window.REGIOES_GEO) ou cai nos retângulos aproximados */
     const regioes = L.featureGroup();
-    REGIONS.forEach(r => {
-      const poly = L.polygon(REGION_POLYS[r.id], {
-        color:r.cor, weight:2, dashArray:"7 6", fillColor:r.cor, fillOpacity:0.10, opacity:0.85
+    const regById = {}; REGIONS.forEach(r => regById[r.id] = r);
+    const baseStyle = r => r.id === 7
+      ? { color:r.cor, weight:2, dashArray:"2 4", fillColor:r.cor, fillOpacity:0.22, opacity:0.9 } // complexos: hachura densa
+      : { color:r.cor, weight:2, dashArray:"7 6", fillColor:r.cor, fillOpacity:0.12, opacity:0.85 };
+
+    function wireRegion(layer, r) {
+      const base = baseStyle(r);
+      layer.bindTooltip(`<b>${String(r.id).padStart(2,"0")} · ${r.nome}</b><br>${r.controle}`, { sticky:true, className:"barao-tt" });
+      layer.on("mouseover", () => layer.setStyle({ fillOpacity:Math.min(0.45, base.fillOpacity+0.18), weight:3 }));
+      layer.on("mouseout",  () => layer.setStyle({ fillOpacity:base.fillOpacity, weight:2 }));
+      layer.on("click", () => { showRegionInfo(info, r); map.fitBounds(layer.getBounds().pad(0.25)); });
+    }
+
+    if (window.REGIOES_GEO) {
+      L.geoJSON(window.REGIOES_GEO, {
+        style: f => baseStyle(regById[f.properties.id]),
+        onEachFeature: (f, layer) => { const r = regById[f.properties.id]; if (r) wireRegion(layer, r); }
+      }).eachLayer(l => l.addTo(regioes));
+    } else {
+      REGIONS.forEach(r => {
+        const poly = L.polygon(REGION_POLYS[r.id], baseStyle(r));
+        wireRegion(poly, r);
+        poly.addTo(regioes);
       });
-      poly.bindTooltip(`<b>${String(r.id).padStart(2,"0")} · ${r.nome}</b><br>${r.controle}`, { sticky:true, className:"barao-tt" });
-      poly.on("mouseover", () => poly.setStyle({ fillOpacity:0.28, weight:3 }));
-      poly.on("mouseout",  () => poly.setStyle({ fillOpacity:0.10, weight:2 }));
-      poly.on("click", () => { showRegionInfo(info, r); map.fitBounds(poly.getBounds().pad(0.4)); });
-      poly.addTo(regioes);
-    });
+    }
 
     /* Pontos de jogo do bicho */
     const bicho = L.layerGroup();
