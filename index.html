@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barões do Asfalto — Apresentação do Jogo</title>
+  <meta name="description" content="RPG de mesa sobre o jogo do bicho e o crime organizado no Rio de Janeiro. Conceitos, mecânicas, território, favores, lavagem e combate." />
+
+  <!-- Fontes (com fallback de sistema caso esteja offline) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Special+Elite&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet (mapa real do Rio). Funciona via CDN; se estiver offline, a apresentação cai no mapa estilizado. -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <link rel="stylesheet" href="assets/styles.css?v=2" />
+</head>
+<body>
+  <!-- Barra superior -->
+  <header class="topbar">
+    <button class="nav-toggle" id="navToggle" aria-label="Abrir menu">
+      <span></span><span></span><span></span>
+    </button>
+    <a class="brand" href="#capa">
+      <span class="brand-mark">★</span>
+      <span class="brand-text">
+        <strong>BARÕES DO ASFALTO</strong>
+        <em>Jogo do Bicho &amp; Crime Organizado no Rio</em>
+      </span>
+    </a>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-tag">RPG DE MESA · d6</div>
+  </header>
+
+  <!-- Progresso de leitura -->
+  <div class="reading-progress"><span id="readingBar"></span></div>
+
+  <div class="layout">
+    <!-- Navegação lateral (gerada via JS) -->
+    <aside class="sidebar" id="sidebar" aria-label="Navegação">
+      <nav id="nav" class="nav"></nav>
+      <div class="sidebar-foot">
+        <div class="serra"></div>
+        <p>Material de apresentação · v1.0</p>
+        <p class="serie">Nº 041892 · SÉRIE VB</p>
+      </div>
+    </aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- Conteúdo principal (renderizado via JS) -->
+    <main class="content" id="content" tabindex="-1"></main>
+  </div>
+
+  <button class="to-top" id="toTop" aria-label="Voltar ao topo">↑</button>
+
+  <script src="assets/app.js?v=2"></script>
+</body>
+</html>
