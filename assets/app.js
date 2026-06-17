@@ -1204,6 +1204,8 @@
     /* Regiões — usa limites reais (window.REGIOES_GEO) ou cai nos retângulos aproximados */
     const regioes = L.featureGroup();
     const regById = {}; REGIONS.forEach(r => regById[r.id] = r);
+    /* Baixada (6) e Niterói/SG (10) ficam longe do núcleo; o enquadramento inicial foca a cidade do Rio */
+    const cityBounds = L.latLngBounds([]);
     const baseStyle = r => r.id === 7
       ? { color:r.cor, weight:2, dashArray:"2 4", fillColor:r.cor, fillOpacity:0.22, opacity:0.9 } // complexos: hachura densa
       : { color:r.cor, weight:2, dashArray:"7 6", fillColor:r.cor, fillOpacity:0.12, opacity:0.85 };
@@ -1214,6 +1216,7 @@
       layer.on("mouseover", () => layer.setStyle({ fillOpacity:Math.min(0.45, base.fillOpacity+0.18), weight:3 }));
       layer.on("mouseout",  () => layer.setStyle({ fillOpacity:base.fillOpacity, weight:2 }));
       layer.on("click", () => { showRegionInfo(info, r); map.fitBounds(layer.getBounds().pad(0.25)); });
+      if (r.id !== 6 && r.id !== 10) { try { cityBounds.extend(layer.getBounds()); } catch (e) {} }
     }
 
     if (window.REGIOES_GEO) {
@@ -1266,7 +1269,7 @@
     });
 
     regioes.addTo(map); bicho.addTo(map); milicia.addTo(map); faccao.addTo(map);
-    map.fitBounds(regioes.getBounds().pad(0.05));
+    map.fitBounds(cityBounds.isValid() ? cityBounds.pad(0.08) : regioes.getBounds().pad(0.05));
     setTimeout(() => map.invalidateSize(), 250);
 
     /* Filtros de camada (checkboxes do toolbar) */

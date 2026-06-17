@@ -27,7 +27,7 @@ for (const [reg, list] of Object.entries(MAP)) list.forEach(n => bairroToReg[n] 
 // ---- município -> região (fora da cidade) ----
 const MUN_REG = {
   "3301702":6,"3303500":6,"3305109":6,"3300456":6,"3303203":6,"3302858":6,"3304144":6,"3302270":6,"3302502":6,
-  "3303302":10,"3304557":10
+  "3303302":10,"3304904":10
 };
 
 const out = { type:"FeatureCollection", features:[] };
