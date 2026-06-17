@@ -26,7 +26,11 @@
     { id:9, nome:"Barra da Tijuca e Recreio", bicho:"Tigre", controle:"Bicheiros empresariais", cor:"#C9A227",
       pol:8, pot:5, custo:"R$ 120 mil+", desc:"Crime de camisa polo. Muito dinheiro, mas baixa tradição do bicho e segurança privada pesada.", frase:"Crime de camisa polo." },
     { id:10, nome:"Niterói / São Gonçalo", bicho:"Camelo", controle:"Bicheiros + CV", cor:"#2C5F7C",
-      pol:6, pot:8, custo:"R$ 40–100 mil", desc:"Do outro lado da Baía. Niterói tradicional e classe média; São Gonçalo, volume gigante e perigoso.", frase:"A travessia da Baía." }
+      pol:6, pot:8, custo:"R$ 40–100 mil", desc:"Do outro lado da Baía. Niterói tradicional e classe média; São Gonçalo, volume gigante e perigoso.", frase:"A travessia da Baía." },
+    { id:11, nome:"Região dos Lagos", bicho:"Borboleta", controle:"Milícia em expansão + bicho local", cor:"#C8A97E",
+      pol:5, pot:7, custo:"R$ 30–90 mil (sazonal)", desc:"Costa do Sol: Maricá, Cabo Frio, Búzios. Veraneio, turismo e milícia em avanço. No verão, a renda explode.", frase:"No verão, vale por seis meses." },
+    { id:12, nome:"Costa Verde", bicho:"Veado", controle:"CV (ilhas) + porto de Itaguaí", cor:"#2C5F7C",
+      pol:4, pot:6, custo:"R$ 40–100 mil", desc:"Angra, Paraty e o Porto de Itaguaí. Turismo, ilhas e a porta do mar — a rota de abastecimento do Rio.", frase:"Quem domina o mar abastece a cidade." }
   ];
 
   /* posições no mapa estilizado (viewBox 0 0 600 430) — usado como fallback offline */
@@ -34,7 +38,7 @@
     6:[20,18,168,72], 7:[206,18,168,72], 8:[392,18,168,72],
     4:[20,104,168,72], 3:[206,104,168,72], 1:[392,104,168,72],
     9:[20,190,168,72], 5:[206,190,168,72], 2:[392,190,168,72],
-    10:[300,310,168,72]
+    10:[206,300,168,56], 11:[392,300,168,56], 12:[20,300,168,56]
   };
 
   /* -------------------- DADOS GEO (mapa real / Leaflet) -------------------- */
@@ -49,7 +53,9 @@
     7:[[-22.846,-43.248],[-22.846,-43.292],[-22.878,-43.292],[-22.878,-43.248]],
     8:[[-22.884,-43.178],[-22.879,-43.216],[-22.902,-43.226],[-22.907,-43.184]],
     9:[[-22.994,-43.302],[-23.000,-43.488],[-23.038,-43.492],[-23.026,-43.308]],
-    10:[[-22.858,-43.018],[-22.858,-43.132],[-22.922,-43.132],[-22.932,-43.018]]
+    10:[[-22.858,-43.018],[-22.858,-43.132],[-22.922,-43.132],[-22.932,-43.018]],
+    11:[[-22.93,-42.95],[-22.70,-41.88],[-22.78,-41.82],[-23.00,-42.30],[-23.00,-42.92]],
+    12:[[-22.86,-43.78],[-23.02,-44.05],[-23.26,-44.74],[-23.10,-44.20],[-22.98,-43.92]]
   };
 
   /* Pontos físicos de jogo do bicho (baseados nas fichas do doc 4.2) */
@@ -87,6 +93,35 @@
     {n:"Jacarezinho", fac:"TCP", det:"Reduto do Terceiro Comando Puro.", lat:-22.8893, lng:-43.2566},
     {n:"Providência", fac:"TCP", det:"Primeira favela do Brasil, hoje sob o TCP.", lat:-22.8970, lng:-43.1900},
     {n:"Cidade de Deus", fac:"CV", det:"Domínio do CV na Zona Oeste.", lat:-22.9490, lng:-43.3620}
+  ];
+
+  /* Poder político + síntese das bocas por região (doc 3.1) — mostrado no painel lateral */
+  const REGION_EXTRA = {
+    1:{ politico:"Ver. Wanderley Pimenta — alvará expresso e fiscal cego (SAARA).", boca:"Só nas bordas: Providência (TCP). Alto Heat, pouca margem." },
+    2:{ politico:"Ver. Ricardo Vianna — \"policiamento turístico\" que afasta batida.", boca:"Cantagalo/Pavão-Pavãozinho, Rocinha (CV). Margem alta, mídia brutal." },
+    3:{ politico:"Ver. Joelson do Povo — mobilização, alvará e escolas de samba.", boca:"Alemão, Penha, Maré (CV) e Jacarezinho (TCP). O maior varejo da cidade." },
+    4:{ politico:"Ver. Toninho Braço — fachada civil do Major Oliveira (milícia).", boca:"Milícia controla/taxa a boca; TCP em Realengo/Padre Miguel." },
+    5:{ politico:"Ver. Procópio Lemos — fiscalização seletiva e contatos no TJ.", boca:"Borel, Formiga, Salgueiro, Turano (CV). Pico em dia de jogo." },
+    6:{ politico:"Dep. Geraldão da Baixada — o cacique; engaveta qualquer coisa.", boca:"Guerra CV × TCP × milícia. Máximo lucro, máximo risco." },
+    7:{ politico:"Ver. Cleber Souza — ponte com secretarias (responde à facção).", boca:"O coração do tráfico: Alemão, Maré, Rocinha, Jacarezinho, CDD." },
+    8:{ politico:"Ver. Adilson Portuário — concessão e carga do porto.", boca:"Providência, Pedra Lisa, Conceição (TCP). O valor é a rota." },
+    9:{ politico:"Ver. Dr. Fontes — blindagem jurídica e a milícia de Rio das Pedras.", boca:"Cidade de Deus (CV); Muzema/Rio das Pedras (milícia)." },
+    10:{ politico:"Dep. Paulinho Icaraí (Niterói) + Ver. Marcão (São Gonçalo).", boca:"São Gonçalo (CV agressivo): Salgueiro, Jardim Catarina." },
+    11:{ politico:"Dep. Naldo Sal — prefeito no bolso e alvará de orla.", boca:"Chegando pela milícia (Maricá) e pelo CV via SG. Verão = pico." },
+    12:{ politico:"Dep. Zé do Porto — libera carga e licitação portuária.", boca:"Ilha Grande/Angra (CV). O valor real é a ROTA MARÍTIMA." }
+  };
+
+  /* Bocas de fumo — vertente opcional de alto risco (doc 4.1 §2B / 3.1) */
+  const BOCA_POINTS = [
+    {n:"Complexo do Alemão", fac:"CV", det:"Praça de varejo de altíssimo volume, fluxo 24h.", lat:-22.8650, lng:-43.2710},
+    {n:"Complexo da Maré", fac:"CV × TCP", det:"Boca em guerra de facções — território instável.", lat:-22.8560, lng:-43.2410},
+    {n:"Rocinha", fac:"CV", det:"Clientela rica da Zona Sul; margem altíssima, mídia brutal.", lat:-22.9870, lng:-43.2450},
+    {n:"Jacarezinho", fac:"TCP", det:"Reduto histórico de varejo do TCP.", lat:-22.8800, lng:-43.2560},
+    {n:"Cidade de Deus", fac:"CV", det:"Boca célebre na Zona Oeste.", lat:-22.9500, lng:-43.3600},
+    {n:"Cantagalo / Pavão-Pavãozinho", fac:"CV", det:"Entre Ipanema e Copacabana. Alto valor, Heat de mídia.", lat:-22.9710, lng:-43.1930},
+    {n:"Morro do Borel", fac:"CV", det:"Encravada na Tijuca; pico em dia de jogo no Maracanã.", lat:-22.9300, lng:-43.2370},
+    {n:"Providência", fac:"TCP", det:"Boca antiga sobre o porto; ponto de distribuição.", lat:-22.8980, lng:-43.1890},
+    {n:"São Gonçalo (Salgueiro)", fac:"CV", det:"CV agressivo do outro lado da Baía; alto volume.", lat:-22.8270, lng:-43.0190}
   ];
 
   /* -------------------- SEÇÕES -------------------- */
@@ -158,7 +193,7 @@
         <div class="qf"><b>3-5</b><span>Jogadores + 1 Mestre</span></div>
         <div class="qf"><b>d6</b><span>Pool de dados</span></div>
         <div class="qf"><b>9</b><span>Arquétipos</span></div>
-        <div class="qf"><b>10</b><span>Regiões do Rio</span></div>
+        <div class="qf"><b>12</b><span>Regiões do Rio</span></div>
       </div>
 
       <h2 class="block">Como tudo se conecta</h2>
@@ -527,6 +562,7 @@
         <label class="mt-toggle" data-layer="bicho"><input type="checkbox" checked> <i class="mk-dot bicho">$</i> Pontos do bicho</label>
         <label class="mt-toggle" data-layer="milicia"><input type="checkbox" checked> <i class="mk-dot milicia">▣</i> Milícia</label>
         <label class="mt-toggle" data-layer="faccao"><input type="checkbox" checked> <i class="mk-dot faccao">✊</i> Facção</label>
+        <label class="mt-toggle" data-layer="boca"><input type="checkbox"> <i class="mk-dot boca">☠</i> Bocas de fumo</label>
       </div>
 
       <div class="map-app">
@@ -542,13 +578,13 @@
         </div>
         <div class="map-info" id="mapInfo">
           <div class="rkicker">Selecione no mapa</div>
-          <h4>As 10 regiões do Rio</h4>
-          <p class="muted">Cada região tem um perfil de controle criminal, nível de policiamento, potencial para o jogo do bicho e um custo de entrada. Clique numa região (área tracejada) para ver os detalhes; passe o mouse nos pontos para o nome e clique para abrir.</p>
+          <h4>As 12 regiões do Rio</h4>
+          <p class="muted">Cada região tem um perfil de controle criminal, policiamento, potencial para o bicho, custo de entrada, <strong>poder político</strong> (o vereador/deputado dominante) e suas <strong>bocas de fumo</strong>. Clique numa região (área tracejada) para ver os detalhes; passe o mouse nos pontos para o nome e clique para abrir.</p>
           <p class="muted">No jogo físico, este mapa vira o <strong>tabuleiro</strong>, onde os tokens marcam seus pontos e o avanço dos rivais.</p>
         </div>
       </div>
-      <p class="muted" style="font-size:.82rem;margin-top:8px">🟡 14 pontos físicos de bicho · ▣ 5 áreas de milícia · ✊ 6 redutos de facção. As 2 plataformas <em>online</em> (maior renda do jogo) não têm endereço — operam de qualquer lugar.</p>
-      <p class="muted" style="font-size:.82rem;margin-top:4px">Os contornos das regiões são <strong>limites reais</strong> (bairros oficiais do Rio + municípios da Baixada e de Niterói/São Gonçalo). A região <strong>Complexos de Favelas</strong> aparece <em>espalhada</em> pelo mapa (hachura densa), porque não é uma zona contígua — são redutos de facção dentro de outras zonas.</p>
+      <p class="muted" style="font-size:.82rem;margin-top:8px">$ 14 pontos de bicho · ▣ 5 áreas de milícia · ✊ 6 redutos de facção · ☠ 9 bocas de fumo (ligue a camada). As 2 plataformas <em>online</em> (maior renda do jogo) não têm endereço — operam de qualquer lugar.</p>
+      <p class="muted" style="font-size:.82rem;margin-top:4px">Os contornos são <strong>limites reais</strong> (bairros oficiais do Rio + municípios do IBGE). São <strong>12 regiões</strong>: 10 no núcleo metropolitano + 2 <strong>fronteiras de expansão</strong> — <strong>Região dos Lagos</strong> (Maricá, Cabo Frio, Búzios) a leste e <strong>Costa Verde</strong> (Angra, Paraty, Porto de Itaguaí) a oeste. A região <strong>Complexos de Favelas</strong> aparece <em>espalhada</em> (hachura densa): não é zona contígua, são redutos de facção dentro de outras zonas. Dê zoom para fora para ver as fronteiras.</p>
 
       <h2 class="block">Como ler o território</h2>
       <div class="grid cols-3">
@@ -604,6 +640,19 @@
         <li><strong>Não minta</strong> sobre a receita — eles descobrem.</li>
         <li><strong>Nunca fale com a facção rival.</strong> Traição se paga com a vida.</li>
       </ol>
+
+      <h2 class="block">Poder político: o padrinho na Câmara</h2>
+      <p class="lead">Acima da facção e da milícia existe um poder mais discreto — e muitas vezes mais decisivo: o <span class="hl">político</span>. Cada região tem o seu vereador ou deputado dominante. Sem um padrinho na Câmara ou na Assembleia, <span class="hl">não se constrói império no Rio</span>.</p>
+      <div class="grid cols-3">
+        <div class="card"><div class="ico">📜</div><h4>O que ele entrega</h4><p>Alvará e fiscalização seletiva, contrato público para <b>lavar</b>, verba de emenda, e pressão para <b>desviar operações policiais</b> da sua área.</p></div>
+        <div class="card"><div class="ico">🤝</div><h4>O que ele cobra</h4><p>Caixa de campanha (dinheiro vivo), votos de curral, sociedade nos negócios — e <b>lealdade</b>. Vira favor, e favor vira dívida.</p></div>
+        <div class="card"><div class="ico">⚠️</div><h4>O risco</h4><p>Político é refém de imagem. Um escândalo o derruba — e leva junto quem apostou nele. Dever a um cacique é virar <b>propriedade</b> dele.</p></div>
+      </div>
+      <div class="grid cols-2" style="margin-top:6px">
+        <div class="card" style="border-left:4px solid #A4161A"><h4>Geraldão da Baixada — o cacique</h4><p>Engaveta inquérito, nomeia delegado, ganha licitação. É o favor Crítico em pessoa — e cobra com violência. Dever-lhe um favor grande resolve tudo hoje e te escraviza amanhã.</p></div>
+        <div class="card" style="border-left:4px solid #C9A227"><h4>Joelson do Povo — Zona Norte</h4><p>Enche uma rua em duas horas, decide qual bicheiro patrocina a escola campeã. O aval dele vale mais que dinheiro no subúrbio — enquanto ele tiver o povo na mão.</p></div>
+      </div>
+      ${cenario("Como entra no jogo", `<p>Cada região do <strong>mapa</strong> (seção Território) mostra o seu político dominante. Eles são a ponte entre o crime e o Estado — e a principal fonte de <strong>favores</strong> Grandes e Críticos. O banco completo dos 12 padrinhos está no Livro do Mestre.</p>`)}
       ${navButtons("faccoes")}
     </section>`;
   }
@@ -1164,6 +1213,9 @@
       <div class="stat"><span>Policiamento</span>${minibars(r.pol,10,true)}</div>
       <div class="stat"><span>Potencial do bicho</span>${minibars(r.pot,10,false)}</div>
       <div class="stat"><span>Custo de entrada</span><b class="money" style="color:var(--dourado-claro)">${r.custo}</b></div>
+      ${REGION_EXTRA[r.id] ? `
+      <div class="rblock"><span class="rblock-t">🏛️ Poder político</span><p>${REGION_EXTRA[r.id].politico}</p></div>
+      <div class="rblock boca"><span class="rblock-t">☠ Bocas de fumo</span><p>${REGION_EXTRA[r.id].boca}</p></div>` : ""}
       <p class="muted" style="font-family:var(--ff-eleg);font-style:italic;margin-top:12px">"${r.frase}"</p>`;
   }
 
@@ -1216,7 +1268,7 @@
       layer.on("mouseover", () => layer.setStyle({ fillOpacity:Math.min(0.45, base.fillOpacity+0.18), weight:3 }));
       layer.on("mouseout",  () => layer.setStyle({ fillOpacity:base.fillOpacity, weight:2 }));
       layer.on("click", () => { showRegionInfo(info, r); map.fitBounds(layer.getBounds().pad(0.25)); });
-      if (r.id !== 6 && r.id !== 10) { try { cityBounds.extend(layer.getBounds()); } catch (e) {} }
+      if (![6,10,11,12].includes(r.id)) { try { cityBounds.extend(layer.getBounds()); } catch (e) {} }
     }
 
     if (window.REGIOES_GEO) {
@@ -1268,12 +1320,24 @@
       m.addTo(faccao);
     });
 
+    /* Bocas de fumo (vertente de alto risco) — camada começa desligada */
+    const boca = L.layerGroup();
+    BOCA_POINTS.forEach(p => {
+      const m = L.marker([p.lat,p.lng], { icon:icon("boca","☠") });
+      m.bindTooltip("Boca · "+p.n, { direction:"top", offset:[0,-10], className:"barao-tt" });
+      m.bindPopup(`<div class="pop"><span class="pop-kind boca">BOCA DE FUMO · ${p.fac}</span>
+        <h5>${p.n}</h5><p>${p.det}</p>
+        <div class="pop-row"><span>Imposto à facção</span><b class="g">10–25% do faturamento</b></div>
+        <div class="pop-row"><span>Risco</span><b class="g">Heat alto · vertente opcional</b></div></div>`, { className:"barao-popup" });
+      m.addTo(boca);
+    });
+
     regioes.addTo(map); bicho.addTo(map); milicia.addTo(map); faccao.addTo(map);
     map.fitBounds(cityBounds.isValid() ? cityBounds.pad(0.08) : regioes.getBounds().pad(0.05));
     setTimeout(() => map.invalidateSize(), 250);
 
     /* Filtros de camada (checkboxes do toolbar) */
-    const layers = { regioes, bicho, milicia, faccao };
+    const layers = { regioes, bicho, milicia, faccao, boca };
     root.querySelectorAll("#mapToolbar .mt-toggle").forEach(lbl => {
       const key = lbl.dataset.layer, cb = lbl.querySelector("input");
       cb.addEventListener("change", () => {

@@ -6,7 +6,8 @@ const D = path.join(__dirname, "data");
 const NOMES = {
   1:"Centro", 2:"Zona Sul", 3:"Zona Norte", 4:"Zona Oeste", 5:"Grande Tijuca",
   6:"Baixada Fluminense", 7:"Complexos de Favelas", 8:"Região Portuária",
-  9:"Barra da Tijuca e Recreio", 10:"Niterói / São Gonçalo"
+  9:"Barra da Tijuca e Recreio", 10:"Niterói / São Gonçalo",
+  11:"Região dos Lagos / Costa do Sol", 12:"Costa Verde"
 };
 
 const g = JSON.parse(fs.readFileSync(path.join(D,"regioes-dissolved.geojson"),"utf8"));
