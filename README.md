@@ -1,37 +1,49 @@
-# Barões do Asfalto — Apresentação
+# Barões do Asfalto — App (Next.js)
 
-Aplicação web de apresentação do RPG de mesa **Barões do Asfalto** (jogo do bicho e crime organizado no Rio de Janeiro). Explica conceitos, mecânicas, território, favores, lavagem de dinheiro e combate — para os jogadores entenderem e se interessarem pelo jogo.
+App multi-portal com login: **Apresentação** (pública), **Livro digital** (wiki, login) e
+**Dashboard de Gameplay** (login). Stack: Next.js 16 (App Router) + Tailwind 4 + Supabase.
 
-🔗 **Site:** _(adicione o link da Vercel aqui depois do deploy)_
+## Rodar local
 
-## Tecnologia
+```bash
+npm install
+cp .env.local.example .env.local   # preencha com as chaves do Supabase
+npm run dev                         # http://localhost:3000
+```
 
-Site **100% estático** — HTML, CSS e JavaScript puro, sem build. Abre direto no navegador ou em qualquer hospedagem estática.
+Sem `.env.local`, o app roda em modo "preview" (sem login/dados) para visualização.
 
-- Navegação por seções (SPA com hash routing)
-- **Rolador de dados interativo** (ensina a mecânica do pool de d6)
-- **Mapa real do Rio** (Leaflet + OpenStreetMap/CARTO) com as 10 regiões em **limites reais** (bairros do data.rio + municípios do IBGE), pontos de jogo do bicho, milícias e facções
-- Seções de **NPCs** ("Quem você encontra") e **Campanha & Missões**
-- Diagramas, fluxogramas e tabelas (incl. quadrante Heat×Exposição e pirâmide de proteção)
+## Configurar o Supabase (uma vez)
 
-## Rodar localmente
+1. Crie um projeto grátis em supabase.com.
+2. Em **Project Settings → API**, copie `Project URL` e `anon key` para `.env.local`
+   (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
+3. No **SQL Editor**, rode `supabase/migrations/0001_init.sql` (schema + RLS).
+4. **Crie o usuário admin:** Authentication → Users → Add user (email do admin),
+   _ou_ faça login pela tela `/login` uma vez. Depois rode
+   `supabase/migrations/0002_seed_admin.sql` para promover esse email a `admin`.
+5. Admin cria as contas dos jogadores (Authentication → Add user) e as fichas
+   (no Dashboard, Fase 2).
 
-Basta abrir o `index.html` no navegador. Não precisa de servidor.
+## Deploy (Vercel)
+
+- Framework: **Next.js** (auto-detectado).
+- Env vars na Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  (e `SUPABASE_SERVICE_ROLE_KEY` se usar o export do agente).
 
 ## Estrutura
 
 ```
-.
-├── index.html          # página principal
-├── assets/
-│   ├── styles.css      # tema visual
-│   ├── app.js          # conteúdo, navegação, mapa e interatividade
-│   └── regioes-geo.js  # limites reais das 10 regiões (embutido p/ funcionar via file://)
-├── _build/             # scripts que geram regioes-geo.js (data.rio + IBGE); não é servido
-├── COMO-ABRIR.md       # guia rápido de uso
-└── README.md
+app/
+  page.tsx                  # hub dos 3 portais (público)
+  login/                    # login (Supabase)
+  (protected)/              # exige login quando Supabase configurado
+    livro/                  # Livro digital (wiki dos markdowns)
+    dashboard/              # Dashboard (Fase 2)
+content/livro/              # markdown do livro (fonte do Livro digital)
+public/apresentacao/        # a Apresentação estática (portal público)
+lib/supabase/               # clients (client/server) + sessão
+lib/auth.ts                 # usuário/perfil/papel
+proxy.ts                    # renova sessão (convenção Next 16)
+supabase/migrations/        # schema + RLS + seed admin
 ```
-
-## Deploy (Vercel)
-
-Site estático sem build. Na Vercel: **Framework Preset = Other**, **Root Directory = `.`**, sem comando de build. A Vercel detecta o `index.html` e serve automaticamente.
