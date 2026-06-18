@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Cartas de Arquétipo — Barões do Asfalto</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  body{ background:#2c2c2a; }
+  .controls{ position:fixed; top:0; left:0; right:0; z-index:80; display:flex; align-items:center; gap:14px;
+    padding:10px 16px; background:rgba(16,16,14,.94); color:var(--creme); font-family:'Oswald',sans-serif;
+    font-size:12px; letter-spacing:.04em; box-shadow:0 2px 14px rgba(0,0,0,.55); }
+  .controls b{ font-family:'Anton'; letter-spacing:.06em; color:var(--dourado); text-transform:uppercase; }
+  .controls .hint{ margin-left:auto; opacity:.66; font-size:10.5px; font-family:'Special Elite',monospace; }
+
+  .stage{ padding:60px 18px 46px; display:flex; flex-wrap:wrap; justify-content:center; gap:18px; align-items:flex-start; }
+  .pscale{ transform-origin:top left; }
+
+  @page{ size:148mm 210mm; margin:0; }
+  .card{ position:relative; width:148mm; height:210mm; overflow:hidden; background:var(--creme);
+    background-image:radial-gradient(circle at 16% 9%, rgba(180,150,90,.07), transparent 56%),
+      radial-gradient(circle at 84% 92%, rgba(120,90,40,.06), transparent 54%);
+    color:var(--tinta); padding:8mm 8mm 6mm; display:flex; flex-direction:column;
+    font-family:'Source Serif 4', Georgia, serif; box-shadow:0 8px 30px rgba(0,0,0,.45); }
+  .card::before{ content:""; position:absolute; inset:4mm; border:1.3pt solid var(--verde);
+    box-shadow:0 0 0 1.2pt var(--creme), 0 0 0 2.4pt var(--verde); pointer-events:none; z-index:0; }
+  .card.red::before{ border-color:var(--vermelho); box-shadow:0 0 0 1.2pt var(--creme), 0 0 0 2.4pt var(--vermelho); }
+  .card > *{ position:relative; z-index:1; }
+
+  .corner{ position:absolute; z-index:2; font-family:'Anton'; color:var(--dourado-2); opacity:.85; }
+  .corner.tl{ top:6mm; left:6mm; font-size:13pt; } .corner.br{ bottom:6mm; right:6mm; font-size:13pt; transform:rotate(180deg); }
+
+  /* ---- FRENTE ---- */
+  .amast{ text-align:center; padding:0 8mm; }
+  .amast .kick{ font-family:'Anton'; color:var(--vermelho); text-transform:uppercase; letter-spacing:.14em; font-size:7pt; }
+  .amast .tt{ font-family:'Anton'; font-size:19pt; line-height:.96; color:var(--verde); text-transform:uppercase; margin:.6mm 0 1mm; }
+  .amast .ep{ font-family:'Playfair Display'; font-style:italic; font-size:9pt; color:#5e574a; line-height:1.25; }
+  hr.serr{ height:0; border:0; border-top:1.3pt dashed var(--dourado-2); opacity:.6; margin:2.2mm 0; }
+
+  /* retrato falado (silhueta abstrata) */
+  .retrato{ display:flex; gap:3mm; align-items:center; margin:1mm 0; }
+  .rframe{ width:30mm; height:34mm; flex:none; border:1pt dashed var(--linha); background:rgba(27,67,50,.05);
+    display:flex; align-items:flex-end; justify-content:center; overflow:hidden; position:relative; }
+  .rframe svg{ width:84%; height:92%; }
+  .rframe .tag{ position:absolute; top:1mm; left:0; right:0; text-align:center; font-family:'Special Elite',monospace; font-size:5pt; color:#8a8068; letter-spacing:.06em; }
+  .rmeta{ flex:1; }
+  .rmeta .lab{ font-family:'Oswald'; font-weight:600; text-transform:uppercase; letter-spacing:.05em; font-size:6.2pt; color:#6a6a60; }
+  .rmeta .val{ font-family:'Source Serif 4'; font-size:8.4pt; line-height:1.3; margin-bottom:1.4mm; }
+  .conc{ list-style:none; margin:1mm 0 0; padding:0; }
+  .conc li{ font-family:'Source Serif 4'; font-size:8pt; line-height:1.3; padding-left:4mm; position:relative; margin-bottom:.6mm; }
+  .conc li::before{ content:"▸"; position:absolute; left:0; color:var(--dourado-2); }
+
+  .abox{ border:1.2pt solid var(--verde); margin-top:2mm; }
+  .abox .h{ background:var(--verde); color:var(--creme); font-family:'Anton'; font-size:8pt; text-transform:uppercase;
+    letter-spacing:.04em; padding:1mm 2.4mm; display:flex; justify-content:space-between; gap:2mm; }
+  .abox .b{ font-family:'Source Serif 4'; font-size:7.6pt; line-height:1.32; padding:1.6mm 2.4mm; }
+  .abox.red{ border-color:var(--vermelho); } .abox.red .h{ background:var(--vermelho); }
+  .abox .h .tagn{ font-family:'Special Elite',monospace; font-size:5.6pt; color:var(--dourado); letter-spacing:.04em; }
+  .abox.red .h .tagn{ color:var(--creme); }
+
+  .foot{ margin-top:auto; display:flex; justify-content:space-between; align-items:flex-end; gap:3mm; padding-top:2mm; }
+  .serie{ font-family:'Special Elite',monospace; font-size:5.6pt; color:#8a8068; letter-spacing:.05em; }
+  .bichotag{ font-family:'Oswald'; font-weight:600; font-size:7pt; color:var(--verde); text-transform:uppercase; letter-spacing:.03em; }
+
+  /* ---- VERSO ---- */
+  .vh{ font-family:'Anton'; text-transform:uppercase; letter-spacing:.05em; font-size:8.4pt; color:var(--creme);
+    background:var(--verde); padding:1mm 2.4mm; margin:0 0 1.4mm; }
+  .vh.gold{ background:var(--dourado); color:var(--tinta); }
+  .attrgrid{ display:grid; grid-template-columns:repeat(3,1fr); gap:1.6mm; margin-bottom:1mm; }
+  .attrgrid .a{ border:1pt solid var(--linha-2); text-align:center; padding:1mm; }
+  .attrgrid .a .n{ font-family:'Oswald'; font-weight:600; font-size:5.8pt; text-transform:uppercase; color:#6a6a60; letter-spacing:.04em; }
+  .attrgrid .a .v{ font-family:'Anton'; font-size:13pt; color:var(--verde); line-height:1; }
+  .pchips{ display:flex; flex-wrap:wrap; gap:1.4mm; }
+  .pchip{ font-family:'Oswald'; font-weight:600; font-size:7pt; color:var(--verde); border:1pt solid var(--dourado);
+    background:rgba(201,162,39,.08); padding:.6mm 1.8mm; border-radius:1mm; }
+  .vbody{ font-family:'Source Serif 4'; font-size:7.8pt; line-height:1.36; }
+  .contacts .row{ display:flex; gap:1.5mm; align-items:flex-end; padding:1mm 0; border-bottom:.5pt dotted var(--linha-2); }
+  .contacts .row:last-child{ border-bottom:0; }
+  .contacts .ln{ flex:1; border-bottom:1px dotted var(--linha); min-height:4mm; }
+  .contacts .lealp{ display:inline-flex; gap:.7mm; } .contacts .lealp i{ width:2.3mm; height:2.3mm; border:.9pt solid var(--tinta); display:block; }
+  .gancho{ font-family:'Playfair Display'; font-style:italic; font-size:8pt; color:var(--verde); line-height:1.3; }
+
+  @media print{
+    body{ background:#fff; }
+    .controls{ display:none !important; }
+    .stage{ padding:0; gap:0; display:block; }
+    .pscale{ transform:none !important; width:auto !important; height:auto !important; }
+    .card{ box-shadow:none; page-break-after:always; }
+    .card:last-child{ page-break-after:avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="controls noprint">
+  <b>Cartas de Arquétipo — 9 × A5</b>
+  <span class="hint">Imprima frente/verso duplex (borda longa) · 1 carta por jogador na criação</span>
+</div>
+<div class="stage" id="stage"></div>
+
+<script>
+  // silhueta genérica "retrato falado" (busto)
+  const BUST = `<svg viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g fill="#1B4332" fill-opacity="0.22">
+      <circle cx="50" cy="34" r="22"/>
+      <path d="M8 110 C8 78 28 64 50 64 C72 64 92 78 92 110 Z"/>
+    </g>
+    <g fill="none" stroke="#1B4332" stroke-opacity="0.5" stroke-width="1.4">
+      <circle cx="50" cy="34" r="22"/>
+      <path d="M8 110 C8 78 28 64 50 64 C72 64 92 78 92 110"/>
+    </g></svg>`;
+
+  const ARQ = [
+    { n:"01", t:"O Contador Sujo", ep:"“Eu faço o dinheiro desaparecer. E reaparecer batizado.”",
+      ac:"Óculos de grau · maleta executiva", bicho:"Coelho — multiplica",
+      conc:["Mente fria de planilha, coração de cofre.","O crime é uma empresa — e empresa precisa de contador.","Cada real sujo tem que voltar limpo."],
+      vt:["Alquimista Financeiro","Lavagem feita por você: taxa menor, tempo −25%, −1 dificuldade. 1×/sessão você fareja uma oportunidade financeira (Mente + Economia Ilegal, dif. 3)."],
+      vd:["Papel Rastreável","Exposição começa em 5; +1 a cada empresa criada. Investigadores ganham +2 dados contra a sua papelada."],
+      attr:[4,3,2,1,3,2], per:["Economia Ilegal","Lavagem","Planejamento","Negociação","Direito"],
+      rec:"Dinheiro inicial padrão + 1 empresa de fachada pequena já aberta.",
+      gan:"Você conhece os números de todos. Isso te faz indispensável — e descartável." },
+
+    { n:"02", t:"O Político de Bairro", ep:"“Eu não mando em ninguém. Todo mundo só me deve.”",
+      ac:"Santinhos no bolso · aperto de mão fácil", bicho:"Galo — canta para a base",
+      conc:["A rua é o seu curral, o favor é o seu voto.","Aparece em velório, batizado e enchente.","Limpo na foto, sujo no acordo."],
+      vt:["Homem do Povo","Na SUA região: +2 dados sociais e contatos com −1 dificuldade. 1×/sessão mobiliza um mutirão (10–30 civis)."],
+      vd:["Visibilidade Pública","Exposição 7 (nunca abaixo de 5). Violência com você presente = +3 Heat. Não participa de ação ilegal explícita."],
+      attr:[3,4,2,1,4,1], per:["Negociação","Política","Sedução","Leitura de Intenções","Submundo Carioca"],
+      rec:"Base eleitoral fiel + um gabinete que abre portas (e esconde dinheiro).",
+      gan:"Seu poder é a multidão. Sem o palanque, você é só mais um devedor." },
+
+    { n:"03", t:"O Atravessador", ep:"“Nada se move nesta cidade sem passar por mim.”",
+      ac:"Chave de van · seis celulares", bicho:"Cavalo — a rota",
+      conc:["Conhece cada beco, cada pedágio, cada brecha.","Sem base fixa: hoje aqui, amanhã sumido.","O caminho é o negócio."],
+      vt:["Conhece Todos os Caminhos","+3 dados em Direção/Fuga no Rio; −1 dif. em Logística. 1×/sessão ROTA FANTASMA: escapa, atalha ou evita pedágio automaticamente."],
+      vd:["Alvo Fácil","Exposição mínima 4. Emboscadas contra você ganham +2 dados; interrogatório contra você tem −1 dificuldade."],
+      attr:[3,3,3,3,2,1], per:["Direção","Fuga","Logística","Ocultação","Submundo Carioca"],
+      rec:"Uma van limpa, uma rota fantasma mapeada e contatos em toda estrada.",
+      gan:"Todos precisam de você para mover algo. E todos sabem onde te achar." },
+
+    { n:"04", t:"O Operador de Elite", ep:"“Nove anos de farda. O triplo do salário do outro lado.”",
+      ac:"Colete · fuzil desmontado", bicho:"Tigre — predador",
+      conc:["Treinado pelo Estado, comprado pelo crime.","A violência é ofício, não impulso.","Carrega fantasmas que não desligam."],
+      vt:["Máquina de Guerra","+2 dados em combate; age primeiro; ignora ferimento leve. Treina a equipe (+1/+2 dados). Plano tático (Mente + Táticas, dif. 3) dá +2 à equipe."],
+      vd:["Fantasma do Passado","+1 Pressão extra ao matar; flashbacks com Pressão 7+; −2 dados sociais com civis. Histórico militar é ficha aberta."],
+      attr:[3,1,4,4,2,1], per:["Armas de Fogo","Combate Corpo a Corpo","Táticas","Ocultação","Direção"],
+      rec:"Arsenal pessoal, contatos na tropa e a disciplina que falta aos outros.",
+      gan:"Você resolve o que ninguém resolve — e cada bala cobra um pedaço seu." },
+
+    { n:"05", t:"O Vigarista", ep:"“Minha arma é um terno bem cortado.”",
+      ac:"Relógio de luxo (falso) · sorriso treinado", bicho:"Macaco — mil faces",
+      conc:["Nunca foi quem disse ser.","Vende gelo a esquimó e ainda cobra entrega.","O passado sempre bate à porta."],
+      vt:["Mil Faces","Cria identidades falsas (Mente + Disfarce, dif. 3); +3 dados sociais atuando como persona. 1×/sessão aplica um golpe preparado (R$ 10–100 mil)."],
+      vd:["Casa de Cartas","Falha crítica social expõe a identidade/passado. Capital de Rua máximo 5. Fantasmas do passado reaparecem."],
+      attr:[4,4,3,1,2,1], per:["Mentira","Disfarce","Sedução","Negociação","Leitura de Intenções"],
+      rec:"Um guarda-roupa de personagens e documentos para cada um deles.",
+      gan:"Você é todo mundo e ninguém. Um dia alguém vai querer saber quem você é de verdade." },
+
+    { n:"06", t:"O Articulador do Morro", ep:"“Eu sou a ponte. Sem mim, esses mundos não se falam.”",
+      ac:"Três celulares · chinelo e terno (metade/metade)", bicho:"Cobra — os becos",
+      conc:["Transita do barraco ao gabinete.","Respeitado em cima e embaixo do morro.","Refém de equilíbrio impossível."],
+      vt:["Passaporte do Morro","Trânsito livre em qualquer favela; +3 dados sociais com comunidade/facção; audiência com liderança (dif. 2). 1×/sessão MEDIA um conflito entre duas partes."],
+      vd:["Refém de Dois Mundos","Trair qualquer lado = catástrofe (+5 Heat ou prisão). Capital de Rua: 5 no asfalto / 7 no morro. Família mora na comunidade."],
+      attr:[3,4,2,2,4,1], per:["Negociação","Intimidação","Submundo Carioca","Leitura de Intenções","Sedução"],
+      rec:"A confiança da comunidade e o número do telefone que ninguém mais tem.",
+      gan:"Você equilibra dois mundos nas mãos. Um tropeço e os dois caem em cima de você." },
+
+    { n:"07", t:"O Empresário de Fachada", ep:"“CNPJ de 15 anos não levanta suspeita.”",
+      ac:"Capacete de obra · gravata", bicho:"Elefante — carrega a estrutura",
+      conc:["Cidadão de bem na superfície.","A construtora é o melhor lava-jato da cidade.","Vive uma vida dupla insustentável."],
+      vt:["Fachada Impecável","Sua construtora lava até R$ 300 mil/mês a 25%, em 2–4 semanas, −2 de risco. 1×/campanha transfere a culpa para um 'funcionário desonesto'. +2 dados com o mundo corporativo."],
+      vd:["Vida Dupla Insustentável","A família não sabe de nada (+2 Pressão quando ameaçada). Se preso, perde TUDO. Capital de Rua máximo 4."],
+      attr:[4,3,2,2,3,1], per:["Lavagem","Economia Ilegal","Direito","Negociação","Política"],
+      rec:"Uma empresa legítima e antiga, contadores e uma reputação imaculada.",
+      gan:"Sua maior força é parecer limpo. Sua maior fraqueza é ter o que perder." },
+
+    { n:"08", t:"O Informante", ep:"“Eu não faço nada. Eu só sei das coisas.”",
+      ac:"Sete celulares · caderninho codificado", bicho:"Águia — vê tudo",
+      conc:["Vende segredo, não serviço.","Neutro por sobrevivência.","Um X9 vive enquanto ninguém descobre."],
+      vt:["Onisciência Urbana","Descobre qualquer informação (Contatos + perícia, dif. 1–5 conforme o segredo). 1×/sessão 'eu já sabia disso' (flashback). Alerta automático de operações contra o grupo."],
+      vd:["Refém da Neutralidade","Não participa de violência; sem seguranças próprios; Capital de Rua máx. 6. Exposto como X9, perde tudo e vira alvo."],
+      attr:[3,3,2,1,5,2], per:["Submundo Carioca","Leitura de Intenções","Ocultação","Tecnologia","Política"],
+      rec:"Uma teia de informantes e o único caderno que decifra o submundo.",
+      gan:"Você sabe de tudo. O problema é o dia em que descobrirem o que você sabe." },
+
+    { n:"09", t:"O Herdeiro Relutante", ep:"“Eu tinha MBA e futuro. Aí meu pai morreu e me deixou um império.”",
+      ac:"Terno deslocado · foto do pai", bicho:"Leão — a herança",
+      conc:["Nasceu fora do crime, herdou o trono.","Império pronto, inimigos inclusos.","A velha guarda não confia no menino."],
+      vt:["Legado do Pai","Começa com 8 pontos ativos (R$ 60 mil/mês), 2 empresas de fachada, R$ 800 mil (300 limpo / 500 sujo), imóveis e Capital de Rua 5. 1×/sessão otimiza a operação (−15% custos OU +10% renda por 1 mês)."],
+      vd:["Alvo nas Costas","3–5 inimigos herdados; a velha guarda duvida de você (lealdade 4, liderança +1 dif.); 3–5 favores grandes a pagar. Heat inicial 3; Pressão inicial 3."],
+      attr:[4,3,2,1,3,2], per:["Negociação","Economia Ilegal","Planejamento","Política","Submundo Carioca"],
+      rec:"Um império já montado — com todas as dívidas e rivais que vêm junto.",
+      gan:"Você começa por cima. O difícil é não ser derrubado antes de aprender a mandar." },
+  ];
+  const ATTRN = ["MENTE","LÁBIA","SANGUE FRIO","OPERAÇÃO","CONTATOS","INSTINTO"];
+
+  const stage = document.getElementById('stage');
+  ARQ.forEach(a => {
+    // FRENTE
+    stage.insertAdjacentHTML('beforeend', `
+    <div class="pscale"><section class="card" data-screen-label="${a.t} · Frente">
+      <div class="corner tl">${a.n}</div><div class="corner br">${a.n}</div>
+      <div class="amast">
+        <div class="kick">Arquétipo ${a.n} de 9 · Retrato Falado</div>
+        <div class="tt">${a.t}</div>
+        <div class="ep">${a.ep}</div>
+      </div>
+      <hr class="serr">
+      <div class="retrato">
+        <div class="rframe">${BUST}<span class="tag">SUSPEITO Nº ${a.n}</span></div>
+        <div class="rmeta">
+          <div class="lab">Sinais particulares</div><div class="val">${a.ac}</div>
+          <ul class="conc">${a.conc.map(c=>`<li>${c}</li>`).join("")}</ul>
+        </div>
+      </div>
+      <div class="abox"><div class="h"><span>Vantagem — ${a.vt[0]}</span><span class="tagn">+</span></div><div class="b">${a.vt[1]}</div></div>
+      <div class="abox red"><div class="h"><span>Fraqueza — ${a.vd[0]}</span><span class="tagn">−</span></div><div class="b">${a.vd[1]}</div></div>
+      <div class="foot">
+        <span class="serie">Nº 041892 · SÉRIE VB · FRENTE</span>
+        <span class="bichotag">Brasão sugerido: ${a.bicho}</span>
+      </div>
+    </section></div>`);
+    // VERSO
+    stage.insertAdjacentHTML('beforeend', `
+    <div class="pscale"><section class="card red" data-screen-label="${a.t} · Verso">
+      <div class="corner tl">${a.n}</div><div class="corner br">${a.n}</div>
+      <div class="amast" style="text-align:left;padding:0;">
+        <div class="kick">Ficha-resumo · copie na sua folha</div>
+        <div class="tt" style="font-size:15pt;">${a.t}</div>
+      </div>
+      <hr class="serr">
+      <div class="vh">Atributos recomendados <span style="float:right;font-family:'Special Elite',monospace;font-size:5.4pt;color:var(--dourado)">15 pts · máx 4</span></div>
+      <div class="attrgrid">${a.attr.map((v,i)=>`<div class="a"><div class="n">${ATTRN[i]}</div><div class="v">${v}</div></div>`).join("")}</div>
+      <div class="vh gold" style="margin-top:1.4mm;">Perícias-chave <span style="float:right;font-family:'Special Elite',monospace;font-size:5.4pt;color:var(--verde)">20 pts · máx 3</span></div>
+      <div class="pchips">${a.per.map(p=>`<span class="pchip">${p}</span>`).join("")}</div>
+      <div class="vh" style="margin-top:1.8mm;">Recursos iniciais</div>
+      <div class="vbody">${a.rec}</div>
+      <div class="vh" style="margin-top:1.8mm;">Contatos iniciais <span style="float:right;font-family:'Special Elite',monospace;font-size:5.4pt;color:var(--dourado)">Contatos × 3 · lealdade ☐</span></div>
+      <div class="contacts">
+        ${[0,1,2].map(()=>`<div class="row"><span class="ln"></span><span class="lealp"><i></i><i></i><i></i><i></i><i></i></span></div>`).join("")}
+      </div>
+      <div class="foot">
+        <span class="serie">Nº 041892 · SÉRIE VB · VERSO</span>
+        <span class="gancho">${a.gan}</span>
+      </div>
+    </section></div>`);
+  });
+
+  function fit(){
+    const avail = window.innerWidth - 40;
+    const a5w = 148*96/25.4, a5h = 210*96/25.4;
+    const s = Math.min(1, ((avail-18)/2)/a5w);
+    document.querySelectorAll('.pscale').forEach(sc=>{ sc.style.transform=`scale(${s})`; sc.style.width=(a5w*s)+'px'; sc.style.height=(a5h*s)+'px'; });
+  }
+  window.addEventListener('resize', fit); fit();
+</script>
+</body>
+</html>

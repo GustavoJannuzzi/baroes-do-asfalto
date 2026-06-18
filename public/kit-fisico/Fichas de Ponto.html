@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Fichas de Ponto — Barões do Asfalto</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  body{ background:#2c2c2a; }
+  .controls{ position:fixed; top:0; left:0; right:0; z-index:80; display:flex; align-items:center; gap:14px;
+    padding:10px 16px; background:rgba(16,16,14,.94); color:var(--creme); font-family:'Oswald',sans-serif;
+    font-size:12px; letter-spacing:.04em; box-shadow:0 2px 14px rgba(0,0,0,.55); }
+  .controls b{ font-family:'Anton'; letter-spacing:.06em; color:var(--dourado); text-transform:uppercase; }
+  .controls .hint{ margin-left:auto; opacity:.66; font-size:10.5px; font-family:'Special Elite',monospace; }
+
+  .stage{ padding:60px 18px 46px; display:flex; flex-wrap:wrap; justify-content:center; gap:6mm; align-items:flex-start; }
+
+  /* ===== CARTA TAROT 70 x 120 mm ===== */
+  @page{ size:A4; margin:8mm; }
+  .pcard{ position:relative; width:70mm; height:120mm; overflow:hidden; background:var(--creme);
+    background-image:radial-gradient(circle at 18% 10%, rgba(180,150,90,.08), transparent 60%);
+    color:var(--tinta); display:flex; flex-direction:column; font-family:'Source Serif 4', Georgia, serif;
+    box-shadow:0 6px 22px rgba(0,0,0,.4); border:.5pt solid #b8a988; }
+  .pcard::before{ content:""; position:absolute; inset:2.4mm; border:1pt solid var(--verde); pointer-events:none; z-index:0; }
+  .pcard > *{ position:relative; z-index:1; }
+  .pcard .pad{ padding:4mm 4mm 3mm; display:flex; flex-direction:column; height:100%; }
+
+  /* topo */
+  .ptop{ display:flex; justify-content:space-between; align-items:flex-start; gap:2mm; }
+  .ptop .nm{ font-family:'Anton'; font-size:11pt; line-height:.96; color:var(--verde); text-transform:uppercase; }
+  .ptop .tp{ font-family:'Oswald'; font-weight:600; font-size:6pt; text-transform:uppercase; letter-spacing:.05em; color:var(--vermelho); margin-top:.6mm; }
+  .ptop .reg{ flex:none; text-align:center; }
+  .ptop .reg .chip{ width:11mm; height:11mm; position:relative; display:flex; align-items:center; justify-content:center; }
+  .ptop .reg .chip .r{ position:absolute; inset:0; border:1.2pt solid var(--dourado-2); border-radius:50%; }
+  .ptop .reg .chip .g{ font-family:'Anton'; font-size:8pt; color:var(--verde); }
+  .ptop .reg .lab{ font-family:'Special Elite',monospace; font-size:4.4pt; color:#7a7060; letter-spacing:.02em; margin-top:.4mm; }
+
+  hr.s{ height:0; border:0; border-top:1pt dashed var(--dourado-2); opacity:.6; margin:1.8mm 0; }
+
+  /* renda */
+  .renda{ text-align:center; background:var(--verde); color:var(--creme); padding:1.4mm 1mm; margin:.5mm 0; }
+  .renda .k{ font-family:'Special Elite',monospace; font-size:5pt; letter-spacing:.1em; color:var(--dourado); }
+  .renda .v{ font-family:'Anton'; font-size:18pt; line-height:1; }
+  .renda .v small{ font-size:8pt; }
+
+  /* mini-stats */
+  .stats{ display:grid; grid-template-columns:1fr 1fr; gap:1.2mm; margin:1.6mm 0; }
+  .stat{ border:.75pt solid var(--linha-2); padding:1mm 1.4mm; }
+  .stat .l{ font-family:'Oswald'; font-weight:600; font-size:5.2pt; text-transform:uppercase; letter-spacing:.03em; color:#6a6a60; }
+  .stat .d{ font-family:'Source Serif 4'; font-size:7.4pt; color:var(--tinta); line-height:1.1; margin-top:.3mm; }
+
+  /* exposição */
+  .expo{ margin:1.2mm 0; }
+  .expo .l{ font-family:'Oswald'; font-weight:600; font-size:5.4pt; text-transform:uppercase; letter-spacing:.04em; color:#6a6a60; display:flex; justify-content:space-between; }
+  .ebar{ display:flex; gap:.6mm; margin-top:.6mm; }
+  .ebar i{ flex:1; height:2.6mm; border:.6pt solid var(--linha-2); background:#fff; }
+  .ebar i.on{ background:var(--dourado); border-color:var(--dourado-2); }
+  .ebar i.hi{ background:var(--vermelho); border-color:var(--vermelho); }
+
+  .pers{ font-family:'Playfair Display'; font-style:italic; font-size:7pt; color:var(--verde); line-height:1.25; margin:1mm 0 .8mm; }
+  .notes{ margin-top:auto; }
+  .notes .nl{ border-bottom:1px dotted var(--linha); height:3.6mm; }
+  .pfoot{ display:flex; justify-content:space-between; align-items:flex-end; margin-top:1.4mm; }
+  .pfoot .se{ font-family:'Special Elite',monospace; font-size:4.6pt; color:#8a8068; letter-spacing:.04em; }
+  .pfoot .ty{ font-family:'Oswald'; font-weight:600; font-size:5.4pt; color:var(--verde); text-transform:uppercase; }
+
+  /* DIGITAL — visual diferenciado */
+  .pcard.dig{ background:#12130f; color:#cfe6d6; border-color:#2a3a30; }
+  .pcard.dig::before{ border-color:#3a6b4d; }
+  .pcard.dig .ptop .nm{ color:#7fe0a6; }
+  .pcard.dig .ptop .reg .chip .r{ border-color:#3a6b4d; } .pcard.dig .ptop .reg .chip .g{ color:#7fe0a6; }
+  .pcard.dig .renda{ background:#0c2018; color:#7fe0a6; } .pcard.dig .renda .k{ color:#5fae7e; }
+  .pcard.dig .stat{ border-color:#2a3a30; } .pcard.dig .stat .d{ color:#cfe6d6; }
+  .pcard.dig .pers{ color:#7fe0a6; }
+  .pcard.dig hr.s{ border-top-color:#3a6b4d; }
+  .pcard.dig .warn{ font-family:'Special Elite',monospace; font-size:5pt; color:#ff8c66; border:.6pt solid #6b2c1a; padding:.6mm 1mm; margin-top:1mm; line-height:1.3; }
+  .pcard.dig .notes .nl{ border-bottom-color:#2a3a30; }
+
+  /* VERSO comum */
+  .pback{ background:var(--verde);
+    background-image:repeating-linear-gradient(45deg, rgba(201,162,39,.06) 0 6px, transparent 6px 12px); }
+  .pback::before{ border-color:var(--dourado); }
+  .pback .pad{ align-items:center; justify-content:center; text-align:center; gap:2mm; }
+  .pback .wm{ font-family:'Playfair Display'; font-style:italic; color:var(--dourado); font-size:13pt; line-height:1; }
+  .pback .big{ font-family:'Anton'; color:var(--creme); font-size:15pt; text-transform:uppercase; line-height:.95; }
+  .pback .stamp2{ font-family:'Special Elite',monospace; color:var(--creme); border:1.4pt solid var(--dourado); border-radius:1mm;
+    padding:1mm 2.4mm; font-size:6.6pt; letter-spacing:.08em; transform:rotate(-4deg); }
+  .pback .qd{ font-family:'Special Elite',monospace; color:var(--vermelho); border:1.6pt solid var(--vermelho); border-radius:1mm;
+    padding:.8mm 2mm; font-size:6pt; letter-spacing:.08em; transform:rotate(5deg); opacity:.5; }
+  .pback .reg-chip{ width:18mm; height:18mm; position:relative; display:flex; align-items:center; justify-content:center; }
+  .pback .reg-chip .r{ position:absolute; inset:0; border:1.4pt solid var(--dourado); border-radius:50%; }
+  .pback .reg-chip .r.i{ inset:2.4mm; border:.8pt solid var(--creme); opacity:.6; }
+  .pback .reg-chip .g{ font-family:'Anton'; font-size:11pt; color:var(--creme); }
+
+  .sectlabel{ flex-basis:100%; text-align:center; font-family:'Anton'; color:var(--dourado); text-transform:uppercase;
+    letter-spacing:.1em; font-size:13px; margin:8px 0 0; }
+
+  @media print{
+    body{ background:#fff; }
+    .controls{ display:none !important; }
+    .stage{ padding:0; gap:0; display:flex; flex-wrap:wrap; align-content:flex-start; }
+    .pcard{ box-shadow:none; margin:0; }
+    .sectlabel{ display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="controls noprint">
+  <b>Fichas de Ponto — Tarot 70×120mm</b>
+  <span class="hint">16 prontas + 4 em branco · imprima, corte e ponha ao lado do tabuleiro · um token Ø25 na região do mapa</span>
+</div>
+<div class="stage" id="stage"></div>
+
+<script>
+  // região -> grupo do bicho-patrono
+  const REGB = { "Z. Norte":13,"Centro":2,"Z. Oeste":21,"Complexos":9,"Z. Sul":19,"Baixada":15,"Ilha do Gov.":13,"—":0 };
+  const PONTOS = [
+    {n:"01",nome:"Barraca do Seu Milton",tipo:"Barraca de rua",reg:"Z. Norte",sub:"Madureira",lucro:"11.700",exp:2,inv:"R$ 6 mil",prot:"Milícia local",roi:"1 mês",pers:"30 anos no mesmo canto. Freguês tem nome."},
+    {n:"02",nome:"Bar do Neguinho",tipo:"Bar parceiro",reg:"Z. Norte",sub:"Méier",lucro:"14.850",exp:3,inv:"R$ 18 mil",prot:"PM de área",roi:"2 meses",pers:"Aposta desce melhor com cerveja gelada."},
+    {n:"03",nome:"Barraca da Central",tipo:"Barraca de rua",reg:"Centro",sub:"Central do Brasil",lucro:"22.350",exp:5,inv:"R$ 8 mil",prot:"Milícia + PM",roi:"1 mês",pers:"500 mil pessoas por dia. Alguma vai apostar."},
+    {n:"04",nome:"Salão Glamour",tipo:"Comércio parceiro",reg:"Z. Norte",sub:"Madureira",lucro:"7.800",exp:2,inv:"R$ 12 mil",prot:"Milícia local",roi:"2 meses",pers:"Entre a escova e a tintura, sai o palpite."},
+    {n:"05",nome:"Bar do Russo",tipo:"Bar parceiro",reg:"Z. Oeste",sub:"Bangu",lucro:"7.500",exp:6,inv:"R$ 15 mil",prot:"Milícia (pesada)",roi:"3 meses",pers:"Território de milícia. Pagamento em dia."},
+    {n:"06",nome:"Casa da Tia Marta",tipo:"Ponto em comunidade",reg:"Complexos",sub:"Alemão",lucro:"11.100",exp:2,inv:"R$ 14 mil",prot:"Facção (CV) 25%",roi:"2 meses",pers:"A facção autoriza. A Tia abençoa."},
+    {n:"07",nome:"Plataforma Bicho Digital",tipo:"Online",reg:"—",sub:"digital",lucro:"66.000",exp:8,inv:"R$ 120 mil",prot:"Servidor + laranja",roi:"3 meses",pers:"O bicho no smartphone. A Receita também viu.",dig:true},
+    {n:"08",nome:"Banca de Jornal Glória",tipo:"Banca parceira",reg:"Z. Sul",sub:"Glória",lucro:"15.000",exp:4,inv:"R$ 16 mil",prot:"PM (cara)",roi:"2 meses",pers:"Revista, bala e fezinha."},
+    {n:"09",nome:"Mercadinho Santa Cruz",tipo:"Comércio parceiro",reg:"Z. Oeste",sub:"Santa Cruz",lucro:"8.250",exp:5,inv:"R$ 14 mil",prot:"Milícia",roi:"3 meses",pers:"No caderno do fiado tem mais que fiado."},
+    {n:"10",nome:"Oficina Mecânica Ramos",tipo:"Comércio parceiro",reg:"Z. Norte",sub:"Ramos",lucro:"7.800",exp:3,inv:"R$ 13 mil",prot:"Facção + PM",roi:"2 meses",pers:"Troca de óleo e de dezena."},
+    {n:"11",nome:"Cooperativa Boa Vista",tipo:"Ponto-táxi / cooperativa",reg:"Z. Norte",sub:"Penha",lucro:"39.000",exp:3,inv:"R$ 45 mil",prot:"Sindicato + PM",roi:"2 meses",pers:"Cada corrida leva um palpite junto."},
+    {n:"12",nome:"Academia Fit Vida",tipo:"Comércio parceiro",reg:"Ilha do Gov.",sub:"Ilha do Governador",lucro:"14.400",exp:2,inv:"R$ 18 mil",prot:"PM de área",roi:"2 meses",pers:"Malha de dia, joga de noite."},
+    {n:"13",nome:"Barraca Mobile Copa",tipo:"Barraca móvel",reg:"Z. Sul",sub:"Copacabana",lucro:"7.500",exp:7,inv:"R$ 7 mil",prot:"PM turística (cara)",roi:"2 meses",pers:"Turista também quer sorte. Polícia também olha."},
+    {n:"14",nome:"Igreja de Caxias",tipo:"Fachada comunitária",reg:"Baixada",sub:"Duque de Caxias",lucro:"5.400",exp:1,inv:"R$ 10 mil",prot:"Doação à liderança",roi:"3 meses",pers:"Ninguém revista o gazofilácio."},
+    {n:"15",nome:"App Resultado Fácil",tipo:"Online",reg:"—",sub:"digital",lucro:"100.500",exp:9,inv:"R$ 200 mil",prot:"Offshore + hacker",roi:"3 meses",pers:"Imprime dinheiro. E intimações.",dig:true}
+  ];
+
+  function ebar(exp,dig){ let h=''; for(let i=1;i<=10;i++){ const cls = i<=exp ? (i>=8?'hi':'on') : ''; h+=`<i class="${cls}"></i>`; } return h; }
+
+  function frente(p){
+    const g = REGB[p.reg]||0;
+    return `<div class="pcard${p.dig?' dig':''}" data-screen-label="Ponto ${p.n}"><div class="pad">
+      <div class="ptop">
+        <div><div class="nm">${p.nome}</div><div class="tp">${p.tipo}</div></div>
+        <div class="reg"><div class="chip"><span class="r"></span><span class="g">${g?String(g).padStart(2,'0'):'∞'}</span></div><div class="lab">${p.reg==='—'?'SEM REGIÃO':p.reg}</div></div>
+      </div>
+      <hr class="s">
+      <div class="renda"><div class="k">RENDA LÍQUIDA / MÊS</div><div class="v"><small>R$ </small>${p.lucro}</div></div>
+      <div class="stats">
+        <div class="stat"><div class="l">Investimento</div><div class="d">${p.inv}</div></div>
+        <div class="stat"><div class="l">Proteção paga a</div><div class="d">${p.prot}</div></div>
+        <div class="stat"><div class="l">Exposição</div><div class="d">${p.exp} / 10</div></div>
+        <div class="stat"><div class="l">Retorno (ROI)</div><div class="d">${p.roi}</div></div>
+      </div>
+      <div class="expo"><div class="l"><span>Risco de exposição</span><span>${p.exp}/10</span></div><div class="ebar">${ebar(p.exp,p.dig)}</div></div>
+      ${p.dig?`<div class="warn">⚠ REQUER TECNOLOGIA 3+ · Exposição nunca cai abaixo de 8.</div>`:''}
+      <div class="pers">“${p.pers}”</div>
+      <div class="notes"><div class="nl"></div><div class="nl"></div></div>
+      <div class="pfoot"><span class="se">Nº 041892 · ${p.sub.toUpperCase()}</span><span class="ty">Ponto ${p.n}</span></div>
+    </div></div>`;
+  }
+
+  function branco(i){
+    return `<div class="pcard" data-screen-label="Ponto em branco"><div class="pad">
+      <div class="ptop"><div><div class="nm" style="color:#9a9484">_______________</div><div class="tp">tipo: ____________</div></div>
+        <div class="reg"><div class="chip"><span class="r"></span><span class="g" style="color:#9a9484">··</span></div><div class="lab">REGIÃO __</div></div></div>
+      <hr class="s">
+      <div class="renda" style="background:rgba(27,67,50,.10);color:var(--verde)"><div class="k" style="color:var(--dourado-2)">RENDA LÍQUIDA / MÊS</div><div class="v">R$ ________</div></div>
+      <div class="stats">
+        <div class="stat"><div class="l">Investimento</div><div class="d">R$ ______</div></div>
+        <div class="stat"><div class="l">Proteção paga a</div><div class="d">__________</div></div>
+        <div class="stat"><div class="l">Exposição</div><div class="d">__ / 10</div></div>
+        <div class="stat"><div class="l">Retorno (ROI)</div><div class="d">____ meses</div></div>
+      </div>
+      <div class="expo"><div class="l"><span>Risco de exposição</span><span>__/10</span></div><div class="ebar">${'<i></i>'.repeat(10)}</div></div>
+      <div class="pers" style="color:#9a9484">“____________________________”</div>
+      <div class="notes"><div class="nl"></div><div class="nl"></div></div>
+      <div class="pfoot"><span class="se">Barraca 3–8k · Bar 6–15k · Lotérica 15–35k · Apostas 20–60k · Online 10–180k</span><span class="ty">Em branco</span></div>
+    </div></div>`;
+  }
+
+  function verso(){
+    return `<div class="pcard pback"><div class="pad">
+      <div class="wm">Barões<br>do Asfalto</div>
+      <div class="reg-chip"><span class="r"></span><span class="r i"></span><span class="g">★</span></div>
+      <div class="big">Ponto<br>de Bicho</div>
+      <div class="stamp2">PONTO ATIVO</div>
+      <div class="qd">QUEIMADO</div>
+      <div class="se" style="color:var(--creme);opacity:.6;font-family:'Special Elite',monospace;font-size:5pt">BANCO DO BICHO · VALE NA PALAVRA</div>
+    </div></div>`;
+  }
+
+  const stage = document.getElementById('stage');
+  stage.insertAdjacentHTML('beforeend', `<div class="sectlabel">16 Pontos Prontos (frente)</div>`);
+  PONTOS.forEach(p=> stage.insertAdjacentHTML('beforeend', frente(p)));
+  stage.insertAdjacentHTML('beforeend', `<div class="sectlabel">4 Cartas em Branco</div>`);
+  for(let i=0;i<4;i++) stage.insertAdjacentHTML('beforeend', branco(i));
+  stage.insertAdjacentHTML('beforeend', `<div class="sectlabel">Verso comum (imprima no verso de todas)</div>`);
+  stage.insertAdjacentHTML('beforeend', verso());
+</script>
+</body>
+</html>

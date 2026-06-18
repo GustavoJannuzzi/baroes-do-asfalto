@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Os 25 Bichos — Barões do Asfalto</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  body{ background:#2c2c2a; }
+
+  .controls{ position:fixed; top:0; left:0; right:0; z-index:80; display:flex; align-items:center; gap:14px;
+    padding:10px 16px; background:rgba(16,16,14,.94); color:var(--creme); font-family:'Oswald',sans-serif;
+    font-size:12px; letter-spacing:.04em; box-shadow:0 2px 14px rgba(0,0,0,.55); }
+  .controls b{ font-family:'Anton'; letter-spacing:.06em; color:var(--dourado); text-transform:uppercase; }
+  .controls .hint{ margin-left:auto; opacity:.66; font-size:10.5px; font-family:'Special Elite',monospace; }
+
+  .stage{ padding:60px 18px 46px; display:flex; justify-content:center; }
+  .pscale{ transform-origin:top center; }
+
+  /* ============== PÔSTER A3 retrato ============== */
+  @page{ size:A3; margin:0; }
+  .poster{
+    position:relative; width:297mm; height:420mm; overflow:hidden;
+    background:var(--creme);
+    background-image:
+      radial-gradient(circle at 14% 8%, rgba(180,150,90,.08), transparent 55%),
+      radial-gradient(circle at 86% 94%, rgba(120,90,40,.07), transparent 52%);
+    color:var(--tinta); padding:16mm 14mm 12mm; display:flex; flex-direction:column;
+    font-family:'Source Serif 4', Georgia, serif; box-shadow:0 10px 40px rgba(0,0,0,.5);
+  }
+  .poster::before{ content:""; position:absolute; inset:7mm; border:1.6pt solid var(--verde);
+    box-shadow:0 0 0 1.6pt var(--creme), 0 0 0 3pt var(--verde); pointer-events:none; z-index:0; }
+  .poster > *{ position:relative; z-index:1; }
+
+  /* cabeçalho */
+  .phead{ text-align:center; margin-bottom:5mm; }
+  .phead .kick{ font-family:'Anton'; color:var(--vermelho); text-transform:uppercase; letter-spacing:.32em; font-size:11pt; }
+  .phead .big{ font-family:'Anton'; color:var(--verde); text-transform:uppercase; font-size:62pt; line-height:.9; letter-spacing:.01em; margin:1mm 0; }
+  .phead .big .em{ color:var(--dourado); }
+  .phead .sub{ font-family:'Playfair Display'; font-style:italic; font-size:14pt; color:#5e574a; }
+  .phead hr{ height:0; border:0; border-top:1.6pt dashed var(--dourado-2); opacity:.6; margin:4mm 16mm 0; }
+
+  /* grade 5x5 */
+  .grid25{ flex:1; display:grid; grid-template-columns:repeat(5,1fr); grid-template-rows:repeat(5,1fr); gap:4mm; margin:5mm 0; }
+  .bcell{ position:relative; border:1pt solid var(--linha-2); border-radius:2mm; background:rgba(255,255,255,.28);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.4mm; padding:3mm 2mm; text-align:center; overflow:hidden; }
+  .bcell.patron{ border-color:var(--dourado); background:rgba(201,162,39,.10); box-shadow:inset 0 0 0 1pt rgba(201,162,39,.35); }
+  /* chip / emblema do grupo */
+  .chip{ position:relative; width:20mm; height:20mm; display:flex; align-items:center; justify-content:center; flex:none; }
+  .chip .ring{ position:absolute; inset:0; border-radius:50%; border:1.6pt solid var(--verde); }
+  .chip .ring.i{ inset:2.4mm; border:.9pt solid var(--dourado-2); }
+  .chip .diam{ position:absolute; width:42%; height:42%; transform:rotate(45deg); border:1.1pt solid var(--dourado-2); opacity:.55; }
+  .chip .gn{ font-family:'Anton'; font-size:18pt; color:var(--verde); line-height:1; z-index:2; }
+  .bcell.patron .chip .ring{ border-color:var(--dourado-2); }
+  .bcell.patron .chip .gn{ color:var(--vermelho); }
+  .bname{ font-family:'Anton'; text-transform:uppercase; font-size:13.5pt; letter-spacing:.02em; color:var(--tinta); line-height:1; }
+  .bdez{ font-family:'Oswald'; font-weight:600; font-size:9pt; letter-spacing:.06em; color:#6a6256; }
+  .bcell .star{ position:absolute; top:1.6mm; right:2.2mm; font-family:'Special Elite',monospace; font-size:6pt; color:var(--dourado-2); }
+
+  /* rodapé: patronos + uso */
+  .pfoot{ display:grid; grid-template-columns:1.55fr 1fr; gap:7mm; align-items:start; margin-top:2mm; }
+  .pfoot h4{ font-family:'Anton'; text-transform:uppercase; letter-spacing:.04em; font-size:10pt; color:var(--creme);
+    background:var(--verde); padding:1.2mm 3mm; margin:0 0 2mm; display:flex; justify-content:space-between; align-items:baseline; }
+  .pfoot h4.gold{ background:var(--dourado); color:var(--tinta); }
+  .pfoot h4 .s{ font-family:'Special Elite',monospace; font-size:6pt; color:var(--dourado); letter-spacing:.04em; }
+  .pfoot h4.gold .s{ color:var(--verde); }
+  .patrons{ columns:2; column-gap:6mm; font-family:'Oswald'; font-size:8.2pt; line-height:1.5; }
+  .patrons div{ break-inside:avoid; display:flex; gap:1.6mm; }
+  .patrons b{ color:var(--verde); white-space:nowrap; }
+  .patrons span{ color:#5e574a; }
+  .uso{ font-family:'Source Serif 4'; font-size:8.4pt; line-height:1.42; color:#3a3a34; }
+  .uso b{ color:var(--verde); }
+  .uso .opt{ font-family:'Special Elite',monospace; font-size:7.4pt; color:#6a6256; display:block; margin-top:2mm; line-height:1.45; }
+
+  .credits{ display:flex; justify-content:space-between; align-items:flex-end; margin-top:5mm; padding-top:2mm; border-top:1.2pt dashed var(--dourado-2); }
+  .credits .serie{ font-family:'Special Elite',monospace; font-size:7pt; color:#8a8068; letter-spacing:.06em; }
+  .credits .q{ font-family:'Playfair Display'; font-style:italic; font-size:9pt; color:var(--verde); }
+
+  @media print{
+    body{ background:#fff; }
+    .controls{ display:none !important; }
+    .stage{ padding:0; display:block; }
+    .pscale{ transform:none !important; width:auto !important; height:auto !important; }
+    .poster{ box-shadow:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="controls noprint">
+  <b>Os 25 Bichos — Pôster A3</b>
+  <span class="hint">Imprima em A3 100% · ou A4 “ajustar à página” · ideal plastificado na parede da mesa</span>
+</div>
+
+<div class="stage">
+  <div class="pscale"><section class="poster" id="poster">
+
+    <div class="phead">
+      <div class="kick">A Tabela Oficial do Jogo do Bicho</div>
+      <div class="big">Os <span class="em">Vinte e Cinco</span></div>
+      <div class="sub">“Desde 1892, todo carioca tem um bicho de estimação.”</div>
+      <hr>
+    </div>
+
+    <div class="grid25" id="grid"></div>
+
+    <div class="pfoot">
+      <div>
+        <h4>Bichos-Patronos das Regiões <span class="s">o brasão de cada zona</span></h4>
+        <div class="patrons" id="patrons"></div>
+      </div>
+      <div>
+        <h4 class="gold">Como usar na mesa <span class="s">tempero de sorte</span></h4>
+        <div class="uso">
+          Cada organização escolhe <b>um bicho como brasão</b> — seus tokens de território no tabuleiro usam esse ícone e número de grupo.
+          <span class="opt">▸ Opcional do mestre: no início de cada Fase Econômica, role as dezenas (1d10 + 1d10). O bicho sorteado dá <b>+10% de renda</b> aos pontos da região patrona daquele bicho naquele mês.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="credits">
+      <span class="serie">Nº 041892 · SÉRIE VB · BANCO DO BICHO · IMPRESSÃO AUTORIZADA</span>
+      <span class="q">“O número é só o disfarce. O bicho é a fé.”</span>
+    </div>
+
+  </section></div>
+</div>
+
+<script>
+  const BICHOS = [
+    ["01","Avestruz","01 · 02 · 03 · 04"],["02","Águia","05 · 06 · 07 · 08"],["03","Burro","09 · 10 · 11 · 12"],
+    ["04","Borboleta","13 · 14 · 15 · 16"],["05","Cachorro","17 · 18 · 19 · 20"],["06","Cabra","21 · 22 · 23 · 24"],
+    ["07","Carneiro","25 · 26 · 27 · 28"],["08","Camelo","29 · 30 · 31 · 32"],["09","Cobra","33 · 34 · 35 · 36"],
+    ["10","Coelho","37 · 38 · 39 · 40"],["11","Cavalo","41 · 42 · 43 · 44"],["12","Elefante","45 · 46 · 47 · 48"],
+    ["13","Galo","49 · 50 · 51 · 52"],["14","Gato","53 · 54 · 55 · 56"],["15","Jacaré","57 · 58 · 59 · 60"],
+    ["16","Leão","61 · 62 · 63 · 64"],["17","Macaco","65 · 66 · 67 · 68"],["18","Porco","69 · 70 · 71 · 72"],
+    ["19","Pavão","73 · 74 · 75 · 76"],["20","Peru","77 · 78 · 79 · 80"],["21","Touro","81 · 82 · 83 · 84"],
+    ["22","Tigre","85 · 86 · 87 · 88"],["23","Urso","89 · 90 · 91 · 92"],["24","Veado","93 · 94 · 95 · 96"],
+    ["25","Vaca","97 · 98 · 99 · 00"]
+  ];
+  // bichos que são brasão de alguma região (recebem destaque dourado)
+  const PATRON = { "Águia":1,"Pavão":2,"Galo":3,"Touro":4,"Leão":5,"Jacaré":6,"Cobra":7,"Elefante":8,"Tigre":9,"Camelo":10,"Borboleta":11,"Veado":12 };
+  document.getElementById('grid').innerHTML = BICHOS.map(b=>`
+    <div class="bcell${PATRON[b[1]]?' patron':''}">
+      ${PATRON[b[1]]?'<span class="star">★ brasão</span>':''}
+      <div class="chip"><span class="ring"></span><span class="ring i"></span><span class="diam"></span><span class="gn">${b[0]}</span></div>
+      <div class="bname">${b[1]}</div>
+      <div class="bdez">${b[2]}</div>
+    </div>`).join("");
+
+  const PATRONS = [
+    ["1 · Centro","Águia — poder no alto"],["2 · Zona Sul","Pavão — ostentação"],
+    ["3 · Zona Norte","Galo — coração popular"],["4 · Zona Oeste","Touro — força em expansão"],
+    ["5 · Grande Tijuca","Leão — tradição orgulhosa"],["6 · Baixada","Jacaré — sangue no brejo"],
+    ["7 · Complexos","Cobra — becos e vielas"],["8 · Portuária","Elefante — carga pesada"],
+    ["9 · Barra/Recreio","Tigre — predador elegante"],["10 · Niterói/SG","Camelo — a travessia"],
+    ["11 · Reg. dos Lagos","Borboleta — o verão"],["12 · Costa Verde","Veado — a mata e o mar"]
+  ];
+  document.getElementById('patrons').innerHTML = PATRONS.map(p=>`<div><b>${p[0]}</b><span>${p[1]}</span></div>`).join("");
+
+  function fit(){
+    const availH = window.innerHeight - 120, availW = window.innerWidth - 60;
+    const w = 297*96/25.4, h = 420*96/25.4;
+    const s = Math.min(1, availW/w, availH/h);
+    document.querySelectorAll('.pscale').forEach(sc=>{ sc.style.transform=`scale(${s})`; sc.style.width=(w*s)+'px'; sc.style.height=(h*s)+'px'; });
+  }
+  window.addEventListener('resize', fit); fit();
+</script>
+</body>
+</html>

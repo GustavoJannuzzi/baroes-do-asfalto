@@ -1,0 +1,156 @@
+/* ============================================================
+   BARÕES DO ASFALTO — SISTEMA VISUAL DO KIT FÍSICO
+   Tokens + componentes compartilhados (pule de bicho + dossiê)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,600;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Special+Elite&display=swap');
+
+:root{
+  --verde:#1B4332;       /* Verde Barão  */
+  --verde-2:#143728;     /* sombra do verde */
+  --creme:#F4ECD8;       /* Creme Pule   */
+  --creme-2:#EBE0C6;     /* creme sombra */
+  --vermelho:#A4161A;    /* Vermelho Lacre */
+  --dourado:#C9A227;     /* Dourado Mostarda */
+  --dourado-2:#A8851A;
+  --tinta:#1A1A1A;       /* Preto Tinta  */
+  --azul:#2C5F7C;        /* Azul Guanabara */
+  --kraft:#C8A97E;       /* Kraft */
+
+  --linha:rgba(26,26,26,.42);   /* linha pontilhada de preencher */
+  --linha-2:rgba(26,26,26,.22);
+}
+
+*{ box-sizing:border-box; }
+
+html,body{ margin:0; padding:0; }
+
+body{
+  background:#3a3a38;            /* mesa cinza atrás das folhas (tela) */
+  font-family:'Source Serif 4', Georgia, serif;
+  color:var(--tinta);
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+
+/* ---------- FOLHA (A4) ---------- */
+.sheet{
+  position:relative;
+  width:210mm; height:297mm;
+  background:var(--creme);
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(180,150,90,.06), transparent 60%),
+    radial-gradient(circle at 82% 78%, rgba(120,90,40,.05), transparent 55%);
+  margin:8mm auto;
+  box-shadow:0 6px 30px rgba(0,0,0,.45);
+  overflow:hidden;
+  padding:9mm 9mm 7mm;
+  display:flex; flex-direction:column;
+}
+.sheet::before{ /* moldura tipográfica dupla estilo bilhete */
+  content:""; position:absolute; inset:4mm;
+  border:1.4pt solid var(--verde);
+  box-shadow:0 0 0 1.4pt var(--creme), 0 0 0 2.6pt var(--verde);
+  pointer-events:none;
+}
+.sheet > *{ position:relative; z-index:1; }
+
+@page{ size:A4; margin:0; }
+@media print{
+  body{ background:none; }
+  .sheet{ margin:0; box-shadow:none; page-break-after:always; }
+  .sheet:last-child{ page-break-after:avoid; }
+  .noprint{ display:none !important; }
+}
+
+/* ---------- MASTHEAD / LOGOTIPO ---------- */
+.wordmark{ font-family:'Playfair Display', serif; font-style:italic; font-weight:700;
+  color:var(--verde); line-height:.92; letter-spacing:.005em; }
+.kicker{ font-family:'Anton', sans-serif; text-transform:uppercase; letter-spacing:.12em;
+  color:var(--vermelho); }
+
+/* ---------- BARRA DE SEÇÃO ---------- */
+.bar{
+  background:var(--verde); color:var(--creme);
+  font-family:'Anton', sans-serif; text-transform:uppercase;
+  letter-spacing:.07em; font-size:10pt; line-height:1.12;
+  padding:1.5mm 3mm; display:flex; justify-content:space-between; align-items:center; gap:3mm;
+}
+.bar > span:first-child{ white-space:nowrap; }
+.bar .sub{ font-family:'Special Elite', monospace; font-size:6.5pt;
+  color:var(--dourado); letter-spacing:.06em; }
+.bar.red{ background:var(--vermelho); }
+.bar.red .sub{ color:var(--creme); }
+.bar.gold{ background:var(--dourado); color:var(--tinta); }
+.bar.gold .sub{ color:var(--verde); }
+
+/* ---------- CAMPOS PREENCHÍVEIS ---------- */
+.f{ display:flex; align-items:flex-end; gap:1.5mm; min-width:0; }
+.f > label, .lab{ font-family:'Oswald', sans-serif; font-weight:600; font-size:6.6pt;
+  text-transform:uppercase; letter-spacing:.05em; color:#4a4a44; white-space:nowrap; }
+.line{ flex:1; border-bottom:1px dotted var(--linha); min-height:4.4mm; min-width:6mm; }
+.line.tall{ min-height:6mm; }
+
+/* círculos de atributo */
+.circ{ display:inline-flex; gap:1.1mm; }
+.circ i{ width:3.1mm; height:3.1mm; border:1.1pt solid var(--tinta); border-radius:50%; display:block; }
+
+/* pips de perícia (quadradinhos 0-5) */
+.pips{ display:inline-flex; gap:.9mm; }
+.pips i{ width:2.7mm; height:2.7mm; border:1pt solid var(--tinta); display:block; }
+.pips i:first-child{ border-color:var(--linha); } /* o "zero" mais leve */
+
+/* checkbox */
+.chk{ width:3mm; height:3mm; border:1.2pt solid var(--tinta); display:inline-block;
+  vertical-align:-.4mm; margin-right:1mm; }
+
+/* ---------- SERRILHA / PICOTE ---------- */
+.serrilha{ height:0; border:0; border-top:1.6pt dashed var(--dourado-2);
+  opacity:.7; margin:1.6mm 0; }
+.serrilha.green{ border-top-color:var(--verde); opacity:.45; }
+
+/* ---------- TABELAS DE PREENCHER ---------- */
+table.grid{ width:100%; border-collapse:collapse; font-family:'Oswald',sans-serif; }
+table.grid th{ font-size:6.4pt; font-weight:600; text-transform:uppercase; letter-spacing:.04em;
+  color:var(--creme); background:var(--verde); padding:1mm 1.5mm; text-align:left; }
+table.grid td{ border:.75pt solid var(--linha-2); height:5.4mm; padding:0 1.5mm; }
+table.grid tr:nth-child(even) td{ background:rgba(27,67,50,.045); }
+
+/* ---------- CARIMBO ---------- */
+.stamp{ font-family:'Special Elite', monospace; text-transform:uppercase;
+  border:2.2pt solid var(--vermelho); color:var(--vermelho);
+  padding:.6mm 2.2mm; letter-spacing:.08em; display:inline-block;
+  transform:rotate(-5deg); border-radius:1pt; font-size:8pt;
+  box-shadow:inset 0 0 0 1pt rgba(164,22,26,.25); opacity:.92; }
+.stamp.green{ border-color:var(--verde); color:var(--verde); box-shadow:inset 0 0 0 1pt rgba(27,67,50,.25); }
+
+/* ---------- MEDALHÃO DO BICHO (marca d'água / ornamento) ----------
+   Composição só com formas simples: círculos + losango + número.   */
+.bicho{ position:relative; width:var(--s,22mm); height:var(--s,22mm);
+  display:flex; align-items:center; justify-content:center; flex:none; }
+.bicho .ring{ position:absolute; inset:0; border-radius:50%;
+  border:1.4pt solid var(--verde); }
+.bicho .ring.inner{ inset:2.2mm; border:.8pt solid var(--verde); }
+.bicho .diam{ position:absolute; width:42%; height:42%; transform:rotate(45deg);
+  border:1.2pt solid var(--dourado-2); }
+.bicho .grp{ font-family:'Anton',sans-serif; font-size:calc(var(--s,22mm)*.30); color:var(--verde);
+  line-height:1; z-index:2; }
+.bicho.wm{ opacity:.07; }            /* marca d'água */
+.bicho.wm .ring, .bicho.wm .ring.inner{ border-color:var(--tinta); }
+.bicho.wm .diam{ border-color:var(--tinta); }
+.bicho.wm .grp{ color:var(--tinta); }
+
+/* utilidades */
+.mono{ font-family:'Special Elite', monospace; }
+.osw{ font-family:'Oswald', sans-serif; }
+.serif{ font-family:'Source Serif 4', serif; }
+.play{ font-family:'Playfair Display', serif; }
+.tiny{ font-size:6pt; }
+.muted{ color:#6a6a60; }
+.up{ text-transform:uppercase; letter-spacing:.05em; }
+.center{ text-align:center; }
+.row{ display:flex; }
+.col{ display:flex; flex-direction:column; }
+.between{ justify-content:space-between; }
+.gap1{ gap:1mm; } .gap2{ gap:2mm; } .gap3{ gap:3mm; } .gap4{ gap:4mm; }
+.grow{ flex:1; } .nowrap{ white-space:nowrap; }

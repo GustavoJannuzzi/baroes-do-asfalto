@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Referência Rápida do Jogador — Barões do Asfalto</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  body{ background:#2c2c2a; }
+
+  .controls{ position:fixed; top:0; left:0; right:0; z-index:80; display:flex; align-items:center; gap:14px;
+    padding:10px 16px; background:rgba(16,16,14,.94); color:var(--creme); font-family:'Oswald',sans-serif;
+    font-size:12px; letter-spacing:.04em; box-shadow:0 2px 14px rgba(0,0,0,.55); }
+  .controls b{ font-family:'Anton'; letter-spacing:.06em; color:var(--dourado); text-transform:uppercase; }
+  .controls .hint{ margin-left:auto; opacity:.66; font-size:10.5px; font-family:'Special Elite',monospace; }
+
+  .stage{ padding:62px 18px 46px; display:flex; flex-wrap:wrap; justify-content:center; gap:22px; align-items:flex-start; }
+  .pscale{ transform-origin:top left; }
+
+  /* ============== CARTÃO A5 ============== */
+  @page{ size:148mm 210mm; margin:0; }
+  .card{
+    position:relative; width:148mm; height:210mm; overflow:hidden;
+    background:var(--creme);
+    background-image:
+      radial-gradient(circle at 16% 9%, rgba(180,150,90,.07), transparent 56%),
+      radial-gradient(circle at 84% 92%, rgba(120,90,40,.06), transparent 54%);
+    color:var(--tinta); padding:9mm 9mm 7mm; display:flex; flex-direction:column;
+    font-family:'Source Serif 4', Georgia, serif; box-shadow:0 8px 30px rgba(0,0,0,.45);
+  }
+  .card::before{ content:""; position:absolute; inset:4mm; border:1.3pt solid var(--verde);
+    box-shadow:0 0 0 1.2pt var(--creme), 0 0 0 2.4pt var(--verde); pointer-events:none; z-index:0; }
+  .card > *{ position:relative; z-index:1; }
+
+  /* dezenas nos cantos (estilo baralho) */
+  .corner{ position:absolute; z-index:2; font-family:'Oswald'; font-weight:700; text-align:center; color:var(--dourado-2); opacity:.85; line-height:.9; }
+  .corner .g{ font-family:'Anton'; font-size:9pt; color:var(--verde); display:block; }
+  .corner .d{ font-size:5pt; letter-spacing:.04em; }
+  .corner.tl{ top:7mm; left:6mm; } .corner.br{ bottom:6mm; right:6.5mm; transform:rotate(180deg); }
+
+  /* masthead */
+  .mast{ display:flex; justify-content:space-between; align-items:flex-start; gap:4mm; padding-left:6mm; margin-bottom:1mm; }
+  .mast .kicker{ font-family:'Anton'; color:var(--vermelho); text-transform:uppercase; letter-spacing:.13em; font-size:7.4pt; }
+  .mast .title{ font-family:'Anton'; font-size:16pt; line-height:.92; color:var(--verde); text-transform:uppercase; letter-spacing:.005em; margin:.4mm 0 .2mm; white-space:nowrap; }
+  .mast .title .em{ color:var(--dourado); }
+  .mast .wm{ font-family:'Playfair Display'; font-style:italic; font-size:7.4pt; color:#6a6256; text-align:right; line-height:1.05; }
+
+  hr.serr{ height:0; border:0; border-top:1.4pt dashed var(--dourado-2); opacity:.65; margin:2mm 0; }
+  hr.serr.green{ border-top-color:var(--verde); opacity:.4; }
+
+  .h2{ font-family:'Anton'; text-transform:uppercase; letter-spacing:.05em; font-size:8.8pt; color:var(--creme);
+    background:var(--verde); padding:1mm 2.4mm; display:flex; justify-content:space-between; align-items:baseline; gap:3mm; }
+  .h2 .sub{ font-family:'Special Elite',monospace; font-size:5.4pt; letter-spacing:.03em; color:var(--dourado); }
+  .h2.red{ background:var(--vermelho); } .h2.red .sub{ color:var(--creme); }
+  .h2.gold{ background:var(--dourado); color:var(--tinta); } .h2.gold .sub{ color:var(--verde); }
+
+  .body{ font-family:'Source Serif 4'; font-size:8pt; line-height:1.34; }
+  .body b{ color:var(--verde); }
+  .lead{ font-family:'Oswald'; font-weight:600; font-size:8.4pt; }
+
+  /* tabelas */
+  .t{ width:100%; border-collapse:collapse; font-family:'Oswald',sans-serif; }
+  .t td{ font-size:7.4pt; padding:.7mm 1.6mm; border-bottom:.5pt solid var(--linha-2); vertical-align:top; line-height:1.16; }
+  .t tr:last-child td{ border-bottom:0; }
+  .t .n{ font-weight:700; color:var(--verde); text-align:center; white-space:nowrap; }
+  .t .em{ color:var(--vermelho); font-weight:700; }
+  .t.zebra tr:nth-child(even) td{ background:rgba(27,67,50,.05); }
+
+  .chip{ display:inline-flex; align-items:center; justify-content:center; min-width:5mm; height:5mm; padding:0 1mm;
+    border:1.3pt solid var(--verde); color:var(--verde); font-family:'Anton'; font-size:7.6pt; border-radius:1mm; }
+
+  /* resultado: faixa com etiqueta */
+  .res{ display:flex; align-items:baseline; gap:2mm; padding:.9mm 0; border-bottom:.5pt dotted var(--linha-2); }
+  .res:last-child{ border-bottom:0; }
+  .res .lbl{ font-family:'Anton'; font-size:7.6pt; text-transform:uppercase; letter-spacing:.02em; width:30mm; flex:none; line-height:1; }
+  .res .lbl small{ display:block; font-family:'Special Elite',monospace; font-size:4.8pt; font-weight:400; color:#7a7060; letter-spacing:.02em; margin-top:.5mm; }
+  .res.bad .lbl{ color:var(--vermelho); } .res.ok .lbl{ color:var(--verde); }
+  .res .dsc{ font-family:'Source Serif 4'; font-size:7.2pt; line-height:1.26; }
+
+  /* métricas (verso) */
+  .metric{ display:flex; gap:2.4mm; align-items:flex-start; padding:1.2mm 0; border-bottom:.5pt dotted var(--linha-2); }
+  .metric:last-child{ border-bottom:0; }
+  .mi{ width:6.6mm; height:6.6mm; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center;
+    font-family:'Anton'; font-size:8pt; color:#fff; margin-top:.3mm; }
+  .mi.h{ background:var(--vermelho); } .mi.e{ background:var(--azul); }
+  .mi.c{ background:var(--dourado); color:var(--tinta); } .mi.p{ background:#1a1a1a; } .mi.l{ background:var(--verde); }
+  .metric .mt{ flex:1; min-width:0; }
+  .metric .mn{ font-family:'Anton'; font-size:8.4pt; text-transform:uppercase; letter-spacing:.02em; color:var(--tinta); line-height:1; }
+  .metric .mn small{ font-family:'Source Serif 4'; font-style:italic; font-weight:400; font-size:6pt; color:#6a6256; text-transform:none; letter-spacing:0; margin-left:1mm; }
+  .metric .md{ font-family:'Oswald'; font-size:6.6pt; line-height:1.34; color:#3a3a34; margin-top:.4mm; }
+  .metric .md b{ color:var(--vermelho); }
+
+  .twocol{ display:grid; grid-template-columns:1fr 1fr; gap:2.6mm 4mm; }
+
+  .money{ border:1pt solid var(--linha-2); border-left:2.4pt solid var(--verde); padding:1mm 2mm; }
+  .money.dirty{ border-left-color:var(--vermelho); } .money.transit{ border-left-color:var(--azul); }
+  .money .mh{ font-family:'Anton'; font-size:7.6pt; text-transform:uppercase; letter-spacing:.02em; color:var(--verde); }
+  .money.dirty .mh{ color:var(--vermelho); } .money.transit .mh{ color:var(--azul); }
+  .money .mb{ font-family:'Source Serif 4'; font-size:6.6pt; line-height:1.24; color:#3a3a34; margin-top:.3mm; }
+
+  .steps{ display:flex; gap:1.6mm; }
+  .stepc{ flex:1; border:1pt solid var(--linha-2); padding:.8mm 1.4mm; text-align:center; }
+  .stepc .sn{ font-family:'Anton'; font-size:10pt; color:var(--dourado-2); line-height:.9; }
+  .stepc .st{ font-family:'Oswald'; font-weight:600; font-size:6pt; text-transform:uppercase; letter-spacing:.02em; color:var(--verde); line-height:1.05; margin-top:.4mm; }
+
+  .footer{ margin-top:auto; display:flex; justify-content:space-between; align-items:flex-end; gap:3mm; padding-top:2mm; }
+  .serie{ font-family:'Special Elite',monospace; font-size:5.6pt; color:#8a8068; letter-spacing:.05em; }
+  .quote{ font-family:'Playfair Display'; font-style:italic; font-size:7.2pt; color:var(--verde); text-align:right; }
+
+  .wmbicho{ position:absolute; right:9mm; bottom:11mm; --s:30mm; z-index:0; opacity:.06; }
+  .wmbicho .ring,.wmbicho .ring.inner,.wmbicho .diam{ border-color:var(--tinta); }
+  .wmbicho .grp{ color:var(--tinta); }
+
+  @media print{
+    body{ background:#fff; }
+    .controls{ display:none !important; }
+    .stage{ padding:0; gap:0; display:block; }
+    .pscale{ transform:none !important; width:auto !important; height:auto !important; }
+    .card{ box-shadow:none; page-break-after:always; }
+    .card:last-child{ page-break-after:avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="controls noprint">
+  <b>Referência Rápida do Jogador</b>
+  <span class="hint">A5 frente/verso · imprima duplex · plastifique · 1 por jogador</span>
+</div>
+
+<div class="stage">
+
+  <!-- ================= FRENTE ================= -->
+  <div class="pscale"><section class="card" data-screen-label="Referência · Frente">
+    <div class="corner tl"><span class="g">13</span><span class="d">49·50<br>51·52</span></div>
+    <div class="mast">
+      <div>
+        <div class="kicker">Referência Rápida</div>
+        <div class="title">Como se <span class="em">joga</span></div>
+      </div>
+      <div class="wm">Barões<br>do Asfalto</div>
+    </div>
+    <hr class="serr">
+
+    <div class="h2">O Teste <span class="sub">pool de d6</span></div>
+    <div class="body" style="margin:1.4mm 0;">
+      <span class="lead" style="color:var(--verde)">Pool</span> = <b>Atributo</b> (1–5) + <b>Perícia</b> (0–5) + modificadores. Role tudo em d6.
+      <div style="margin-top:1mm;">▸ Cada <b>5 ou 6</b> = 1 sucesso &nbsp;·&nbsp; ▸ Cada <b>6 explode</b>: role 1 dado extra.</div>
+    </div>
+    <table class="t zebra">
+      <tr><td>Rotina</td><td class="n"><span class="chip">1</span></td><td>Muito Difícil</td><td class="n"><span class="chip">4</span></td></tr>
+      <tr><td>Moderada</td><td class="n"><span class="chip">2</span></td><td>Quase Impossível</td><td class="n"><span class="chip">5+</span></td></tr>
+      <tr><td>Difícil</td><td class="n"><span class="chip">3</span></td><td class="lead" style="color:#7a7060;font-size:6pt;font-weight:400">sucessos exigidos →</td><td></td></tr>
+    </table>
+
+    <hr class="serr green">
+
+    <div class="h2 gold">Resultado <span class="sub">compare com a dificuldade</span></div>
+    <div style="margin:1.4mm 0;">
+      <div class="res bad"><div class="lbl">Falha crítica<small>0 suc. + maioria de 1s</small></div><div class="dsc">Falha + complicação séria. <b style="color:var(--vermelho)">+1 Heat.</b></div></div>
+      <div class="res bad"><div class="lbl">Falha<small>0 sucessos</small></div><div class="dsc">Não rola; a situação piora um pouco.</div></div>
+      <div class="res ok"><div class="lbl">Sucesso parcial<small>dificuldade −1</small></div><div class="dsc">Consegue, <b>MAS…</b> custa mais · demora · +1 Heat · ou fica devendo um favor.</div></div>
+      <div class="res ok"><div class="lbl">Sucesso total<small>≥ dificuldade</small></div><div class="dsc">Consegue limpo, sem preço extra.</div></div>
+      <div class="res ok"><div class="lbl">Sucesso crítico<small>dificuldade +2</small></div><div class="dsc">Consegue + escolha 1: −1 Heat · info extra · +1 lealdade · ½ custo · ½ tempo.</div></div>
+    </div>
+
+    <hr class="serr green">
+
+    <div class="h2">Modificadores <span class="sub">somam/subtraem dados</span></div>
+    <div class="twocol" style="margin:1.4mm 0;">
+      <table class="t">
+        <tr><td>Condições ideais / preparo</td><td class="n">+1 a +3</td></tr>
+        <tr><td>Equipamento profissional</td><td class="n">+1 a +3</td></tr>
+        <tr><td>Cada fonte confiável</td><td class="n">+1</td></tr>
+        <tr><td>Favor P / M / G</td><td class="n">+1/+2/+3</td></tr>
+      </table>
+      <table class="t">
+        <tr><td>Pressa, recursos limitados</td><td class="n em">−1</td></tr>
+        <tr><td>Improviso, sob pressão</td><td class="n em">−2</td></tr>
+        <tr><td>Desespero total</td><td class="n em">−3</td></tr>
+        <tr><td class="lead" style="font-size:6.2pt;color:#7a7060;font-weight:400" colspan="2">Contestado: mais sucessos vence. Ajuda: +1 dado por aliado (perícia 2+), máx +3.</td></tr>
+      </table>
+    </div>
+
+    <div class="footer">
+      <span class="serie">Nº 041892 · SÉRIE VB · FRENTE</span>
+      <span class="quote">“Na lábia ou na bala — escolhe.”</span>
+    </div>
+  </section></div>
+
+  <!-- ================= VERSO ================= -->
+  <div class="pscale"><section class="card" data-screen-label="Referência · Verso">
+    <div class="wmbicho bicho"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div><div class="grp">13</div></div>
+    <div class="corner tl"><span class="g">13</span><span class="d">49·50<br>51·52</span></div>
+    <div class="mast">
+      <div>
+        <div class="kicker">Referência Rápida</div>
+        <div class="title">O que se <span class="em">paga</span></div>
+      </div>
+      <div class="wm">Barões<br>do Asfalto</div>
+    </div>
+    <hr class="serr">
+
+    <div class="h2">As 5 Métricas <span class="sub">escala 0–10</span></div>
+    <div style="margin:1.2mm 0;">
+      <div class="metric"><div class="mi h">H</div><div class="mt"><div class="mn">Heat <small>atenção da polícia / mídia</small></div>
+        <div class="md"><b>3+</b> −1 social c/ civis · <b>5+</b> investigação ativa, −2 · <b>7+</b> operações, −3 · <b>9+</b> força-tarefa</div></div></div>
+      <div class="metric"><div class="mi e">E</div><div class="mt"><div class="mn">Exposição <small>rastro legal</small></div>
+        <div class="md">alta = fácil de investigar · <b>7+</b> não usa banco · <b>8+</b> Receita entra automático</div></div></div>
+      <div class="metric"><div class="mi c">C</div><div class="mt"><div class="mn">Capital de Rua <small>reputação no submundo</small></div>
+        <div class="md">+1 dado social no crime a cada 2 pontos · 5% de desconto por ponto</div></div></div>
+      <div class="metric"><div class="mi p">P</div><div class="mt"><div class="mn">Pressão <small>estresse</small></div>
+        <div class="md"><b>3-4</b> −1 SF · <b>5-6</b> −1 SF e Instinto · <b>7-8</b> −2 mentais · <b>9-10</b> −3 em tudo · <b>10 = COLAPSO (1d6)</b></div></div></div>
+      <div class="metric"><div class="mi l">L</div><div class="mt"><div class="mn">Lealdade <small>por NPC</small></div>
+        <div class="md"><b>0-2</b> trai · <b>3-4</b> mercenário · <b>5-6</b> confiável · <b>7-8</b> arrisca por você · <b>9-10</b> morre por você</div></div></div>
+    </div>
+
+    <hr class="serr green">
+
+    <div class="twocol" style="grid-template-columns:1fr 1.05fr;">
+      <div>
+        <div class="h2 red">Heat de Combate</div>
+        <table class="t zebra" style="margin-top:1mm;">
+          <tr><td>Briga · tiroteio discreto</td><td class="n em">+1</td></tr>
+          <tr><td>Tiroteio em público</td><td class="n em">+2</td></tr>
+          <tr><td>Fuzil · civil morto</td><td class="n em">+3</td></tr>
+          <tr><td>Policial morto</td><td class="n em">+4</td></tr>
+          <tr><td>Figura pública</td><td class="n em">+5</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="h2">Dinheiro</div>
+        <div class="col" style="display:flex; flex-direction:column; gap:1mm; margin-top:1mm;">
+          <div class="money"><div class="mh">Limpo</div><div class="mb">usa em tudo, sem perguntas</div></div>
+          <div class="money dirty"><div class="mh">Sujo</div><div class="mb">até R$ 10 mil informal; acima, precisa lavar</div></div>
+          <div class="money transit"><div class="mh">Em trânsito</div><div class="mb">lavando: 2–16 sem.; perde a taxa da empresa</div></div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="serr green">
+
+    <div class="h2 gold">Estrutura da Sessão</div>
+    <div class="steps" style="margin:1.4mm 0;">
+      <div class="stepc"><div class="sn">1</div><div class="st">Planejamento</div></div>
+      <div class="stepc"><div class="sn">2</div><div class="st">Execução</div></div>
+      <div class="stepc"><div class="sn">3</div><div class="st">Consequências</div></div>
+      <div class="stepc"><div class="sn">4</div><div class="st">Fase Econômica</div></div>
+    </div>
+    <div class="body" style="font-size:6.4pt; color:#6a6256; font-family:'Special Elite',monospace; line-height:1.4;">Testes no planejamento dão bônus à execução. As consequências (Heat, lealdades, favores) cobram no mês seguinte.</div>
+
+    <div class="footer">
+      <span class="serie">Nº 041892 · SÉRIE VB · VERSO</span>
+      <span class="quote">“A conta sempre chega.”</span>
+    </div>
+  </section></div>
+
+</div>
+
+<script>
+function fit(){
+  const avail = window.innerWidth - 40;
+  const a5w = 148*96/25.4, a5h = 210*96/25.4;
+  const s = Math.min(1, ((avail-22)/2)/a5w);
+  document.querySelectorAll('.pscale').forEach(sc=>{
+    sc.style.transform=`scale(${s})`;
+    sc.style.width=(a5w*s)+'px'; sc.style.height=(a5h*s)+'px';
+  });
+}
+window.addEventListener('resize', fit);
+fit();
+</script>
+</body>
+</html>

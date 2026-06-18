@@ -23,6 +23,13 @@ const PORTALS = [
     title: "Dashboard de Gameplay",
     desc: "Sua ficha viva: atributos, dinheiro, pontos, favores e segurança — com alertas das regras e o mapa do território.",
   },
+  {
+    href: "/kit",
+    tag: "Pública",
+    icon: "🖨️",
+    title: "Kit Físico",
+    desc: "13 componentes prontos para imprimir: tabuleiro, fichas, decks de cartas, tokens, escudo do mestre e mais.",
+  },
 ];
 
 export default async function Home() {

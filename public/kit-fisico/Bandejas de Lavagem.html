@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Bandejas de Lavagem — Barões do Asfalto</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  body{ background:#2c2c2a; }
+  .controls{ position:fixed; top:0; left:0; right:0; z-index:80; display:flex; align-items:center; gap:14px;
+    padding:10px 16px; background:rgba(16,16,14,.94); color:var(--creme); font-family:'Oswald',sans-serif;
+    font-size:12px; letter-spacing:.04em; box-shadow:0 2px 14px rgba(0,0,0,.55); }
+  .controls b{ font-family:'Anton'; letter-spacing:.06em; color:var(--dourado); text-transform:uppercase; }
+  .controls .hint{ margin-left:auto; opacity:.66; font-size:10.5px; font-family:'Special Elite',monospace; }
+
+  .stage{ padding:60px 18px 46px; display:flex; flex-wrap:wrap; justify-content:center; gap:6mm; align-items:flex-start; }
+
+  /* ===== BANDEJA A6 105 x 148 mm ===== */
+  @page{ size:A4; margin:8mm; }
+  .tray{ position:relative; width:105mm; height:148mm; overflow:hidden; background:var(--creme);
+    background-image:repeating-linear-gradient(135deg, rgba(44,95,124,.04) 0 8px, transparent 8px 16px),
+      radial-gradient(circle at 16% 8%, rgba(180,150,90,.08), transparent 55%);
+    color:var(--tinta); display:flex; flex-direction:column; font-family:'Source Serif 4', Georgia, serif;
+    box-shadow:0 6px 22px rgba(0,0,0,.4); border:.5pt solid #b8a988; }
+  .tray::before{ content:""; position:absolute; inset:3mm; border:1.4pt solid var(--azul); pointer-events:none; z-index:0; }
+  .tray .pad{ position:relative; z-index:1; padding:5mm 5mm 4mm; display:flex; flex-direction:column; height:100%; }
+
+  .th{ display:flex; align-items:center; justify-content:space-between; gap:2mm; }
+  .th .big{ font-family:'Anton'; font-size:20pt; color:var(--azul); text-transform:uppercase; line-height:.9; }
+  .th .stamp{ font-family:'Special Elite',monospace; color:var(--azul); border:1.6pt solid var(--azul);
+    padding:.8mm 2mm; font-size:6.6pt; letter-spacing:.06em; transform:rotate(-5deg); border-radius:1pt; }
+  .sub{ font-family:'Oswald'; font-weight:600; font-size:6.6pt; text-transform:uppercase; letter-spacing:.04em; color:#5e6a70; margin-top:.6mm; }
+  hr.s{ height:0; border:0; border-top:1.2pt dashed var(--azul); opacity:.5; margin:2.4mm 0; }
+
+  /* bandeja onde o maço descansa */
+  .rest{ border:1.4pt dashed rgba(44,95,124,.6); background:rgba(44,95,124,.05); flex:1;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1mm; text-align:center; padding:3mm; min-height:34mm; }
+  .rest .lab{ font-family:'Special Elite',monospace; font-size:6.4pt; color:#5e6a70; letter-spacing:.04em; }
+  .rest .em{ font-family:'Playfair Display'; font-style:italic; font-size:8pt; color:var(--azul); }
+
+  /* campos */
+  .fields{ display:grid; grid-template-columns:1fr 1fr; gap:1.4mm 3mm; margin:2.4mm 0; }
+  .fld{ display:flex; flex-direction:column; gap:.4mm; }
+  .fld.full{ grid-column:span 2; }
+  .fld .l{ font-family:'Oswald'; font-weight:600; font-size:5.6pt; text-transform:uppercase; letter-spacing:.04em; color:#5e6a70; }
+  .fld .ln{ border-bottom:1px dotted var(--linha); min-height:4.6mm; }
+  .fld .ln.green{ border-bottom:1.4pt solid var(--verde); }
+  .fld .l.g{ color:var(--verde); }
+
+  /* trilha de semanas */
+  .weeks .wl{ display:flex; justify-content:space-between; font-family:'Oswald'; font-weight:600; font-size:5.4pt;
+    text-transform:uppercase; letter-spacing:.03em; color:#5e6a70; margin-bottom:1mm; }
+  .wtrack{ display:flex; gap:.6mm; }
+  .wcell{ flex:1; height:6mm; border:.7pt solid var(--linha-2); background:#fff; display:flex; align-items:flex-start; justify-content:center;
+    font-family:'Oswald'; font-weight:600; font-size:4.4pt; color:#8a8478; padding-top:.3mm; }
+  .wcell.mark{ background:rgba(44,95,124,.12); border-color:var(--azul); color:var(--azul); }
+  .wcell.done{ background:rgba(27,67,50,.14); border-color:var(--verde); color:var(--verde); }
+  .legw{ font-family:'Special Elite',monospace; font-size:5pt; color:#7a7368; letter-spacing:.02em; margin-top:1.2mm; line-height:1.4; }
+  .legw b{ color:var(--azul); }
+
+  .sectlabel{ flex-basis:100%; text-align:center; font-family:'Anton'; color:var(--dourado); text-transform:uppercase; letter-spacing:.1em; font-size:13px; margin:8px 0 0; }
+
+  @media print{
+    body{ background:#fff; }
+    .controls{ display:none !important; }
+    .stage{ padding:0; gap:0; display:flex; flex-wrap:wrap; align-content:flex-start; }
+    .tray{ box-shadow:none; }
+    .sectlabel{ display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="controls noprint">
+  <b>Bandejas de Lavagem — “No Forno”</b>
+  <span class="hint">4 cartas A6 · ponha o maço de dinheiro SUJO sobre a bandeja · avance o clipe 1 casa por semana de jogo · ao chegar no fim, vira LIMPO (menos a taxa)</span>
+</div>
+<div class="stage" id="stage"></div>
+
+<script>
+  function tray(){
+    let cells='';
+    for(let i=1;i<=16;i++){ cells += `<div class="wcell">${i}</div>`; }
+    return `<div class="tray"><div class="pad">
+      <div class="th"><div><div class="big">No Forno</div><div class="sub">Dinheiro em trânsito · lavando</div></div>
+        <div class="stamp">EM TRÂNSITO</div></div>
+      <hr class="s">
+      <div class="rest"><span class="lab">↓ COLOQUE O MAÇO DE DINHEIRO SUJO AQUI ↓</span>
+        <span class="em">“rico no papel, pobre na prática”</span>
+        <span class="lab">enquanto a carta segura o maço, o dinheiro não pode ser usado</span></div>
+      <div class="fields">
+        <div class="fld"><span class="l">Valor sujo (entrada)</span><span class="ln"></span></div>
+        <div class="fld"><span class="l">Taxa da empresa (%)</span><span class="ln"></span></div>
+        <div class="fld full"><span class="l">Método / empresa de fachada</span><span class="ln"></span></div>
+        <div class="fld full"><span class="l g">→ Valor limpo ao sair (entrada − taxa)</span><span class="ln green"></span></div>
+      </div>
+      <div class="weeks">
+        <div class="wl"><span>Semana 1</span><span>marque o avanço com um clipe</span><span>Semana 16</span></div>
+        <div class="wtrack">${cells}</div>
+        <div class="legw">Prazo típico: <b>2–16 semanas</b> conforme o método (lava-rápido rápido e caro · offshore lento e barato). Role o risco (1d6) ao concluir: em <b>1</b>, complicação. No fim, troque o maço sujo por dinheiro <b>LIMPO</b> (menos a taxa).</div>
+      </div>
+    </div></div>`;
+  }
+  const stage = document.getElementById('stage');
+  stage.insertAdjacentHTML('beforeend', `<div class="sectlabel">4 Bandejas de Lavagem (A6)</div>`);
+  for(let i=0;i<4;i++) stage.insertAdjacentHTML('beforeend', tray());
+</script>
+</body>
+</html>

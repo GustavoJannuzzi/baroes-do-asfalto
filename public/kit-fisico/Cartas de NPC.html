@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Cartas de NPC — Barões do Asfalto</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  body{ background:#2c2c2a; }
+  .controls{ position:fixed; top:0; left:0; right:0; z-index:80; display:flex; align-items:center; gap:14px;
+    padding:10px 16px; background:rgba(16,16,14,.94); color:var(--creme); font-family:'Oswald',sans-serif;
+    font-size:12px; letter-spacing:.04em; box-shadow:0 2px 14px rgba(0,0,0,.55); }
+  .controls b{ font-family:'Anton'; letter-spacing:.06em; color:var(--dourado); text-transform:uppercase; }
+  .controls .hint{ margin-left:auto; opacity:.66; font-size:10.5px; font-family:'Special Elite',monospace; }
+
+  .stage{ padding:60px 18px 46px; display:flex; flex-wrap:wrap; justify-content:center; gap:5mm; align-items:flex-start; }
+
+  /* ===== CARTA POKER 63,5 x 88,9 mm — dossiê policial ===== */
+  @page{ size:A4; margin:8mm; }
+  .npc{ position:relative; width:63.5mm; height:88.9mm; overflow:hidden; background:#f7f1e2;
+    background-image:radial-gradient(circle at 84% 92%, rgba(120,90,40,.06), transparent 54%);
+    color:var(--tinta); display:flex; flex-direction:column; font-family:'Source Serif 4', Georgia, serif;
+    box-shadow:0 6px 20px rgba(0,0,0,.4); border:.5pt solid #b8a988; }
+  .npc::before{ content:""; position:absolute; inset:2.2mm; border:1pt solid var(--tinta); opacity:.5; pointer-events:none; z-index:0; }
+  .npc .pad{ position:relative; z-index:1; padding:3mm 3.2mm 2.4mm; display:flex; flex-direction:column; height:100%; }
+
+  .nhead{ display:flex; gap:2mm; align-items:flex-start; }
+  .mug{ width:14mm; height:16mm; flex:none; border:.8pt solid var(--tinta); background:rgba(27,67,50,.06);
+    display:flex; align-items:flex-end; justify-content:center; overflow:hidden; position:relative; }
+  .mug svg{ width:86%; height:92%; }
+  .mug .h{ position:absolute; top:.4mm; left:0; right:0; text-align:center; font-family:'Special Elite',monospace; font-size:3.6pt; color:#8a8068; }
+  .nmeta{ flex:1; min-width:0; }
+  .ntag{ font-family:'Special Elite',monospace; font-size:4.6pt; letter-spacing:.08em; color:var(--vermelho); text-transform:uppercase; }
+  .nname{ font-family:'Anton'; font-size:11.5pt; line-height:.92; text-transform:uppercase; color:var(--verde); margin:.4mm 0 .3mm; }
+  .nape{ font-family:'Playfair Display'; font-style:italic; font-size:7pt; color:#5e574a; line-height:1.05; }
+  .nfunc{ font-family:'Oswald'; font-weight:600; font-size:5.6pt; text-transform:uppercase; letter-spacing:.02em; color:#3a3a34; margin-top:.6mm; line-height:1.12; }
+
+  hr.s{ height:0; border:0; border-top:1pt dashed var(--dourado-2); opacity:.55; margin:1.6mm 0; }
+
+  .row{ margin-bottom:1.2mm; }
+  .row .l{ font-family:'Oswald'; font-weight:700; font-size:5pt; text-transform:uppercase; letter-spacing:.04em; color:var(--verde); }
+  .row.bad .l{ color:var(--vermelho); }
+  .row .d{ font-family:'Source Serif 4'; font-size:6.8pt; line-height:1.22; color:#2a2a24; }
+
+  .leald{ display:flex; align-items:center; gap:1.4mm; margin-top:auto; padding-top:1.4mm; }
+  .leald .l{ font-family:'Oswald'; font-weight:700; font-size:5pt; text-transform:uppercase; letter-spacing:.03em; color:#5e574a; }
+  .pips{ display:inline-flex; gap:.5mm; }
+  .pips i{ width:2.4mm; height:2.4mm; border:.8pt solid var(--tinta); display:block; }
+  .pips i.on{ background:var(--verde); border-color:var(--verde); }
+  .nfoot{ display:flex; justify-content:space-between; align-items:flex-end; margin-top:1.2mm; }
+  .nfoot .se{ font-family:'Special Elite',monospace; font-size:4.4pt; color:#8a8068; }
+  .nfoot .pr{ font-family:'Oswald'; font-weight:600; font-size:5.2pt; color:var(--dourado-2); text-transform:uppercase; }
+
+  .sectlabel{ flex-basis:100%; text-align:center; font-family:'Anton'; color:var(--dourado); text-transform:uppercase; letter-spacing:.1em; font-size:13px; margin:8px 0 0; }
+
+  @media print{
+    body{ background:#fff; }
+    .controls{ display:none !important; }
+    .stage{ padding:0; gap:0; display:flex; flex-wrap:wrap; align-content:flex-start; }
+    .npc{ box-shadow:none; }
+    .sectlabel{ display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="controls noprint">
+  <b>Cartas de NPC — Banqueiros de Favores</b>
+  <span class="hint">9 prontos (doc 5.1) + 6 em branco · formato dossiê · o mestre puxa a carta quando o NPC entra em cena</span>
+</div>
+<div class="stage" id="stage"></div>
+
+<script>
+  const BUST = `<svg viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g fill="#1B4332" fill-opacity="0.18"><circle cx="50" cy="34" r="22"/><path d="M8 110 C8 78 28 64 50 64 C72 64 92 78 92 110 Z"/></g>
+    <g fill="none" stroke="#1B4332" stroke-opacity="0.45" stroke-width="1.3"><circle cx="50" cy="34" r="22"/><path d="M8 110 C8 78 28 64 50 64 C72 64 92 78 92 110"/></g></svg>`;
+
+  // nome, apelido, funcao, oferece, cobra, naofaz, leald(0-10)
+  const NPCS = [
+    ["Peralta","“O Corretor”","Corretor de favores — conecta quem precisa com quem pode",
+      "Monta cadeias de favores: acha quem resolve o seu problema e negocia a ponte.",
+      "Comissão em dinheiro + um favor Pequeno a ele.",
+      "Não FAZ o favor ele mesmo; não toma partido; não entra na violência.", 5],
+    ["Maria Severina","“Dona Severina” — A Memória","Árbitra e registro vivo de todas as dívidas de favor do Rio",
+      "Cadernos manuscritos com cada dívida; a palavra dela encerra qualquer disputa.",
+      "Nada em dinheiro — exige que respeitem a palavra dela. Para sempre.",
+      "Nunca mente, nunca esquece, nunca toma lado. Não se compra.", 7],
+    ["Vampiro","“O Agiota de Favores”","Compra dívidas de favor de gente desesperada",
+      "Assume a sua dívida impagável hoje — e você passa a dever a ele.",
+      "Vira favor Crítico com juros que nunca param de subir.",
+      "Não perdoa, não esquece o prazo, não solta quem deve.", 2],
+    ["Fátima Costa","“Doutora Fátima” — A Conectora","Ex-assessora parlamentar; abre portas no poder público",
+      "Alvará, licença e acesso a quem decide. Destrava o impossível burocrático.",
+      "Dinheiro alto + um favor (muitas vezes intimidar alguém).",
+      "Não esquece nada: coleta informação sobre todos que a procuram.", 4],
+    ["Carlão","“O Músculo”","Presença física que resolve o que a conversa não resolve",
+      "Cobrança, recado, escolta, “conversa” com quem está atrapalhando.",
+      "Favor Médio — e ele cobra algo arriscado quando chegar a hora.",
+      "Não trai aliado; se VOCÊ trair, vira inimigo mortal.", 6],
+    ["Eduardo Lins","“Doutor Lins” — O Fantasma","Advogado que faz processos federais desaparecerem",
+      "Testemunha muda, evidência vicia, promotor é transferido. Você fica livre.",
+      "Favor Crítico — e ele espera ANOS para cobrar, no pior momento.",
+      "Não trabalha por dinheiro (já é milionário). Não aceita pressa.", 3],
+    ["Anjo","“O Olho”","Sabe de tudo que acontece no submundo carioca",
+      "Qualquer informação: rotina de delegado, planos de rival, segredo guardado.",
+      "Dinheiro — ou um favor. E fica sabendo do seu interesse.",
+      "Nunca mente; se não sabe, diz que não sabe. Nunca se trai (quem trai, morre).", 5],
+    ["Magnólia","“Dona Magnólia” — A Lavadeira","Império legítimo (salões, lavanderias) que lava grandes volumes",
+      "Transforma centenas de milhares em dinheiro limpo, mês após mês.",
+      "Taxa do volume + um favor Grande. Relação profissional e respeitosa.",
+      "Não aceita amadorismo; guarda registro de TUDO que você lavou.", 6],
+    ["Padre Milton","“O Mediador”","Líder religioso de peso moral absoluto; evita guerras",
+      "Medeia conflitos que terminariam em sangue; a palavra dele é respeitada por todos.",
+      "Não cobra dinheiro nem favor — cobra PENITÊNCIA (obra social, sustento de famílias).",
+      "Tem as confissões de todos, mas nunca usa. Não toma lado no crime.", 8]
+  ];
+
+  function leaPips(v){ let s=''; for(let i=1;i<=10;i++) s+=`<i class="${i<=v?'on':''}"></i>`; return s; }
+
+  function card(n){
+    return `<div class="npc"><div class="pad">
+      <div class="nhead">
+        <div class="mug">${BUST}<span class="h">FICHA</span></div>
+        <div class="nmeta">
+          <div class="ntag">★ Banqueiro de Favores · Dossiê</div>
+          <div class="nname">${n[0]}</div>
+          <div class="nape">${n[1]}</div>
+          <div class="nfunc">${n[2]}</div>
+        </div>
+      </div>
+      <hr class="s">
+      <div class="row"><span class="l">Oferece</span><div class="d">${n[3]}</div></div>
+      <div class="row"><span class="l">Cobra</span><div class="d">${n[4]}</div></div>
+      <div class="row bad"><span class="l">⚠ O que NÃO faz / o risco</span><div class="d">${n[5]}</div></div>
+      <div class="leald"><span class="l">Lealdade inicial</span><span class="pips">${leaPips(n[6])}</span></div>
+      <div class="nfoot"><span class="se">Nº 041892 · SÉRIE VB</span><span class="pr">doc 5.1</span></div>
+    </div></div>`;
+  }
+
+  function blank(){
+    return `<div class="npc"><div class="pad">
+      <div class="nhead">
+        <div class="mug">${BUST}<span class="h">FICHA</span></div>
+        <div class="nmeta">
+          <div class="ntag">★ Contato / NPC · Dossiê</div>
+          <div class="nname" style="color:#9a9484">_____________</div>
+          <div class="nape">“____________________”</div>
+          <div class="nfunc" style="color:#9a9484">Função: _______________________</div>
+        </div>
+      </div>
+      <hr class="s">
+      <div class="row"><span class="l">Oferece</span><div class="d" style="color:#9a9484">______________________________</div></div>
+      <div class="row"><span class="l">Cobra</span><div class="d" style="color:#9a9484">______________________________</div></div>
+      <div class="row bad"><span class="l">⚠ O que NÃO faz / o risco</span><div class="d" style="color:#9a9484">________________________</div></div>
+      <div class="leald"><span class="l">Lealdade inicial</span><span class="pips">${leaPips(0)}</span></div>
+      <div class="nfoot"><span class="se">Nº 041892 · SÉRIE VB</span><span class="pr">em branco</span></div>
+    </div></div>`;
+  }
+
+  const stage = document.getElementById('stage');
+  stage.insertAdjacentHTML('beforeend', `<div class="sectlabel">9 Banqueiros de Favores (doc 5.1)</div>`);
+  NPCS.forEach(n=> stage.insertAdjacentHTML('beforeend', card(n)));
+  stage.insertAdjacentHTML('beforeend', `<div class="sectlabel">6 Cartas em branco — o mestre preenche</div>`);
+  for(let i=0;i<6;i++) stage.insertAdjacentHTML('beforeend', blank());
+</script>
+</body>
+</html>

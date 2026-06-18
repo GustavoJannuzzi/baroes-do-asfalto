@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Baralho de Favores — Barões do Asfalto</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  body{ background:#2c2c2a; }
+
+  .controls{ position:fixed; top:0; left:0; right:0; z-index:80; display:flex; align-items:center; gap:14px;
+    padding:10px 16px; background:rgba(16,16,14,.94); color:var(--creme); font-family:'Oswald',sans-serif;
+    font-size:12px; letter-spacing:.04em; box-shadow:0 2px 14px rgba(0,0,0,.55); }
+  .controls b{ font-family:'Anton'; letter-spacing:.06em; color:var(--dourado); text-transform:uppercase; }
+  .controls .hint{ margin-left:auto; opacity:.66; font-size:10.5px; font-family:'Special Elite',monospace; }
+  .controls button{ font-family:'Oswald',sans-serif; font-weight:600; font-size:11px; letter-spacing:.05em;
+    text-transform:uppercase; color:var(--tinta); background:var(--dourado); border:0; padding:5px 11px; border-radius:2px;
+    cursor:pointer; }
+  .controls button.alt{ background:transparent; color:var(--creme); border:1px solid rgba(244,236,216,.4); }
+
+  .stage{ padding:60px 18px 46px; display:flex; flex-direction:column; align-items:center; gap:26px; }
+  .pscale{ transform-origin:top left; }
+  .plabel{ font-family:'Special Elite',monospace; font-size:11px; color:#b9b4a4; letter-spacing:.05em;
+    margin:0 0 -14px; align-self:center; }
+
+  /* ===================== FOLHA A4 ===================== */
+  @page{ size:A4; margin:0; }
+  .sheet{ position:relative; width:210mm; height:297mm; background:#fbfbf9; overflow:hidden;
+    box-shadow:0 8px 30px rgba(0,0,0,.45); }
+
+  /* campo com sangria (bleed) — cor sólida que corre 3mm além do corte */
+  .field{ position:absolute; left:6.75mm; top:12.15mm; width:196.5mm; height:272.7mm; }
+  .field.front{ background:var(--creme);
+    background-image:
+      radial-gradient(circle at 16% 9%, rgba(180,150,90,.06), transparent 56%),
+      radial-gradient(circle at 84% 92%, rgba(120,90,40,.05), transparent 54%); }
+  .field.back{ background:var(--verde);
+    background-image:
+      radial-gradient(circle at 18% 12%, rgba(0,0,0,.18), transparent 60%),
+      radial-gradient(circle at 82% 84%, rgba(0,0,0,.16), transparent 58%); }
+
+  .grid{ position:absolute; left:3mm; top:3mm; display:grid;
+    grid-template-columns:repeat(3,63.5mm); grid-template-rows:repeat(3,88.9mm); }
+
+  /* marcas de corte */
+  .cut{ position:absolute; background:rgba(26,26,26,.32); z-index:5; }
+  .cut.v{ width:.25mm; } .cut.h{ height:.25mm; }
+
+  /* ===================== CARTA ===================== */
+  .card{ position:relative; width:63.5mm; height:88.9mm; overflow:hidden; color:var(--tinta);
+    font-family:'Source Serif 4', Georgia, serif; display:flex; flex-direction:column; }
+
+  /* ---------- FRENTE ---------- */
+  .front-card{ padding:3.4mm 3.2mm 2.8mm; }
+  .front-card::before{ content:""; position:absolute; inset:2.1mm; border:1pt solid var(--verde);
+    box-shadow:0 0 0 .9pt var(--creme), 0 0 0 1.8pt var(--verde); pointer-events:none; z-index:0; opacity:.9; }
+  .front-card > *{ position:relative; z-index:1; }
+
+  /* cantos (naipe = pontos de débito) */
+  .corner{ position:absolute; z-index:3; width:8.5mm; text-align:center; line-height:.86; }
+  .corner .cn{ font-family:'Anton'; font-size:14pt; display:block; }
+  .corner .ci{ width:4.4mm; height:4.4mm; margin:.5mm auto 0; display:block; }
+  .corner .cd{ font-family:'Special Elite',monospace; font-size:3.6pt; letter-spacing:.04em; color:#7a7060;
+    display:block; margin-top:.2mm; }
+  .corner.tl{ top:3mm; left:2.7mm; }
+  .corner.br{ bottom:3mm; right:2.7mm; transform:rotate(180deg); }
+
+  /* banner da categoria */
+  .banner{ display:flex; justify-content:center; align-items:center; gap:1.4mm; padding:1.3mm 2mm;
+    margin:0 5mm; text-align:center; }
+  .banner .bn{ font-family:'Anton'; text-transform:uppercase; letter-spacing:.045em; font-size:8.4pt; line-height:.94; }
+  .banner.gold{ background:var(--dourado); color:var(--tinta); }
+  .banner.azul{ background:var(--azul); color:var(--creme); }
+  .banner.vermelho{ background:var(--vermelho); color:var(--creme); }
+  .banner.verde{ background:var(--verde); color:var(--creme); }
+  .banner.kraft{ background:var(--kraft); color:#3a2c18; }
+
+  .bsym{ font-family:'Special Elite',monospace; font-size:4.8pt; letter-spacing:.05em; text-transform:uppercase;
+    text-align:center; color:#7a7060; margin:.8mm 5mm 0; }
+
+  /* linha grau + bônus */
+  .graderow{ display:flex; align-items:stretch; gap:1.6mm; margin:1.6mm 1mm .4mm; }
+  .seal{ flex:1; border:1.1pt solid var(--tinta); padding:.7mm 1.4mm; display:flex; flex-direction:column;
+    justify-content:center; }
+  .seal .sg{ font-family:'Anton'; font-size:8.4pt; text-transform:uppercase; letter-spacing:.02em; line-height:.96; }
+  .seal .sp{ font-family:'Oswald'; font-weight:600; font-size:5pt; text-transform:uppercase; letter-spacing:.04em;
+    color:#5a5448; margin-top:.4mm; }
+  .seal.medio{ background:var(--dourado); border-color:var(--dourado-2); color:var(--tinta); }
+  .seal.medio .sp{ color:#6a5410; }
+  .seal.grande{ background:var(--vermelho); border-color:#7d1014; color:var(--creme); }
+  .seal.grande .sp{ color:rgba(244,236,216,.82); }
+  .seal.critico{ background:var(--tinta); border-color:var(--dourado); color:var(--dourado); }
+  .seal.critico .sp{ color:rgba(201,162,39,.8); }
+
+  .bonus{ width:14mm; flex:none; border:1.1pt solid var(--verde); background:rgba(27,67,50,.06);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+  .bonus .bv{ font-family:'Anton'; font-size:12pt; color:var(--verde); line-height:.86; }
+  .bonus .bl{ font-family:'Oswald'; font-weight:600; font-size:4.4pt; text-transform:uppercase; letter-spacing:.03em;
+    color:#4a4a40; line-height:1.05; margin-top:.4mm; }
+  .bonus.crit .bv{ font-size:8.6pt; }
+
+  /* emblema */
+  .emb{ position:relative; width:15mm; height:15mm; margin:1.3mm auto .6mm; flex:none; }
+  .emb .ring{ position:absolute; inset:0; border-radius:50%; border:1.2pt solid currentColor; }
+  .emb .ring.inner{ inset:1.5mm; border-width:.6pt; opacity:.7; }
+  .emb svg{ position:absolute; inset:3mm; width:9mm; height:9mm; }
+  .emb.gold{ color:var(--dourado-2); } .emb.azul{ color:var(--azul); }
+  .emb.vermelho{ color:var(--vermelho); } .emb.verde{ color:var(--verde); } .emb.kraft{ color:#7a5a30; }
+
+  /* usos */
+  .uses{ margin:0 .4mm; flex:1; min-height:0; }
+  .useshd{ font-family:'Oswald'; font-weight:700; font-size:5pt; text-transform:uppercase; letter-spacing:.12em;
+    color:#7a7060; text-align:center; border-bottom:.5pt solid var(--linha-2); padding-bottom:.5mm; margin-bottom:.9mm; }
+  .uses ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.7mm; }
+  .uses li{ font-family:'Source Serif 4'; font-size:7pt; line-height:1.16; padding-left:3mm; position:relative;
+    text-wrap:pretty; }
+  .uses li::before{ content:"▸"; position:absolute; left:.4mm; top:0; color:var(--dourado-2); font-size:6pt; }
+
+  /* lembrete */
+  .reminder{ font-family:'Special Elite',monospace; font-size:5pt; line-height:1.2; text-align:center;
+    color:var(--vermelho); border-top:.5pt dotted var(--linha); border-bottom:.5pt dotted var(--linha);
+    padding:.9mm 1mm; margin:.8mm 0; letter-spacing:.01em; }
+
+  /* livro de dívida — credor/devedor/prazo */
+  .ledger{ display:flex; flex-direction:column; gap:.9mm; margin:.2mm .2mm 0; }
+  .lrow{ display:flex; align-items:flex-end; gap:1.2mm; }
+  .lrow .lk{ font-family:'Oswald'; font-weight:600; font-size:5pt; text-transform:uppercase; letter-spacing:.04em;
+    color:#5a5448; white-space:nowrap; width:9mm; flex:none; }
+  .lrow .ll{ flex:1; border-bottom:.6pt dotted var(--linha); height:3mm; }
+  .lrow.split{ gap:1mm; }
+  .lrow.split .seg{ display:flex; align-items:flex-end; gap:1mm; flex:1; }
+  .lrow.split .seg .lk{ width:auto; }
+
+  .cfoot{ margin-top:.8mm; display:flex; flex-direction:column; gap:.5mm; }
+  .juros{ font-family:'Special Elite',monospace; font-size:4.4pt; line-height:1.22; color:#6a5a3a;
+    background:rgba(201,162,39,.12); border-left:1.4pt solid var(--dourado-2); padding:.6mm 1.4mm; text-wrap:pretty; }
+  .serie{ font-family:'Special Elite',monospace; font-size:4.2pt; letter-spacing:.06em; color:#8a8068;
+    display:flex; justify-content:space-between; }
+
+  /* ---------- VERSO ---------- */
+  .back-card{ color:var(--creme); }
+  .back-card::before{ content:""; position:absolute; inset:2.1mm; border:1pt solid var(--dourado);
+    box-shadow:0 0 0 .9pt var(--verde), 0 0 0 1.8pt rgba(201,162,39,.55); pointer-events:none; z-index:0; opacity:.85; }
+  .bk-corner{ position:absolute; width:2.4mm; height:2.4mm; border:1pt solid var(--dourado); transform:rotate(45deg);
+    z-index:2; opacity:.8; }
+  .bk-corner.tl{ top:4mm; left:4mm; } .bk-corner.tr{ top:4mm; right:4mm; }
+  .bk-corner.bl{ bottom:4mm; left:4mm; } .bk-corner.br2{ bottom:4mm; right:4mm; }
+
+  .bk-kick{ position:absolute; top:5.4mm; left:0; right:0; text-align:center; z-index:2;
+    font-family:'Anton'; font-size:6.2pt; text-transform:uppercase; letter-spacing:.22em; color:var(--dourado); }
+  .wheel{ position:absolute; inset:0; z-index:1; }
+  .node{ position:absolute; width:5.6mm; height:5.6mm; border-radius:50%; border:.7pt solid rgba(201,162,39,.7);
+    display:flex; align-items:center; justify-content:center; }
+  .node span{ font-family:'Anton'; font-size:5pt; color:var(--creme); line-height:1; }
+  .node.patron{ border-color:var(--dourado); background:rgba(201,162,39,.16); }
+  .node.patron span{ color:var(--dourado); }
+
+  .bk-center{ position:absolute; z-index:2; left:50%; top:42mm; transform:translate(-50%,-50%);
+    width:30mm; height:30mm; border-radius:50%; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; text-align:center; }
+  .bk-center::before{ content:""; position:absolute; inset:0; border-radius:50%; border:1pt solid rgba(201,162,39,.5); }
+  .bk-center::after{ content:""; position:absolute; inset:1.4mm; border-radius:50%; border:.5pt solid rgba(201,162,39,.3); }
+  .bk-word{ position:relative; z-index:1; font-family:'Playfair Display'; font-style:italic; color:var(--dourado);
+    line-height:.96; }
+  .bk-word .w1{ display:block; font-weight:700; font-size:10pt; }
+  .bk-word .w2{ display:block; font-weight:500; font-size:6pt; margin:.3mm 0; }
+  .bk-word .w3{ display:block; font-weight:700; font-size:10pt; }
+  .bk-diam{ position:relative; z-index:1; width:1.8mm; height:1.8mm; border:.8pt solid var(--dourado);
+    transform:rotate(45deg); margin-top:1mm; }
+
+  .bk-phrase{ position:absolute; left:6mm; right:6mm; bottom:9.5mm; z-index:2; text-align:center;
+    font-family:'Playfair Display'; font-style:italic; font-weight:600; font-size:7pt; color:var(--creme);
+    line-height:1.22; text-wrap:balance; }
+  .bk-phrase::before, .bk-phrase::after{ content:""; display:block; height:0; border-top:.7pt solid rgba(201,162,39,.45);
+    width:60%; margin:1.4mm auto; }
+  .bk-phrase::after{ margin-top:1.4mm; margin-bottom:0; }
+  .bk-serie{ position:absolute; bottom:5mm; left:0; right:0; text-align:center; z-index:2;
+    font-family:'Special Elite',monospace; font-size:4pt; letter-spacing:.08em; color:rgba(244,236,216,.5); }
+
+  @media print{
+    body{ background:#fff; }
+    .controls, .plabel{ display:none !important; }
+    .stage{ padding:0; gap:0; }
+    .pscale{ transform:none !important; width:auto !important; height:auto !important; }
+    .sheet{ box-shadow:none; page-break-after:always; }
+    .sheet:last-child{ page-break-after:avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="controls noprint">
+  <b>Baralho de Favores</b>
+  <button onclick="window.print()">Imprimir</button>
+  <button class="alt" id="toggleCuts">Marcas de corte</button>
+  <span class="hint">40 cartas poker · 9 por A4 · duplex borda longa · frente/verso espelhados</span>
+</div>
+
+<div class="stage" id="stage"></div>
+
+<script>
+/* ====================== DADOS ====================== */
+const CAT = [
+  { name:'Políticos', banner:'gold', emb:'gold', emblem:'cartola',
+    sym:'O Barão · cartola · banca dourada', ab:'PL',
+    grades:{ P:['liberar alvará','informação de bastidor','marcar audiência'],
+             M:['atrasar fiscalização','ignorar denúncia','emprego fantasma'],
+             G:['influenciar licitação','arquivar CPI local'],
+             C:['proteção política total por um arco inteiro'] } },
+  { name:'Policiais', banner:'azul', emb:'azul', emblem:'estrela',
+    sym:'O Estado · apito · estrela vazada', ab:'PC',
+    grades:{ P:['aviso de blitz','multa sumir','“não vi nada”'],
+             M:['avisar operação','perder evidência pequena','escolta'],
+             G:['soltar preso','fabricar álibi'],
+             C:['a investigação inteira morre na mesa do delegado'] } },
+  { name:'Facção · Milícia', banner:'vermelho', emb:'vermelho', emblem:'escudo',
+    sym:'A Força · escudo partido', ab:'FC',
+    grades:{ P:['passagem por território','recado entregue'],
+             M:['proteção temporária','armamento emprestado','informação de guerra'],
+             G:['rival “convencido” a sair','força armada por uma noite'],
+             C:['a facção entra na sua guerra'] } },
+  { name:'Submundo', banner:'verde', emb:'verde', emblem:'cobra',
+    sym:'A Cobra · becos e vielas', ab:'SB',
+    grades:{ P:['contato apresentado','esconder algo por uma semana'],
+             M:['documento falso','esconder alguém','serviço técnico'],
+             G:['lavagem emergencial','alguém some da cidade'],
+             C:['o impossível — sem perguntas'] } },
+  { name:'Empresariais', banner:'kraft', emb:'kraft', emblem:'nib',
+    sym:'A Caneta · fachada limpa', ab:'EM',
+    grades:{ P:['nota fiscal amiga','reunião com quem decide'],
+             M:['empregar laranja','facilitar crédito','fachada por um mês'],
+             G:['processar/quebrar concorrente','abrir empresa limpa'],
+             C:['seu nome sai do papel — blindagem societária completa'] } },
+];
+
+const GRADE = {
+  P:{ name:'Pequeno', pts:1, bonus:'+1', bl:'dado',  seal:'pequeno' },
+  M:{ name:'Médio',   pts:3, bonus:'+2', bl:'dados', seal:'medio'   },
+  G:{ name:'Grande',  pts:6, bonus:'+3', bl:'dados', seal:'grande'  },
+  C:{ name:'Crítico', pts:10,bonus:'AUTO', bl:'Moderado · ou +4', seal:'critico' },
+};
+const ORDER = ['P','P','P','M','M','M','G','C'];
+
+/* ====================== EMBLEMAS (xilogravura abstrata) ====================== */
+const SW = 'fill:none;stroke:currentColor;stroke-width:3.4;stroke-linejoin:round;stroke-linecap:round';
+function emblem(kind){
+  switch(kind){
+    case 'cartola': return `<svg viewBox="0 0 64 64" style="overflow:visible"><g style="${SW}">
+      <path d="M21 45 L23 19 C23 15 26 14 30 14 L34 14 C38 14 41 15 41 19 L43 45"/>
+      <path d="M13 45 C13 49 20 51 32 51 C44 51 51 49 51 45"/>
+      <path d="M11 45 L53 45"/>
+      <path d="M23 37 L41 37" style="stroke-width:2.6"/>
+      <path d="M22 57 C26 54 29 54 32 56 C35 54 38 54 42 57" style="stroke-width:2.4"/>
+    </g></svg>`;
+    case 'estrela': return `<svg viewBox="0 0 64 64"><g style="${SW}">
+      <path d="M32 9 L38.5 25.5 L56 26.5 L42 38 L46.5 55 L32 45 L17.5 55 L22 38 L8 26.5 L25.5 25.5 Z"/>
+      <circle cx="32" cy="33" r="4.4" style="stroke-width:2.4"/>
+    </g></svg>`;
+    case 'escudo': return `<svg viewBox="0 0 64 64"><g style="${SW}">
+      <path d="M32 11 L51 17 L51 33 C51 45 43 52 32 57 C21 52 13 45 13 33 L13 17 Z"/>
+      <path d="M32 11 L32 57" style="stroke-width:2.8"/>
+      <path d="M13 28 L51 28" style="stroke-width:2.2"/>
+    </g></svg>`;
+    case 'cobra': return `<svg viewBox="0 0 64 64"><g style="${SW}">
+      <path d="M27 17 C15 24 45 30 31 38 C17 45 47 50 35 57"/>
+      <path d="M27 17 m-4 0 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0" style="stroke-width:2.6"/>
+      <path d="M23 12 L25.5 16 M31 12 L28.5 16" style="stroke-width:2.2"/>
+    </g></svg>`;
+    case 'nib': return `<svg viewBox="0 0 64 64"><g style="${SW}">
+      <path d="M24 18 L40 18 L40 30 L32 53 L24 30 Z"/>
+      <path d="M24 30 L40 30" style="stroke-width:2.4"/>
+      <path d="M32 31 L32 45" style="stroke-width:2.4"/>
+      <circle cx="32" cy="25" r="3" style="stroke-width:2.4"/>
+    </g></svg>`;
+  }
+}
+
+/* ====================== 25 BICHOS (para a roda do verso) ====================== */
+const BICHOS = [];
+for(let g=1; g<=25; g++) BICHOS.push(String(g).padStart(2,'0'));
+const PATRONS = new Set(['02','09','11','12','16','15','22']); // alguns destacados (patronos do tabuleiro)
+
+/* ====================== CONSTRÓI LISTA DE 40 CARTAS ====================== */
+const CARDS = [];
+CAT.forEach(cat=>{
+  ORDER.forEach(g=>{
+    CARDS.push({ cat, g });
+  });
+});
+
+/* ====================== RENDER FRENTE ====================== */
+function frontCard(c){
+  const cat=c.cat, gm=GRADE[c.g];
+  const ex = cat.grades[c.g];
+  const isGC = (c.g==='G'||c.g==='C');
+  const cornerIc = `<svg viewBox="0 0 64 64" class="ci" style="color:var(--${cat.emb==='gold'?'dourado-2':cat.emb==='kraft'?'kraft':cat.emb})">${emblem(cat.emblem)}</svg>`;
+  const cornerHTML = (pos)=>`<div class="corner ${pos}">
+      <span class="cn" style="color:var(--${sealColorVar(gm.seal)})">${gm.pts}</span>
+      <span class="ci" style="display:block;width:4.4mm;height:4.4mm;margin:.4mm auto 0;color:var(--${embVar(cat.emb)})"><svg viewBox="0 0 64 64" style="width:100%;height:100%">${emblem(cat.emblem)}</svg></span>
+      <span class="cd">DÉBITO</span>
+    </div>`;
+  const juros = isGC ? `<div class="juros"><b style="color:var(--vermelho)">Juros:</b> +1 ponto de débito por mês sem pagar. Ao dobro dos pontos, o credor cobra <b>do jeito dele</b>.</div>` : '';
+  return `<div class="card front-card">
+    ${cornerHTML('tl')}
+    ${cornerHTML('br')}
+    <div class="banner ${cat.banner}"><span class="bn">${cat.name}</span></div>
+    <div class="bsym">${cat.sym}</div>
+    <div class="graderow">
+      <div class="seal ${gm.seal}">
+        <span class="sg">${gm.name}</span>
+        <span class="sp">${gm.pts} ${gm.pts===1?'ponto':'pontos'} de débito</span>
+      </div>
+      <div class="bonus ${c.g==='C'?'crit':''}">
+        <span class="bv">${gm.bonus}</span>
+        <span class="bl">${gm.bl}</span>
+      </div>
+    </div>
+    <div class="emb ${cat.emb}"><div class="ring"></div><div class="ring inner"></div>${emblem(cat.emblem)}</div>
+    <div class="uses">
+      <div class="useshd">Usos do favor</div>
+      <ul>${ex.map(e=>`<li>${e}</li>`).join('')}</ul>
+    </div>
+    <div class="reminder">Gastar o favor num teste<br><b>NÃO</b> quita a dívida.</div>
+    <div class="ledger">
+      <div class="lrow"><span class="lk">Credor</span><span class="ll"></span></div>
+      <div class="lrow"><span class="lk">Devedor</span><span class="ll"></span></div>
+      <div class="lrow"><span class="lk">Prazo</span><span class="ll"></span></div>
+    </div>
+    <div class="cfoot">
+      ${juros}
+      <div class="serie"><span>Nº 041892 · SÉRIE VB</span><span>${cat.ab}·${c.g}</span></div>
+    </div>
+  </div>`;
+}
+function sealColorVar(s){ return s==='medio'?'dourado-2':s==='grande'?'vermelho':s==='critico'?'tinta':'verde'; }
+function embVar(e){ return e==='gold'?'dourado-2':e==='kraft'?'kraft':e; }
+
+/* ====================== RENDER VERSO ====================== */
+function backCard(){
+  const cx=31.75, cy=42, r=22.2;
+  let nodes='';
+  BICHOS.forEach((b,i)=>{
+    const a=(-90 + i*(360/25)) * Math.PI/180;
+    const x = cx + r*Math.cos(a);
+    const y = cy + r*Math.sin(a);
+    const pat = PATRONS.has(b)?'patron':'';
+    nodes += `<div class="node ${pat}" style="left:${(x-2.8).toFixed(2)}mm;top:${(y-2.8).toFixed(2)}mm"><span>${b}</span></div>`;
+  });
+  return `<div class="card back-card">
+    <div class="bk-corner tl"></div><div class="bk-corner tr"></div>
+    <div class="bk-corner bl"></div><div class="bk-corner br2"></div>
+    <div class="bk-kick">Favores · desde 1892</div>
+    <div class="wheel">${nodes}</div>
+    <div class="bk-center">
+      <div class="bk-word"><span class="w1">Barões</span><span class="w2">do</span><span class="w3">Asfalto</span></div>
+      <div class="bk-diam"></div>
+    </div>
+    <div class="bk-phrase">Favor não se esquece.<br>Favor se cobra.</div>
+    <div class="bk-serie">O BARALHO DA BANCA · 40 CARTAS · SÉRIE VB</div>
+  </div>`;
+}
+
+/* ====================== IMPOSIÇÃO ====================== */
+function cutMarks(){
+  // posições de corte relativas à folha (mm)
+  const ox=9.75, oy=15.15;       // canto sup-esq do bloco de corte
+  const xs=[0,63.5,127,190.5].map(v=>ox+v);
+  const ys=[0,88.9,177.8,266.7].map(v=>oy+v);
+  let m='';
+  xs.forEach(x=>{
+    m+=`<div class="cut v" style="left:${(x-0.125).toFixed(3)}mm;top:${(oy-3).toFixed(2)}mm;height:3mm"></div>`;
+    m+=`<div class="cut v" style="left:${(x-0.125).toFixed(3)}mm;top:${(oy+266.7).toFixed(2)}mm;height:3mm"></div>`;
+  });
+  ys.forEach(y=>{
+    m+=`<div class="cut h" style="top:${(y-0.125).toFixed(3)}mm;left:${(ox-3).toFixed(2)}mm;width:3mm"></div>`;
+    m+=`<div class="cut h" style="top:${(y-0.125).toFixed(3)}mm;left:${(ox+190.5).toFixed(2)}mm;width:3mm"></div>`;
+  });
+  return m;
+}
+
+function buildSheets(){
+  const stage=document.getElementById('stage');
+  const chunks=[];
+  for(let i=0;i<CARDS.length;i+=9) chunks.push(CARDS.slice(i,i+9));
+
+  chunks.forEach((chunk,si)=>{
+    // ---- FRENTE ----
+    const fLabel=document.createElement('div'); fLabel.className='plabel';
+    fLabel.textContent=`Folha ${si+1} · FRENTES (cartas ${si*9+1}–${si*9+chunk.length})`;
+    const fWrap=document.createElement('div'); fWrap.className='pscale';
+    const fSheet=document.createElement('div'); fSheet.className='sheet';
+    let fCells='';
+    chunk.forEach((c,idx)=>{
+      const r=Math.floor(idx/3), col=idx%3;
+      fCells+=`<div style="grid-column:${col+1};grid-row:${r+1}">${frontCard(c)}</div>`;
+    });
+    fSheet.innerHTML=`<div class="field front"></div><div class="grid">${fCells}</div>${cutMarks()}`;
+    fWrap.appendChild(fSheet); stage.appendChild(fLabel); stage.appendChild(fWrap);
+
+    // ---- VERSO (espelhado: coluna c -> 2-c) ----
+    const bLabel=document.createElement('div'); bLabel.className='plabel';
+    bLabel.textContent=`Folha ${si+1} · VERSOS (espelhado p/ duplex borda longa)`;
+    const bWrap=document.createElement('div'); bWrap.className='pscale';
+    const bSheet=document.createElement('div'); bSheet.className='sheet';
+    let bCells='';
+    chunk.forEach((c,idx)=>{
+      const r=Math.floor(idx/3), col=idx%3, mcol=2-col;
+      bCells+=`<div style="grid-column:${mcol+1};grid-row:${r+1}">${backCard()}</div>`;
+    });
+    bSheet.innerHTML=`<div class="field back"></div><div class="grid">${bCells}</div>${cutMarks()}`;
+    bWrap.appendChild(bSheet); stage.appendChild(bLabel); stage.appendChild(bWrap);
+  });
+}
+buildSheets();
+
+/* ====================== ESCALA TELA ====================== */
+function fit(){
+  const avail=window.innerWidth-36;
+  const a4w=210*96/25.4, a4h=297*96/25.4;
+  const s=Math.min(1, avail/a4w);
+  document.querySelectorAll('.pscale').forEach(w=>{
+    w.style.transform=`scale(${s})`;
+    w.style.width=(a4w*s)+'px'; w.style.height=(a4h*s)+'px';
+  });
+}
+window.addEventListener('resize', fit); fit();
+
+/* toggle marcas de corte */
+let cutsOn=true;
+document.getElementById('toggleCuts').addEventListener('click',()=>{
+  cutsOn=!cutsOn;
+  document.querySelectorAll('.cut').forEach(c=>c.style.display=cutsOn?'':'none');
+});
+</script>
+<script>
+(async () => {
+  // Prepend so page-supplied @page / break rules (deck-stage's margin:0,
+  // author CSS) keep source-order precedence over the baseline.
+  const baseCss = document.createElement('style');
+  baseCss.textContent = "@media print {\n  @page { margin: 0.5cm; }\n  html, body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }\n  section, article, figure, table { break-inside: avoid; }\n  *, *::before, *::after {\n    animation-delay: -99s !important; animation-duration: .001s !important;\n    animation-iteration-count: 1 !important; animation-fill-mode: both !important;\n    animation-play-state: running !important; transition-duration: 0s !important;\n  }\n}";
+  document.head.prepend(baseCss);
+  if (document.readyState === 'loading') {
+    await new Promise((r) => document.addEventListener('DOMContentLoaded', r, { once: true }));
+  }
+  let ds = document.querySelector('deck-stage');
+  // whenDefined never resolves when nothing registers the element, so only
+  // await it when a <deck-stage> tag exists (and race a timeout regardless).
+  if (ds && !customElements.get('deck-stage')) {
+    try {
+      await Promise.race([
+        customElements.whenDefined('deck-stage'),
+        new Promise((r) => setTimeout(r, 3000)),
+      ]);
+    } catch (e) {}
+    ds = document.querySelector('deck-stage');
+  }
+  // dc-runtime assigns window.DCLogic at init and mounts into #dc-root on
+  // DOMContentLoaded; settle on that subtree so React has rendered before
+  // print(). Non-DC pages fall through to weighing body.
+  const isDc = !ds && 'DCLogic' in window;
+  const settleRoot = ds || (isDc ? document.getElementById('dc-root') : null) || document.body;
+  if (settleRoot) {
+    // Weigh only content children — skip script/style/template so inline
+    // Babel/CSS doesn't register as stable "content" before the framework
+    // has mounted anything.
+    const MEDIA = 'img,svg,canvas,video,picture,iframe,embed,object';
+    const weigh = () => {
+      let text = 0, media = 0;
+      for (const c of settleRoot.children) {
+        const t = c.tagName;
+        if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+        text += (c.textContent || '').trim().length;
+        media += c.querySelectorAll(MEDIA).length + (c.matches(MEDIA) ? 1 : 0);
+      }
+      return text + media * 100;
+    };
+    // "Non-zero and stable" alone is not sufficient to mean rendered: generic
+    // body can carry a static shell while async main content is pending, and
+    // #dc-root can carry the root DC's static text while child refs are still
+    // .sc-placeholder boxes. Gate generic on readyState 'complete', and never
+    // accept stability while a dc-runtime placeholder is present.
+    const isGeneric = settleRoot === document.body;
+    const deadline = Date.now() + 15000;
+    let last = -1, stable = 0;
+    while (Date.now() < deadline) {
+      const n = weigh();
+      const ready =
+        (!isGeneric || document.readyState === 'complete') &&
+        !settleRoot.querySelector('.sc-placeholder');
+      if (n > 0 && n === last && ready) { if (++stable >= 2) break; } else { stable = 0; }
+      last = n;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+  try { await document.fonts.ready; } catch (e) {}
+  // Jump every animation to its end state so print() never captures a slide
+  // mid-entrance. Ordering matters: the 0s-transition style must be live
+  // BEFORE data-deck-active is set so attribute-keyed transitions don't
+  // start a (now-0s) run from the pre-active base.
+  const st = document.createElement('style');
+  st.textContent = '*,*::before,*::after{animation-delay:-99s !important;animation-duration:.001s !important;animation-iteration-count:1 !important;animation-fill-mode:both !important;animation-play-state:running !important;transition-duration:0s !important}';
+  document.head.appendChild(st);
+  for (const d of document.querySelectorAll('deck-stage')) {
+    for (const c of d.children) {
+      const t = c.tagName;
+      if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+      c.setAttribute('data-deck-active', '');
+    }
+  }
+  try {
+    const sweep = () => {
+      for (const a of document.getAnimations()) {
+        try { a.finish(); } catch (e) {
+          try { a.currentTime = (a.effect && a.effect.getComputedTiming().duration) || 0; a.pause(); } catch (e2) {}
+        }
+      }
+    };
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+  } catch (e) {}
+  setTimeout(() => { try { window.print(); } catch (e) {} }, 200);
+})();
+</script>
+</body>
+</html>

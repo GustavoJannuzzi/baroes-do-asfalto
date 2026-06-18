@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Marcadores e Tokens — Barões do Asfalto</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  body{ background:#2c2c2a; }
+  .controls{ position:fixed; top:0; left:0; right:0; z-index:80; display:flex; align-items:center; gap:14px;
+    padding:10px 16px; background:rgba(16,16,14,.94); color:var(--creme); font-family:'Oswald',sans-serif;
+    font-size:12px; letter-spacing:.04em; box-shadow:0 2px 14px rgba(0,0,0,.55); }
+  .controls b{ font-family:'Anton'; letter-spacing:.06em; color:var(--dourado); text-transform:uppercase; }
+  .controls .hint{ margin-left:auto; opacity:.66; font-size:10.5px; font-family:'Special Elite',monospace; }
+
+  .stage{ padding:60px 18px 46px; display:flex; flex-direction:column; align-items:center; gap:26px; }
+
+  .pagehead{ width:210mm; max-width:94vw; }
+  .pagehead .kk{ font-family:'Anton'; color:var(--dourado); text-transform:uppercase; letter-spacing:.1em; font-size:13px; }
+
+  /* folha A4 simples (cut-sheet) */
+  .a4{ position:relative; width:210mm; height:297mm; background:var(--creme); overflow:hidden;
+    padding:12mm; display:flex; flex-direction:column; box-shadow:0 8px 30px rgba(0,0,0,.45);
+    font-family:'Source Serif 4', Georgia, serif; color:var(--tinta); }
+  .a4 h2{ font-family:'Anton'; text-transform:uppercase; letter-spacing:.05em; font-size:13pt; color:var(--verde); margin:0 0 1mm; }
+  .a4 .sub{ font-family:'Special Elite',monospace; font-size:7pt; color:#6a6256; letter-spacing:.04em; margin-bottom:4mm; }
+  .a4 .grp{ font-family:'Oswald'; font-weight:600; font-size:8pt; text-transform:uppercase; letter-spacing:.05em; color:var(--vermelho); margin:4mm 0 2mm; }
+
+  /* ===== CÉDULAS ===== */
+  .notes{ display:flex; flex-wrap:wrap; gap:4mm; }
+  .note{ width:88mm; height:42mm; position:relative; border:1pt solid var(--verde); background:var(--creme);
+    background-image:repeating-linear-gradient(90deg, rgba(27,67,50,.05) 0 1px, transparent 1px 5px);
+    display:flex; align-items:center; gap:3mm; padding:3mm 4mm; overflow:hidden; }
+  .note .bigv{ font-family:'Anton'; font-size:17pt; color:var(--verde); line-height:1; }
+  .note .corner{ position:absolute; font-family:'Anton'; font-size:7pt; color:var(--verde); opacity:.8; }
+  .note .corner.tl{ top:2mm; left:3mm; } .note .corner.tr{ top:2mm; right:3mm; }
+  .note .corner.bl{ bottom:2mm; left:3mm; } .note .corner.br{ bottom:2mm; right:3mm; }
+  .note .chip{ width:18mm; height:18mm; position:relative; flex:none; display:flex; align-items:center; justify-content:center; }
+  .note .chip .r{ position:absolute; inset:0; border:1.2pt solid var(--verde); border-radius:50%; }
+  .note .chip .r.i{ inset:2.2mm; border:.7pt solid var(--dourado-2); }
+  .note .chip .d{ position:absolute; width:42%; height:42%; transform:rotate(45deg); border:1pt solid var(--dourado-2); opacity:.6; }
+  .note .chip .g{ font-family:'Anton'; font-size:9pt; color:var(--verde); z-index:2; }
+  .note .mid{ flex:1; }
+  .note .bank{ font-family:'Special Elite',monospace; font-size:5.6pt; letter-spacing:.06em; color:#5e574a; }
+  .note .bicho-nm{ font-family:'Oswald'; font-weight:600; font-size:6.4pt; text-transform:uppercase; color:var(--dourado-2); letter-spacing:.04em; }
+  .note .sig{ font-family:'Playfair Display'; font-style:italic; font-size:6.4pt; color:#6a6256; border-top:.5pt solid var(--linha-2); margin-top:1mm; padding-top:.6mm; }
+  .note .selo{ position:absolute; right:3mm; bottom:3mm; font-family:'Special Elite',monospace; font-size:5.6pt;
+    border:1.2pt solid var(--verde); color:var(--verde); padding:.4mm 1.4mm; transform:rotate(-5deg); border-radius:1pt; opacity:.85; }
+  /* sujo */
+  .note.dirty{ border-color:var(--vermelho); background:#efe3cf;
+    background-image:repeating-linear-gradient(90deg, rgba(164,22,26,.05) 0 1px, transparent 1px 5px); }
+  .note.dirty .bigv, .note.dirty .chip .g, .note.dirty .corner{ color:var(--vermelho); }
+  .note.dirty .chip .r{ border-color:var(--vermelho); }
+  .note.dirty .selo{ border-color:var(--vermelho); color:var(--vermelho); }
+
+  /* ===== RÉGUAS ===== */
+  .ruler{ width:100%; border:1pt solid var(--linha-2); margin-bottom:4mm; }
+  .ruler .rh{ display:flex; align-items:center; gap:2mm; padding:1.4mm 3mm; color:#fff; }
+  .ruler .rh .ic{ width:6mm; height:6mm; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:'Anton'; font-size:7pt; background:rgba(255,255,255,.18); }
+  .ruler .rh .nm{ font-family:'Anton'; text-transform:uppercase; letter-spacing:.04em; font-size:9pt; }
+  .ruler .rh .nm small{ font-family:'Source Serif 4'; font-style:italic; font-weight:400; font-size:6pt; opacity:.85; margin-left:1.6mm; text-transform:none; letter-spacing:0; }
+  .ruler.heat .rh{ background:var(--vermelho); } .ruler.pres .rh{ background:#1a1a1a; }
+  .ruler.expo .rh{ background:var(--azul); } .ruler.cap .rh{ background:var(--dourado); color:var(--tinta); }
+  .ruler.cap .rh .ic{ background:rgba(0,0,0,.14); }
+  .track{ display:flex; }
+  .track .cell{ flex:1; border-right:.5pt solid var(--linha-2); padding:1mm .5mm 1.2mm; text-align:center; min-height:13mm; position:relative; }
+  .track .cell:last-child{ border-right:0; }
+  .track .cell .nq{ font-family:'Anton'; font-size:11pt; color:var(--tinta); line-height:1; }
+  .track .cell .mk{ font-family:'Oswald'; font-weight:600; font-size:5pt; line-height:1.1; color:var(--vermelho); margin-top:1mm; text-transform:uppercase; letter-spacing:.01em; }
+  .track .cell.zero{ background:rgba(27,67,50,.05); }
+  .ruler .clip{ font-family:'Special Elite',monospace; font-size:5.6pt; color:#6a6256; padding:1mm 3mm; border-top:.5pt dotted var(--linha-2); }
+
+  /* ===== TOKENS ===== */
+  .tokens{ display:flex; flex-wrap:wrap; gap:3mm; }
+  .tok{ width:25mm; height:25mm; border-radius:50%; position:relative; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:.4mm; background:var(--creme); }
+  .tok .b{ position:absolute; inset:0; border-radius:50%; border:1.6pt solid var(--verde); }
+  .tok.disp .b{ border-color:var(--vermelho); border-style:dashed; }
+  .tok .ic{ font-family:'Anton'; font-size:8.5pt; color:var(--verde); line-height:1; z-index:2; }
+  .tok .lb{ font-family:'Oswald'; font-weight:600; font-size:4.6pt; text-transform:uppercase; letter-spacing:.02em; color:#5e574a; z-index:2; }
+  .tok.gm{ background:#15281e; } .tok.gm .b{ border-color:var(--dourado); } .tok.gm .ic{ color:var(--dourado); } .tok.gm .lb{ color:var(--creme); }
+  .tok.mes{ background:var(--dourado); } .tok.mes .b{ border-color:var(--verde); } .tok.mes .ic{ color:var(--verde); }
+  .legenda{ font-family:'Source Serif 4'; font-size:7.6pt; color:#3a3a34; line-height:1.4; margin-top:3mm; }
+  .legenda b{ color:var(--verde); }
+
+  @media print{
+    body{ background:#fff; }
+    .controls, .pagehead{ display:none !important; }
+    .stage{ padding:0; gap:0; }
+    .a4{ box-shadow:none; page-break-after:always; }
+    .a4:last-child{ page-break-after:avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="controls noprint">
+  <b>Marcadores e Tokens</b>
+  <span class="hint">Dinheiro · réguas de métrica · tokens de território — imprima quantas cópias precisar, corte e use clipes</span>
+</div>
+<div class="stage" id="stage"></div>
+
+<script>
+  const NOTES = [
+    ["1.000","10","Coelho"],["5.000","13","Galo"],["10.000","11","Cavalo"],
+    ["50.000","16","Leão"],["100.000","12","Elefante"],["500.000","02","Águia"]
+  ];
+  function note(v,g,bn,dirty){
+    return `<div class="note${dirty?' dirty':''}">
+      <span class="corner tl">R$ ${v}</span><span class="corner tr">R$ ${v}</span>
+      <span class="corner bl">R$ ${v}</span>
+      <div class="chip"><span class="r"></span><span class="r i"></span><span class="d"></span><span class="g">${g}</span></div>
+      <div class="mid">
+        <div class="bank">BANCO DO BICHO — VALE NA PALAVRA</div>
+        <div class="bigv">R$ ${v}</div>
+        <div class="bicho-nm">Grupo ${g} · ${bn}</div>
+        <div class="sig">assinado, O Banqueiro &nbsp;·&nbsp; Nº ${Math.floor(100000+Math.random()*899999)}</div>
+      </div>
+      <span class="selo">${dirty?'NÃO PERGUNTA':'DECLARADO'}</span>
+    </div>`;
+  }
+
+  const RULERS = [
+    {cls:"heat",ic:"H",nm:"Heat",sub:"atenção da polícia / mídia",mk:{3:"fichado −1",5:"marcado −2",7:"procurado −3",9:"inimigo público"}},
+    {cls:"pres",ic:"P",nm:"Pressão",sub:"estresse e trauma",mk:{3:"tenso",5:"estressado",7:"abalado",10:"COLAPSO 1d6"}},
+    {cls:"expo",ic:"E",nm:"Exposição",sub:"rastro no mundo legal",mk:{7:"sem banco",8:"Receita auto"}},
+    {cls:"cap",ic:"C",nm:"Capital de Rua",sub:"reputação no submundo",mk:{2:"+1 dado",4:"+2 dados",6:"+3 dados",8:"+4 dados",10:"+5 dados"}}
+  ];
+  function ruler(r){
+    let cells='';
+    for(let i=0;i<=10;i++){ cells+=`<div class="cell${i===0?' zero':''}"><div class="nq">${i}</div>${r.mk[i]?`<div class="mk">${r.mk[i]}</div>`:''}</div>`; }
+    return `<div class="ruler ${r.cls}">
+      <div class="rh"><span class="ic">${r.ic}</span><span class="nm">${r.nm}<small>${r.sub}</small></span></div>
+      <div class="track">${cells}</div>
+      <div class="clip">↑ marque a casa atual com um clipe de papel · escala 0–10</div>
+    </div>`;
+  }
+
+  function tok(ic,lb,cls){ return `<div class="tok ${cls||''}"><span class="b"></span><span class="ic">${ic}</span><span class="lb">${lb}</span></div>`; }
+
+  const stage = document.getElementById('stage');
+
+  // PÁGINA 1 — DINHEIRO LIMPO
+  stage.insertAdjacentHTML('beforeend', `<div class="pagehead"><span class="kk">Folha 1 · Dinheiro Limpo</span></div>
+  <div class="a4">
+    <h2>Banco do Bicho — Dinheiro Limpo</h2>
+    <div class="sub">Carimbo DECLARADO · recorte · imprima quantas folhas precisar (sugestão de quantidades no livro)</div>
+    <div class="grp">As 6 cédulas · verde Barão sobre creme</div>
+    <div class="notes">${NOTES.map(n=>note(n[0],n[1],n[2],false)).join("")}</div>
+  </div>`);
+
+  // PÁGINA 2 — DINHEIRO SUJO
+  stage.insertAdjacentHTML('beforeend', `<div class="pagehead"><span class="kk">Folha 2 · Dinheiro Sujo</span></div>
+  <div class="a4">
+    <h2>Banco do Bicho — Dinheiro Sujo</h2>
+    <div class="sub">Carimbo NÃO PERGUNTA · dica: imprima em papel kraft para diferenciar do limpo na mesa</div>
+    <div class="grp">As 6 cédulas · vermelho Lacre sobre creme</div>
+    <div class="notes">${NOTES.map(n=>note(n[0],n[1],n[2],true)).join("")}</div>
+  </div>`);
+
+  // PÁGINA 2 — RÉGUAS
+  stage.insertAdjacentHTML('beforeend', `<div class="pagehead"><span class="kk">Folha 2 · Réguas de Métrica</span></div>
+  <div class="a4">
+    <h2>Réguas de Métrica</h2>
+    <div class="sub">4 por jogador · recorte cada tira · marque a casa atual com um clipe de papel que desliza</div>
+    ${RULERS.map(ruler).join("")}
+    <div class="legenda">Cada personagem acompanha as 5 métricas (a <b>Lealdade</b> é medida por NPC, na ficha). Heat e Pressão sobem com o crime e a violência; Exposição é o rastro legal; Capital de Rua é o respeito ganho. <b>Pressão 10 = Colapso</b> (role 1d6).</div>
+  </div>`);
+
+  // PÁGINA 3 — TOKENS
+  let brasao = ''; for(let i=0;i<12;i++) brasao += tok('★','consolidado','');
+  let disputa = ''; for(let i=0;i<8;i++) disputa += tok('★','em disputa','disp');
+  const gm = [tok('✊','facção','gm'),tok('▣','milícia','gm'),tok('⌂','rival','gm'),tok('!','operação','gm'),tok('✕','guerra','gm'),tok('★','MÊS','mes')];
+  stage.insertAdjacentHTML('beforeend', `<div class="pagehead"><span class="kk">Folha 3 · Tokens de Território</span></div>
+  <div class="a4">
+    <h2>Tokens de Território <span style="font-family:'Special Elite';font-size:7pt;color:#6a6256;font-weight:400">Ø 25 mm</span></h2>
+    <div class="sub">Imprima 1 folha por bicho-brasão escolhido · troque o ★ pelo número do grupo do seu bicho</div>
+    <div class="grp">Seus pontos — borda verde = consolidado</div>
+    <div class="tokens">${brasao}</div>
+    <div class="grp">Seus pontos — borda vermelha tracejada = em disputa</div>
+    <div class="tokens">${disputa}</div>
+    <div class="grp">Tokens do mestre — poderes neutros no mapa</div>
+    <div class="tokens">${gm.join("")}</div>
+    <div class="legenda">✊ <b>facção</b> · ▣ <b>milícia</b> · ⌂ <b>bicheiro rival</b> · ! <b>operação policial</b> · ✕ <b>guerra na região</b> · ★ <b>marcador do mês</b> (trilha do tabuleiro). Use o token de bicho-brasão na região do mapa onde você tem ponto; a carta detalhada do ponto fica ao lado do tabuleiro.</div>
+  </div>`);
+</script>
+</body>
+</html>

@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Escudo do Mestre — Barões do Asfalto</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  body{ background:#201f1b; }
+
+  /* ===================== CONTROLES DE TELA ===================== */
+  .controls{ position:fixed; top:0; left:0; right:0; z-index:80; display:flex; align-items:center; gap:14px;
+    padding:10px 16px; background:rgba(16,16,14,.94); color:var(--creme); font-family:'Oswald',sans-serif;
+    font-size:12px; letter-spacing:.04em; box-shadow:0 2px 14px rgba(0,0,0,.55); }
+  .controls b{ font-family:'Anton'; letter-spacing:.06em; color:var(--dourado); text-transform:uppercase; }
+  .controls .seg{ display:flex; border:1px solid rgba(244,236,216,.32); border-radius:4px; overflow:hidden; }
+  .controls .seg button{ background:none; border:0; color:var(--creme); font-family:'Oswald'; font-size:11px;
+    text-transform:uppercase; letter-spacing:.05em; padding:5px 13px; cursor:pointer; }
+  .controls .seg button.on{ background:var(--dourado); color:var(--tinta); font-weight:600; }
+  .controls .hint{ margin-left:auto; opacity:.66; font-size:10.5px; font-family:'Special Elite',monospace; }
+
+  /* ===================== PALCO ===================== */
+  .stage{ padding:62px 18px 46px; display:flex; flex-direction:column; align-items:center; gap:26px; }
+  .group-label{ font-family:'Special Elite',monospace; color:var(--dourado); font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; opacity:.8; margin:14px 0 -8px; }
+  .pscaler{ transform-origin:top center; }
+
+  /* ===================== PAINEL (A4 paisagem + sangria 3mm) ===================== */
+  @page{ size:303mm 216mm; margin:0; }
+  .panel{
+    position:relative; width:303mm; height:216mm; overflow:hidden;
+    background:#15392a;
+    background-image:
+      radial-gradient(circle at 14% 10%, rgba(201,162,39,.07), transparent 52%),
+      radial-gradient(circle at 88% 90%, rgba(0,0,0,.34), transparent 55%),
+      repeating-linear-gradient(46deg, rgba(0,0,0,.045) 0 2px, transparent 2px 5px),
+      linear-gradient(160deg, #1a4231 0%, #143726 100%);
+    color:var(--creme);
+    box-shadow:0 12px 46px rgba(0,0,0,.6);
+    font-family:'Source Serif 4', Georgia, serif;
+  }
+  /* marca de corte/sangria — linha tracejada no traço (3mm) */
+  .trimframe{ position:absolute; inset:3mm; border:.4pt dashed rgba(244,236,216,.28); pointer-events:none; z-index:40; }
+  /* moldura dourada dupla estilo dossiê */
+  .goldframe{ position:absolute; inset:7mm; border:1.4pt solid var(--dourado);
+    box-shadow:0 0 0 1pt rgba(20,55,38,.9), 0 0 0 2.2pt rgba(201,162,39,.42); pointer-events:none; z-index:5; }
+  .cmark{ position:absolute; width:5mm; height:5mm; z-index:41; pointer-events:none; }
+  .cmark::before,.cmark::after{ content:""; position:absolute; background:rgba(244,236,216,.5); }
+  .cmark::before{ width:5mm; height:.4pt; top:0; } .cmark::after{ height:5mm; width:.4pt; left:0; }
+  .cmark.tr{ right:0; } .cmark.tr::before{ right:0; left:auto; } .cmark.tr::after{ right:0; left:auto; }
+  .cmark.bl{ bottom:0; } .cmark.bl::before{ bottom:0; top:auto; } .cmark.bl::after{ bottom:0; top:auto; }
+  .cmark.br{ right:0; bottom:0; } .cmark.br::before{ right:0;left:auto;bottom:0;top:auto; } .cmark.br::after{ right:0;left:auto;bottom:0;top:auto; }
+
+  .safe{ position:absolute; inset:13mm; z-index:10; display:flex; flex-direction:column; }
+
+  /* watermark do bicho no canto */
+  .wmbicho{ position:absolute; right:14mm; bottom:11mm; --s:46mm; z-index:1; opacity:.07; }
+  .wmbicho .ring,.wmbicho .ring.inner{ border-color:var(--creme); }
+  .wmbicho .diam{ border-color:var(--creme); }
+  .wmbicho .grp{ color:var(--creme); }
+
+  /* ---------- CABEÇALHO DOSSIÊ ---------- */
+  .dhead{ display:flex; justify-content:space-between; align-items:flex-start; gap:6mm; position:relative; }
+  .casebar{ flex:1; }
+  .tab{ display:inline-flex; align-items:baseline; gap:2mm; background:var(--kraft); color:#2a2114;
+    font-family:'Anton',sans-serif; text-transform:uppercase; letter-spacing:.08em; font-size:7.6pt;
+    padding:1mm 4mm 1.2mm; border-radius:1.4mm 1.4mm 0 0; box-shadow:0 -1pt 0 rgba(255,255,255,.25) inset; }
+  .tab .of{ font-family:'Special Elite',monospace; font-size:6pt; letter-spacing:.04em; color:#5a4a22; }
+  .ptitle{ font-family:'Anton',sans-serif; text-transform:uppercase; letter-spacing:.012em; line-height:.9;
+    font-size:30pt; color:var(--creme); margin:1.6mm 0 1mm; }
+  .ptitle .em{ color:var(--dourado); }
+  .typedline{ font-family:'Special Elite',monospace; font-size:6.4pt; letter-spacing:.03em; color:#cdc1a4; }
+  .typedline .red{ color:#e58688; }
+  .headstamp{ flex:none; text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:2mm; }
+  .stamp.cf{ font-size:8.4pt; border-width:2.4pt; transform:rotate(4deg); }
+  .stamp.cream{ border-color:var(--creme); color:var(--creme); box-shadow:inset 0 0 0 1pt rgba(244,236,216,.25); }
+  .pageno{ font-family:'Anton'; font-size:9pt; color:var(--dourado); letter-spacing:.08em; }
+
+  .ruler{ height:0; border:0; border-top:1.2pt solid rgba(201,162,39,.55); margin:2.4mm 0; }
+  .ruler.thin{ border-top:.5pt dotted rgba(244,236,216,.28); }
+
+  /* ---------- COLUNAS DE CONTEÚDO ---------- */
+  .cols{ flex:1; display:grid; gap:0 6mm; min-height:0; }
+  .col{ display:flex; flex-direction:column; min-height:0; }
+  .vrule{ position:relative; }
+  .vrule::before{ content:""; position:absolute; left:-3mm; top:1mm; bottom:1mm; width:.5pt; background:rgba(244,236,216,.18); }
+
+  /* cabeçalho de seção (ghost dourado) */
+  .dbar{ display:flex; justify-content:space-between; align-items:baseline; gap:3mm;
+    font-family:'Anton',sans-serif; text-transform:uppercase; letter-spacing:.05em; font-size:9.2pt;
+    color:var(--dourado); border-bottom:1.2pt solid var(--dourado); padding-bottom:.8mm; margin:0 0 1.6mm; }
+  .dbar .sub{ font-family:'Special Elite',monospace; font-size:5.8pt; letter-spacing:.03em; color:#b9ad8f; white-space:nowrap; }
+  .dbar.red{ color:#ef8e90; border-color:#c8484b; }
+  .dbar.solid{ background:var(--vermelho); color:var(--creme); border:0; padding:1mm 2.5mm; }
+  .dbar.solid .sub{ color:#f1d9c6; }
+  .sec{ margin-bottom:3mm; }
+  .sec:last-child{ margin-bottom:0; }
+
+  /* texto corrido / anotações */
+  .txt{ font-family:'Source Serif 4',serif; font-size:7.4pt; line-height:1.34; color:#ece2cb; margin:0 0 1.6mm; }
+  .txt .em{ color:var(--dourado); font-weight:600; }
+  .typed{ font-family:'Special Elite',monospace; font-size:6.2pt; line-height:1.35; color:#c7bb9d; letter-spacing:.01em; }
+
+  /* tabelas dossiê */
+  .dt{ width:100%; border-collapse:collapse; font-family:'Oswald',sans-serif; }
+  .dt th{ font-size:6.2pt; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--dourado);
+    text-align:left; padding:.7mm 1.6mm .9mm; border-bottom:1pt solid rgba(201,162,39,.5); white-space:nowrap; }
+  .dt td{ font-size:7pt; color:#ede3cc; padding:.85mm 1.6mm; border-bottom:.5pt solid rgba(244,236,216,.16);
+    line-height:1.16; vertical-align:top; }
+  .dt tr:last-child td{ border-bottom:0; }
+  .dt .n{ font-weight:700; color:#fff; white-space:nowrap; text-align:center; }
+  .dt .em{ color:var(--dourado); font-weight:700; }
+  .dt .rd{ color:#ef8e90; font-weight:700; }
+  .dt.zebra tr:nth-child(even) td{ background:rgba(244,236,216,.045); }
+  .dt.tight td{ padding:.6mm 1.4mm; font-size:6.4pt; }
+  .dt.tight th{ font-size:5.8pt; }
+
+  /* chip de valor (dificuldade / margem) */
+  .chip{ display:inline-flex; align-items:center; justify-content:center; min-width:5.4mm; height:5.4mm; padding:0 1mm;
+    border:1.2pt solid var(--dourado); color:var(--dourado); font-family:'Anton'; font-size:8pt; border-radius:1mm; }
+
+  /* caixa destacada (flashback / aviso) */
+  .box{ border:1.4pt solid var(--dourado); padding:1.8mm 2.4mm; background:rgba(201,162,39,.08); }
+  .box.red{ border-color:#c8484b; background:rgba(164,22,26,.16); }
+  .box .t{ font-family:'Anton'; font-size:8pt; text-transform:uppercase; letter-spacing:.04em; color:var(--dourado); margin-bottom:.8mm; }
+  .box.red .t{ color:#ef8e90; }
+  .box p{ margin:0; font-family:'Source Serif 4'; font-size:7pt; line-height:1.32; color:#ece2cb; }
+
+  /* passos numerados (fase econômica) */
+  .steps{ display:flex; flex-direction:column; gap:1.4mm; }
+  .step{ display:flex; align-items:flex-start; gap:2.4mm; }
+  .step .num{ flex:none; width:6mm; height:6mm; border-radius:50%; border:1.3pt solid var(--dourado);
+    color:var(--dourado); font-family:'Anton'; font-size:8pt; display:flex; align-items:center; justify-content:center; }
+  .step .tt{ font-family:'Oswald'; font-weight:500; font-size:7.2pt; line-height:1.18; padding-top:.6mm; color:#ede3cc; }
+  .step .tt b{ font-weight:700; color:var(--creme); text-transform:uppercase; letter-spacing:.02em; font-size:7.4pt; }
+
+  /* cartões de métrica (painel 2) */
+  .mgrid{ flex:1; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:4mm 6mm; min-height:0; }
+  .mcard{ display:flex; flex-direction:column; border-left:2pt solid rgba(201,162,39,.4); padding-left:3mm; min-height:0; }
+  .mcard .mh{ display:flex; align-items:center; gap:2.4mm; margin-bottom:1.2mm; }
+  .mdisc{ width:8mm; height:8mm; border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none;
+    font-family:'Anton'; font-size:10pt; color:#fff; }
+  .mdisc.h{ background:var(--vermelho); } .mdisc.p{ background:#111; border:1pt solid rgba(244,236,216,.4); }
+  .mdisc.l{ background:var(--dourado); color:#2a2114; } .mdisc.e{ background:var(--azul); }
+  .mcard .mn{ font-family:'Anton'; font-size:13pt; text-transform:uppercase; letter-spacing:.02em; line-height:.92; color:var(--creme); }
+  .mcard .mn small{ display:block; font-family:'Source Serif 4'; font-style:italic; font-weight:400;
+    font-size:6.4pt; letter-spacing:0; text-transform:none; color:#bdb195; margin-top:.4mm; }
+  .faixa{ font-family:'Oswald'; font-size:6.6pt; line-height:1.5; color:#ddd2b8; margin:.4mm 0 1mm; }
+  .faixa b{ color:var(--dourado); font-weight:700; }
+  .faixa .crit{ color:#ef8e90; font-weight:700; }
+  .updown{ display:flex; gap:4mm; }
+  .updown .up b{ color:#9fd9b0; } .updown .dn b{ color:#ef8e90; }
+
+  /* forças (exterior) + frieze */
+  .frieze{ display:flex; justify-content:space-between; align-items:flex-end; gap:3mm; }
+  .fbicho{ display:flex; flex-direction:column; align-items:center; gap:.8mm; flex:1; }
+  .fbicho .bicho{ --s:21mm; }
+  .fbicho .ring,.fbicho .ring.inner{ border-color:var(--creme); }
+  .fbicho .diam{ border-color:var(--dourado); }
+  .fbicho .grp{ color:var(--creme); }
+  .fbicho .fn{ font-family:'Anton'; font-size:7pt; text-transform:uppercase; letter-spacing:.03em; color:var(--creme); line-height:1; }
+  .fbicho .fd{ font-family:'Oswald'; font-size:5.4pt; letter-spacing:.06em; color:var(--dourado); }
+  .fbicho .fg{ position:absolute; top:-1mm; right:1mm; font-family:'Oswald'; font-weight:700; font-size:5.4pt; color:var(--dourado); }
+
+  .forces{ display:flex; justify-content:space-around; align-items:flex-start; gap:5mm; flex:1; }
+  .force{ display:flex; flex-direction:column; align-items:center; gap:2.4mm; text-align:center; width:46mm; }
+  .force .gwrap{ width:26mm; height:26mm; border:1.2pt solid rgba(244,236,216,.3); border-radius:2mm;
+    display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.14); }
+  .force .fl{ font-family:'Anton'; font-size:10pt; text-transform:uppercase; letter-spacing:.03em; color:var(--creme); line-height:.95; }
+  .force .fsub{ font-family:'Source Serif 4'; font-style:italic; font-size:6.6pt; color:#c4b896; line-height:1.2; }
+  /* glyphs abstratos das forças */
+  .gly{ display:flex; align-items:center; justify-content:center; }
+  .g-punho{ width:13mm; height:13mm; border-radius:50%; background:var(--vermelho);
+    box-shadow:inset 0 0 0 1.6mm rgba(0,0,0,.18); }
+  .g-escudo{ width:13mm; height:15mm; background:var(--kraft); border:1.4pt solid #2a2114;
+    border-radius:2mm 2mm 46% 46%; position:relative; }
+  .g-escudo::after{ content:""; position:absolute; left:50%; top:0; bottom:0; width:1.4pt; background:#2a2114; transform:translateX(-.7px); }
+  .g-cartola{ width:16mm; height:12mm; position:relative; }
+  .g-cartola::before{ content:""; position:absolute; left:3mm; right:3mm; top:0; height:7.6mm; background:var(--dourado); border:1.2pt solid #2a2114; border-radius:1mm 1mm 0 0; }
+  .g-cartola::after{ content:""; position:absolute; left:0; right:0; bottom:1.4mm; height:1.6mm; background:var(--dourado); border:1.2pt solid #2a2114; border-radius:1mm; }
+  .g-estrela{ color:var(--azul); font-size:15mm; line-height:1; }
+  .g-punhais{ color:var(--creme); font-size:13mm; line-height:1; font-weight:700; }
+
+  /* rodapé */
+  .dfoot{ display:flex; justify-content:space-between; align-items:flex-end; gap:4mm; margin-top:2.4mm; }
+  .serie{ font-family:'Special Elite',monospace; font-size:6pt; color:#9a8f74; letter-spacing:.05em; }
+  .dquote{ font-family:'Playfair Display',serif; font-style:italic; font-size:8.4pt; color:var(--dourado); text-align:right; max-width:130mm; }
+
+  /* exterior */
+  .ext .safe{ inset:15mm; align-items:center; }
+  .ext .kick{ font-family:'Anton'; color:#ef8e90; text-transform:uppercase; letter-spacing:.2em; font-size:9pt; text-align:center; }
+  .ext .word{ font-family:'Playfair Display',serif; font-style:italic; font-weight:700; color:var(--dourado);
+    line-height:.86; text-align:center; }
+  .ext .since{ font-family:'Special Elite',monospace; color:#cdc1a4; letter-spacing:.18em; font-size:8pt; text-transform:uppercase; }
+  .ext .statement{ font-family:'Anton'; color:var(--creme); text-transform:uppercase; letter-spacing:.01em;
+    line-height:.92; text-align:center; }
+  .ext .lede{ font-family:'Source Serif 4'; font-size:9pt; line-height:1.4; color:#dcd0b6; text-align:center; max-width:200mm; }
+  .ext .seal{ font-family:'Playfair Display'; font-style:italic; font-size:11pt; color:var(--dourado); text-align:center; }
+  .spacer{ flex:1; }
+
+  @media print{
+    body{ background:#fff; }
+    .controls,.group-label{ display:none !important; }
+    .stage{ padding:0; gap:0; }
+    .pscaler{ transform:none !important; height:auto !important; }
+    .panel{ box-shadow:none; page-break-after:always; }
+    .panel:last-child{ page-break-after:avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="controls noprint">
+  <b>Escudo do Mestre</b>
+  <div class="seg">
+    <button id="bInt" class="on" onclick="setFace('int')">Interior · Mestre</button>
+    <button id="bExt" onclick="setFace('ext')">Exterior · Jogadores</button>
+  </div>
+  <span class="hint">4 painéis A4 paisagem · duplex pela borda longa · sangria 3 mm</span>
+</div>
+
+<div class="stage" id="stage">
+
+<!-- ================================================================
+     INTERIOR — LADO DO MESTRE (4 painéis dossiê)
+     ================================================================ -->
+<div class="face-int">
+  <div class="group-label">▸ Interior — voltado para o Banqueiro</div>
+
+  <!-- ============ PAINEL 1 — A RESOLUÇÃO ============ -->
+  <div class="pscaler"><section class="panel" data-screen-label="Escudo · Painel 1 — Resolução">
+    <div class="trimframe"></div><span class="cmark tl"></span><span class="cmark tr"></span><span class="cmark bl"></span><span class="cmark br"></span>
+    <div class="goldframe"></div>
+    <div class="wmbicho bicho"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div><div class="grp">09</div></div>
+    <div class="safe">
+      <div class="dhead">
+        <div class="casebar">
+          <span class="tab">Painel 1 / 4 <span class="of">· resolução</span></span>
+          <div class="ptitle">A <span class="em">Resolução</span></div>
+          <div class="typedline">DOSSIÊ DO BANQUEIRO · CASO Nº 04-1892 · CLASSIFICAÇÃO <span class="red">RESERVADO</span> · pool de d6 — 5 ou 6 conta, 6 explode</div>
+        </div>
+        <div class="headstamp">
+          <span class="stamp cf">Confidencial</span>
+          <span class="stamp cream" style="font-size:5.8pt;transform:rotate(-3deg)">Só o Banqueiro lê</span>
+          <span class="pageno">I</span>
+        </div>
+      </div>
+      <hr class="ruler">
+
+      <div class="cols" style="grid-template-columns:1fr 1fr 1.04fr;">
+        <!-- COL 1 -->
+        <div class="col">
+          <div class="sec">
+            <div class="dbar">O Teste <span class="sub">pool → d6</span></div>
+            <p class="txt"><span class="em">Pool</span> = Atributo (1–5) + Perícia (0–5) + modificadores. Role tudo em d6. Cada <span class="em">5 ou 6</span> é um sucesso; todo <span class="em">6 explode</span> (role mais um dado). Compare os sucessos com a dificuldade.</p>
+          </div>
+          <div class="sec">
+            <div class="dbar">Dificuldade <span class="sub">sucessos exigidos</span></div>
+            <table class="dt zebra">
+              <tr><td>Rotina</td><td class="n"><span class="chip">1</span></td></tr>
+              <tr><td>Moderada</td><td class="n"><span class="chip">2</span></td></tr>
+              <tr><td>Difícil</td><td class="n"><span class="chip">3</span></td></tr>
+              <tr><td>Muito Difícil</td><td class="n"><span class="chip">4</span></td></tr>
+              <tr><td>Quase Impossível</td><td class="n"><span class="chip">5+</span></td></tr>
+            </table>
+            <p class="typed" style="margin-top:1.4mm;">Defina a dificuldade ANTES de rolar. Sem alvo, não tem teste — narre.</p>
+          </div>
+        </div>
+
+        <!-- COL 2 -->
+        <div class="col vrule">
+          <div class="sec">
+            <div class="dbar">Os Resultados <span class="sub">leia de cima a baixo</span></div>
+            <table class="dt">
+              <tr><th style="width:34%">Resultado</th><th>O que acontece</th></tr>
+              <tr><td class="rd">Falha crítica<br><span class="typed" style="font-size:5.4pt;">0 suc. + maioria de 1</span></td><td>Falha e complicação séria. <span class="em">+1 Heat.</span></td></tr>
+              <tr><td class="rd">Falha<br><span class="typed" style="font-size:5.4pt;">0 sucessos</span></td><td>Não rola; a situação piora um pouco.</td></tr>
+              <tr><td class="em">Sucesso parcial<br><span class="typed" style="font-size:5.4pt;">dificuldade −1</span></td><td>Consegue, <b>mas…</b> custa mais, demora, +1 Heat ou fica devendo um favor.</td></tr>
+              <tr><td class="em">Sucesso total<br><span class="typed" style="font-size:5.4pt;">≥ dificuldade</span></td><td>Consegue limpo, sem preço extra.</td></tr>
+              <tr><td class="em">Sucesso crítico<br><span class="typed" style="font-size:5.4pt;">dificuldade +2</span></td><td>Consegue + escolha 1: −1 Heat · info extra · +1 lealdade · metade do custo · metade do tempo.</td></tr>
+            </table>
+          </div>
+          <div class="sec">
+            <div class="dbar">Modificadores <span class="sub">somam/subtraem dados</span></div>
+            <table class="dt tight">
+              <tr><td>Condições ideais / preparação</td><td class="n em">+1 a +3</td></tr>
+              <tr><td>Equipamento bom / profissional</td><td class="n em">+1 a +3</td></tr>
+              <tr><td>Cada fonte confiável de info</td><td class="n em">+1</td></tr>
+              <tr><td>Gastar favor P / M / G</td><td class="n em">+1/+2/+3</td></tr>
+              <tr><td>Pressa, recursos limitados</td><td class="n rd">−1</td></tr>
+              <tr><td>Improviso, grande pressão</td><td class="n rd">−2</td></tr>
+              <tr><td>Desespero total</td><td class="n rd">−3</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- COL 3 -->
+        <div class="col vrule">
+          <div class="sec">
+            <div class="dbar">Testes Especiais</div>
+            <p class="txt"><span class="em">Contestado:</span> os dois rolam; mais sucessos vence. Empate fica no status quo ou favorece quem agiu primeiro.</p>
+            <p class="txt"><span class="em">Ajuda em grupo:</span> cada aliado com a perícia em 2+ dá <span class="em">+1 dado</span> ao líder, até <span class="em">+3</span>.</p>
+            <p class="txt"><span class="em">Teste prolongado:</span> acumule sucessos rodada a rodada até a meta (<span class="em">5–20</span>). Diga de quanto em quanto tempo se rola e o que cada falha custa.</p>
+            <p class="txt" style="margin-bottom:0;"><span class="em">Teste de desafio (frentes):</span> duas frentes correndo contra o relógio — a primeira a atingir a meta de sucessos resolve a seu favor.</p>
+          </div>
+          <div class="sec" style="margin-top:auto;">
+            <div class="box">
+              <div class="t">▸ Flashback</div>
+              <p>Se for <b>plausível</b>, deixe acontecer — custa <b>1 de Pressão</b>. Não negocie o impossível; negocie o preço.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dfoot">
+        <span class="serie">Nº 041892 · SÉRIE VB · ESCUDO · PAINEL I</span>
+        <span class="dquote">“Bandido inteligente não atira. Bandido burro morre cedo.”</span>
+      </div>
+    </div>
+  </section></div>
+
+  <!-- ============ PAINEL 2 — AS MÉTRICAS ============ -->
+  <div class="pscaler"><section class="panel" data-screen-label="Escudo · Painel 2 — As Métricas">
+    <div class="trimframe"></div><span class="cmark tl"></span><span class="cmark tr"></span><span class="cmark bl"></span><span class="cmark br"></span>
+    <div class="goldframe"></div>
+    <div class="wmbicho bicho"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div><div class="grp">16</div></div>
+    <div class="safe">
+      <div class="dhead">
+        <div class="casebar">
+          <span class="tab">Painel 2 / 4 <span class="of">· métricas</span></span>
+          <div class="ptitle">As <span class="em">Métricas</span></div>
+          <div class="typedline">O CUSTO LONGO DO CRIME · ESCALA 0–10 · a lápis, atualizadas ao fim de cada cena</div>
+        </div>
+        <div class="headstamp">
+          <span class="stamp cf">Confidencial</span>
+          <span class="pageno">II</span>
+        </div>
+      </div>
+      <hr class="ruler">
+
+      <div class="mgrid">
+        <!-- HEAT -->
+        <div class="mcard">
+          <div class="mh"><div class="mdisc h">H</div><div class="mn">Heat<small>atenção da polícia e da mídia</small></div></div>
+          <div class="faixa"><b>3+</b> −1 social c/ civis · <b>5+</b> investigação ativa, −2 · <b>7+</b> operações contra você, −3 · <b>9+</b> força-tarefa montada</div>
+          <table class="dt tight" style="margin-bottom:1mm;">
+            <tr><th>Como sobe — tabela única</th><th></th></tr>
+            <tr><td>Briga sem arma · tiroteio discreto</td><td class="n em">+1</td></tr>
+            <tr><td>Tiroteio em público</td><td class="n em">+2</td></tr>
+            <tr><td>Fuzil / rajada · civil morto</td><td class="n em">+3</td></tr>
+            <tr><td>Policial morto</td><td class="n em">+4</td></tr>
+            <tr><td>Figura pública</td><td class="n em">+5</td></tr>
+          </table>
+          <div class="typed"><span style="color:#9fd9b0;font-weight:700">Baixa:</span> suborno −1 · mês quieto −1 · bode expiatório −2 · limpeza profissional −3</div>
+        </div>
+
+        <!-- PRESSÃO -->
+        <div class="mcard">
+          <div class="mh"><div class="mdisc p">P</div><div class="mn">Pressão<small>estresse — em 10, quebra</small></div></div>
+          <div class="faixa"><b>3-4</b> −1 Sangue Frio · <b>5-6</b> −1 SF e Instinto · <b>7-8</b> −2 em testes mentais · <b>9-10</b> −3 em tudo</div>
+          <div class="box red" style="padding:1.4mm 2mm; margin-bottom:1mm;">
+            <div class="t" style="margin-bottom:.6mm;">10 = Colapso · role 1d6</div>
+            <p style="font-size:6.6pt;"><span class="dt" style="display:none"></span><b style="color:#ef8e90">1-2</b> foge, larga tudo · <b style="color:#ef8e90">3-4</b> se entrega · <b style="color:#ef8e90">5-6</b> surto, <b style="color:#ef8e90">+4 Heat</b></p>
+          </div>
+          <div class="typed"><span style="color:#9fd9b0;font-weight:700">Baixa:</span> descanso, tempo longe da rua, resolver a dívida que tira o sono, terapia de boteco</div>
+        </div>
+
+        <!-- LEALDADE -->
+        <div class="mcard">
+          <div class="mh"><div class="mdisc l">L</div><div class="mn">Lealdade<small>por NPC — quanto aguenta por você</small></div></div>
+          <table class="dt tight" style="margin-bottom:1mm;">
+            <tr><td class="n">0-2</td><td>Trai na primeira oportunidade</td></tr>
+            <tr><td class="n">3-4</td><td>Mercenário — fiel ao dinheiro</td></tr>
+            <tr><td class="n">5-6</td><td>Confiável no dia a dia</td></tr>
+            <tr><td class="n">7-8</td><td>Corre risco por você</td></tr>
+            <tr><td class="n em">9-10</td><td>Morre por você</td></tr>
+          </table>
+          <div class="updown">
+            <div class="up typed"><b>Sobe:</b> pagar em dia +1 · salvar a vida +2</div>
+          </div>
+          <div class="dn typed"><b style="color:#ef8e90">Desce:</b> atrasar −1 · abandonar na hora −3 · trair a família −4</div>
+        </div>
+
+        <!-- EXPOSIÇÃO -->
+        <div class="mcard">
+          <div class="mh"><div class="mdisc e">E</div><div class="mn">Exposição<small>rastro legal: contas, papéis, câmeras</small></div></div>
+          <div class="faixa">Alta = fácil de investigar · <b>7+</b> não usa mais banco · <b>8+</b> a Receita entra automático</div>
+          <div class="box" style="padding:1.6mm 2.2mm;">
+            <div class="t" style="margin-bottom:.6mm;">Dificuldade da investigação</div>
+            <p style="font-size:8pt;text-align:center;font-family:'Oswald'"><b style="color:var(--dourado);font-size:11pt">5 − (Exposição ÷ 2)</b></p>
+            <p class="typed" style="margin-top:.6mm;text-align:center;">quanto mais exposto, menos sucessos a polícia precisa para te enquadrar</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="dfoot">
+        <span class="serie">Nº 041892 · SÉRIE VB · ESCUDO · PAINEL II</span>
+        <span class="dquote">“O tiro é hoje. A conta chega no fim do mês.”</span>
+      </div>
+    </div>
+  </section></div>
+
+  <!-- ============ PAINEL 3 — ECONOMIA & COMBATE ============ -->
+  <div class="pscaler"><section class="panel" data-screen-label="Escudo · Painel 3 — Economia & Combate">
+    <div class="trimframe"></div><span class="cmark tl"></span><span class="cmark tr"></span><span class="cmark bl"></span><span class="cmark br"></span>
+    <div class="goldframe"></div>
+    <div class="wmbicho bicho"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div><div class="grp">12</div></div>
+    <div class="safe">
+      <div class="dhead">
+        <div class="casebar">
+          <span class="tab">Painel 3 / 4 <span class="of">· economia &amp; combate</span></span>
+          <div class="ptitle">Economia <span class="em">&amp;</span> Combate</div>
+          <div class="typedline">A BANCA NO FIM DO MÊS · E O QUE FAZER QUANDO O PLANO DÁ RUIM</div>
+        </div>
+        <div class="headstamp">
+          <span class="stamp cf">Confidencial</span>
+          <span class="pageno">III</span>
+        </div>
+      </div>
+      <hr class="ruler">
+
+      <div class="cols" style="grid-template-columns:.92fr 1.12fr 1.12fr;">
+        <!-- COL 1 — fase econômica -->
+        <div class="col">
+          <div class="sec">
+            <div class="dbar">Fase Econômica <span class="sub">6 passos / mês</span></div>
+            <div class="steps">
+              <div class="step"><div class="num">1</div><div class="tt"><b>Renda dos pontos</b> — some o que cada banca rendeu.</div></div>
+              <div class="step"><div class="num">2</div><div class="tt"><b>Proteção</b> — paga quem manda na área.</div></div>
+              <div class="step"><div class="num">3</div><div class="tt"><b>Equipe &amp; contatos</b> — salários e favores fixos.</div></div>
+              <div class="step"><div class="num">4</div><div class="tt"><b>Lavagem</b> — roda o sujo pelas fachadas.</div></div>
+              <div class="step"><div class="num">5</div><div class="tt"><b>Investimentos</b> — novos pontos, fachadas, subornos.</div></div>
+              <div class="step"><div class="num">6</div><div class="tt"><b>Carta de evento</b> — vira o mês.</div></div>
+            </div>
+          </div>
+          <div class="sec" style="margin-top:auto;">
+            <div class="dbar">Proteção <span class="sub">R$ / mês</span></div>
+            <table class="dt tight zebra">
+              <tr><td>PM individual</td><td class="n">1.500</td></tr>
+              <tr><td>Grupo de PMs</td><td class="n">6.000</td></tr>
+              <tr><td>Comandante</td><td class="n">20.000</td></tr>
+              <tr><td>Delegado</td><td class="n">30.000</td></tr>
+              <tr><td>Facção <span class="typed" style="font-size:5pt">(ou 25–30% em comunidade)</span></td><td class="n">3–25 mil</td></tr>
+              <tr><td>Milícia</td><td class="n">5–30 mil</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- COL 2 — lavagem -->
+        <div class="col vrule">
+          <div class="sec">
+            <div class="dbar">Lavagem <span class="sub">tabela canônica</span></div>
+            <table class="dt zebra">
+              <tr><th style="width:38%">Fachada</th><th>Efic.</th><th>Capacidade / mês</th></tr>
+              <tr><td>Lava-rápido</td><td class="n em">28%</td><td>15–40 mil</td></tr>
+              <tr><td>Lanchonete</td><td class="n em">25%</td><td>40–80 mil</td></tr>
+              <tr><td>Estacionamento</td><td class="n em">22%</td><td>60–120 mil</td></tr>
+              <tr><td>Construtora</td><td class="n em">18%</td><td>150–400 mil</td></tr>
+              <tr><td>Holding</td><td class="n em">16%</td><td>200–800 mil</td></tr>
+              <tr><td>Importadora</td><td class="n em">15%</td><td>300 mil–1 mi</td></tr>
+              <tr><td>Offshore</td><td class="n em">10–12%</td><td>500 mil +</td></tr>
+            </table>
+            <div class="box red" style="margin-top:1.6mm; padding:1.4mm 2mm;">
+              <p style="font-size:6.8pt;"><b style="color:#ef8e90">Risco:</b> role <b>1d6</b> ao lavar — <b>1</b> = complicação. <b>1-2</b> se usar 80%+ da capacidade da fachada.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- COL 3 — combate -->
+        <div class="col vrule">
+          <div class="sec">
+            <div class="dbar red">Combate <span class="sub">em 1 quadro</span></div>
+            <table class="dt">
+              <tr><td class="em" style="width:30%">Iniciativa</td><td>Role <b>Instinto</b>; mais sucessos age primeiro. Emboscou <span class="em">+2</span> · surpreendido <span class="rd">−2</span>.</td></tr>
+              <tr><td class="em">Ataque</td><td><b>Operação + arma</b> vs defesa <b>Instinto + Fuga</b> (contestado).</td></tr>
+            </table>
+            <div class="dbar" style="font-size:7.4pt; margin:2mm 0 1.2mm;">Margem <span class="sub">sucessos a mais do atacante</span></div>
+            <table class="dt tight">
+              <tr><td class="n"><span class="chip">1</span></td><td>Leve — −1 dado em tudo</td></tr>
+              <tr><td class="n"><span class="chip">2</span></td><td>Grave — −2, precisa de médico</td></tr>
+              <tr><td class="n"><span class="chip">3</span></td><td>Crítico — −3, fora de combate</td></tr>
+              <tr><td class="n"><span class="chip" style="border-color:#ef8e90;color:#ef8e90">4+</span></td><td class="rd">Mortal</td></tr>
+            </table>
+            <p class="typed" style="margin:1.4mm 0;">Cobertura <b>+1/+2/+3</b> na defesa · colete absorve 1–2 de margem · arma: pistola +0, calibre pesado +1, fuzil +2.</p>
+            <div class="box" style="padding:1.4mm 2mm;">
+              <p style="font-size:7pt;"><b style="color:var(--dourado)">SEMPRE ofereça saída:</b> intimidar, subornar, fugir, render. Combate dura 2–5 rodadas — não vire açougue à toa.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dfoot">
+        <span class="serie">Nº 041892 · SÉRIE VB · ESCUDO · PAINEL III</span>
+        <span class="dquote">“Violência é cara. O preço vem depois — e com juros.”</span>
+      </div>
+    </div>
+  </section></div>
+
+  <!-- ============ PAINEL 4 — A MESA VIVA ============ -->
+  <div class="pscaler"><section class="panel" data-screen-label="Escudo · Painel 4 — A Mesa Viva">
+    <div class="trimframe"></div><span class="cmark tl"></span><span class="cmark tr"></span><span class="cmark bl"></span><span class="cmark br"></span>
+    <div class="goldframe"></div>
+    <div class="wmbicho bicho"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div><div class="grp">22</div></div>
+    <div class="safe">
+      <div class="dhead">
+        <div class="casebar">
+          <span class="tab">Painel 4 / 4 <span class="of">· mesa viva</span></span>
+          <div class="ptitle">A <span class="em">Mesa</span> Viva</div>
+          <div class="typedline">ROLE NO ESCURO · DEIXE A MESA ACHAR QUE FOI SORTE</div>
+        </div>
+        <div class="headstamp">
+          <span class="stamp cf">Confidencial</span>
+          <span class="pageno">IV</span>
+        </div>
+      </div>
+      <hr class="ruler">
+
+      <div class="cols" style="grid-template-columns:1.18fr 1fr 1.06fr;">
+        <!-- COL 1 — d20 econômico -->
+        <div class="col">
+          <div class="dbar">Evento do Mês <span class="sub">1d20 · econômico</span></div>
+          <table class="dt tight zebra">
+            <tr><td class="n">1</td><td>Operação de vitrine — pontos c/ Exp. 5+ fecham 1 sem. (−25%)</td></tr>
+            <tr><td class="n">2</td><td>Receita aperta — lavagem: risco em 1-2 p/ todos</td></tr>
+            <tr><td class="n">3</td><td>Blitz nas vias — Logística +1 dif.; Atravessador brilha</td></tr>
+            <tr><td class="n">4</td><td>PM sobe o morro — comunidade fecha 3 dias; Heat reg. +1</td></tr>
+            <tr><td class="n">5</td><td>Guerra de facção (região aleat.) — pontos lá −50%</td></tr>
+            <tr><td class="n">6</td><td>Milícia aumenta a taxa — +20% em território de milícia</td></tr>
+            <tr><td class="n">7</td><td>Eleições — favores políticos 2×; políticos somem</td></tr>
+            <tr><td class="n">8</td><td>Crise econômica — apostas −20% em todas as regiões</td></tr>
+            <tr><td class="n">9</td><td>Mês morno — sem efeito</td></tr>
+            <tr><td class="n">10</td><td>Mês morno — sem efeito</td></tr>
+            <tr><td class="n">11</td><td>Clássico no Maracanã — +30% Centro, Tijuca, Z. Norte</td></tr>
+            <tr><td class="n">12</td><td>Verão / alta temporada — +30% Z. Sul e Barra</td></tr>
+            <tr><td class="n">13</td><td>Bicheiro da velha guarda morre — 1d3 pontos órfãos a 50%</td></tr>
+            <tr><td class="n">14</td><td>Delegado transferido — acordos da região zerados</td></tr>
+            <tr><td class="n">15</td><td>Caminhão "cai" — mercadoria barata via Submundo</td></tr>
+            <tr><td class="n">16</td><td>Influencer viraliza o bicho — online +40%; Exp. +1</td></tr>
+            <tr><td class="n">17</td><td>CPI do jogo — Heat +1 geral; favores políticos travados</td></tr>
+            <tr><td class="n">18</td><td>Paz comprada entre facções — comunidades +20%</td></tr>
+            <tr><td class="n">19</td><td>Auditoria do COAF — lavou 200k+: teste ou complicação</td></tr>
+            <tr><td class="n em">20</td><td class="em">13º do trabalhador — TODOS os pontos +40%</td></tr>
+          </table>
+        </div>
+
+        <!-- COL 2 — facções + complicação súbita -->
+        <div class="col vrule">
+          <div class="sec">
+            <div class="dbar">Facções <span class="sub">1d20</span></div>
+            <table class="dt tight zebra">
+              <tr><td class="n">1-10</td><td>Nada de novo</td></tr>
+              <tr><td class="n">11-12</td><td>Batida — +2 Heat regional</td></tr>
+              <tr><td class="n">13-14</td><td>Disputa territorial</td></tr>
+              <tr><td class="n">15</td><td>Troca de gerente</td></tr>
+              <tr><td class="n">16</td><td>Megaoperação — +5 Heat; pontos fecham</td></tr>
+              <tr><td class="n">17</td><td>Trégua de 1–3 meses</td></tr>
+              <tr><td class="n">18</td><td>Guerra declarada</td></tr>
+              <tr><td class="n">19</td><td>Líder preso</td></tr>
+              <tr><td class="n em">20</td><td>Expansão de facção</td></tr>
+            </table>
+          </div>
+          <div class="sec" style="margin-top:auto;">
+            <div class="dbar red">Complicação Súbita <span class="sub">1d10 · na hora</span></div>
+            <table class="dt tight">
+              <tr><td class="n">1</td><td>Testemunha inesperada</td><td class="n">6</td><td>Chuva torrencial</td></tr>
+              <tr><td class="n">2</td><td>Contato pede ajuda JÁ</td><td class="n">7</td><td>Traição pequena</td></tr>
+              <tr><td class="n">3</td><td>Equipamento falha</td><td class="n">8</td><td>Imprensa fuçando</td></tr>
+              <tr><td class="n">4</td><td>Rival aparece</td><td class="n">9</td><td>Dinheiro curto</td></tr>
+              <tr><td class="n">5</td><td>PM faz ronda</td><td class="n">10</td><td>Favor cobrado na pior hora</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- COL 3 — gerador de NPC -->
+        <div class="col vrule">
+          <div class="dbar">Gerador de NPC <span class="sub">role 3× 1d10</span></div>
+          <table class="dt tight">
+            <tr><th>#</th><th>A · Nome</th><th>B · Quer</th><th>C · Complicação</th></tr>
+            <tr><td class="n">1</td><td>Jorge</td><td>dinheiro rápido</td><td>deve à milícia</td></tr>
+            <tr><td class="n">2</td><td>Naldo</td><td>proteção</td><td>é informante</td></tr>
+            <tr><td class="n">3</td><td>Zezinho</td><td>vingança</td><td>vício</td></tr>
+            <tr><td class="n">4</td><td>Dona Lúcia</td><td>sair do crime</td><td>parente policial</td></tr>
+            <tr><td class="n">5</td><td>Pastor Élton</td><td>status</td><td>falido</td></tr>
+            <tr><td class="n">6</td><td>Sgt. Brito</td><td>salvar parente</td><td>apaixonado</td></tr>
+            <tr><td class="n">7</td><td>Drª Vera</td><td>fé</td><td>doente</td></tr>
+            <tr><td class="n">8</td><td>Carlinhos</td><td>poder</td><td>ambicioso demais</td></tr>
+            <tr><td class="n">9</td><td>Mestre Pereira</td><td>aposentar</td><td>covarde</td></tr>
+            <tr><td class="n">10</td><td>Bia</td><td>adrenalina</td><td>leal demais</td></tr>
+          </table>
+          <p class="typed" style="margin-top:1.6mm;">Role cada coluna em separado. Cruze os três e você tem gente de verdade: um nome, uma fome, e a rachadura por onde ela quebra.</p>
+        </div>
+      </div>
+
+      <div class="dfoot">
+        <span class="serie">Nº 041892 · SÉRIE VB · ESCUDO · PAINEL IV</span>
+        <span class="dquote">“O dado decide o quê. Você decide o como.”</span>
+      </div>
+    </div>
+  </section></div>
+</div>
+
+<!-- ================================================================
+     EXTERIOR — LADO DOS JOGADORES (4 painéis · 25 bichos + logo)
+     ================================================================ -->
+<div class="face-ext" style="display:none;">
+  <div class="group-label">▸ Exterior — voltado para a mesa (verso do escudo)</div>
+
+  <!-- EXT 1 — logotipo -->
+  <div class="pscaler"><section class="panel ext" data-screen-label="Escudo Exterior · 1 — Logotipo">
+    <div class="trimframe"></div><span class="cmark tl"></span><span class="cmark tr"></span><span class="cmark bl"></span><span class="cmark br"></span>
+    <div class="goldframe"></div>
+    <div class="safe">
+      <div class="spacer"></div>
+      <div class="kick">Jogo do Bicho · Crime Organizado · Rio de Janeiro</div>
+      <div class="word" style="font-size:64pt; margin:3mm 0;">Barões<br>do Asfalto</div>
+      <div class="since">Desde 1892 · Vila Isabel</div>
+      <div class="spacer"></div>
+      <div class="seal">“Todo carioca tem um bicho.”</div>
+      <hr class="ruler" style="width:100%;">
+      <div class="frieze" data-bichos="1-7"></div>
+    </div>
+  </section></div>
+
+  <!-- EXT 2 — manifesto -->
+  <div class="pscaler"><section class="panel ext" data-screen-label="Escudo Exterior · 2 — O Rio em 25 bichos">
+    <div class="trimframe"></div><span class="cmark tl"></span><span class="cmark tr"></span><span class="cmark bl"></span><span class="cmark br"></span>
+    <div class="goldframe"></div>
+    <div class="safe">
+      <div class="spacer"></div>
+      <div class="statement" style="font-size:40pt;">O Rio<br>se joga<br>em <span style="color:var(--dourado)">25 bichos</span></div>
+      <div style="height:6mm;"></div>
+      <p class="lede">Da pule na esquina ao milhão lavado na construtora. Aqui a banca é família, a dívida nunca prescreve e ninguém sai como entrou.</p>
+      <div class="spacer"></div>
+      <hr class="ruler" style="width:100%;">
+      <div class="frieze" data-bichos="8-13"></div>
+    </div>
+  </section></div>
+
+  <!-- EXT 3 — as forças -->
+  <div class="pscaler"><section class="panel ext" data-screen-label="Escudo Exterior · 3 — As forças da rua">
+    <div class="trimframe"></div><span class="cmark tl"></span><span class="cmark tr"></span><span class="cmark bl"></span><span class="cmark br"></span>
+    <div class="goldframe"></div>
+    <div class="safe">
+      <div class="kick" style="margin-bottom:2mm;">Quem manda na cidade</div>
+      <div class="statement" style="font-size:24pt; margin-bottom:5mm;">As Forças da Rua</div>
+      <div class="forces">
+        <div class="force"><div class="gwrap"><span class="gly"><span class="g-punho"></span></span></div><div class="fl">Facção</div><div class="fsub">o punho fechado</div></div>
+        <div class="force"><div class="gwrap"><span class="gly"><span class="g-escudo"></span></span></div><div class="fl">Milícia</div><div class="fsub">o escudo partido</div></div>
+        <div class="force"><div class="gwrap"><span class="gly"><span class="g-cartola"></span></span></div><div class="fl">Bicheiros</div><div class="fsub">a cartola do Barão</div></div>
+        <div class="force"><div class="gwrap"><span class="gly"><span class="g-estrela">★</span></span></div><div class="fl">Polícia</div><div class="fsub">a estrela do Estado</div></div>
+        <div class="force"><div class="gwrap"><span class="gly"><span class="g-punhais">✕</span></span></div><div class="fl">Disputa</div><div class="fsub">os punhais cruzados</div></div>
+      </div>
+      <div class="spacer"></div>
+      <hr class="ruler" style="width:100%;">
+      <div class="frieze" data-bichos="14-19"></div>
+    </div>
+  </section></div>
+
+  <!-- EXT 4 — escolha seu bicho -->
+  <div class="pscaler"><section class="panel ext" data-screen-label="Escudo Exterior · 4 — Escolha seu bicho">
+    <div class="trimframe"></div><span class="cmark tl"></span><span class="cmark tr"></span><span class="cmark bl"></span><span class="cmark br"></span>
+    <div class="goldframe"></div>
+    <div class="safe">
+      <div class="spacer"></div>
+      <div class="statement" style="font-size:34pt;">Escolha<br>seu <span style="color:var(--dourado)">bicho</span></div>
+      <div style="height:5mm;"></div>
+      <p class="lede">Cada organização ergue um brasão. O bicho que você jogar na mesa é a marca que vai aparecer em cada território que tomar — e em cada cabeça que rolar por ele.</p>
+      <div class="spacer"></div>
+      <div class="seal">“Bandido bom é bandido vivo. E discreto.”</div>
+      <hr class="ruler" style="width:100%;">
+      <div class="frieze" data-bichos="20-25"></div>
+    </div>
+  </section></div>
+</div>
+
+</div><!-- /stage -->
+
+<script>
+/* ===================== DADOS DOS 25 BICHOS ===================== */
+const BICHOS = [
+  [1,"Avestruz","01·02·03·04"],[2,"Águia","05·06·07·08"],[3,"Burro","09·10·11·12"],
+  [4,"Borboleta","13·14·15·16"],[5,"Cachorro","17·18·19·20"],[6,"Cabra","21·22·23·24"],
+  [7,"Carneiro","25·26·27·28"],[8,"Camelo","29·30·31·32"],[9,"Cobra","33·34·35·36"],
+  [10,"Coelho","37·38·39·40"],[11,"Cavalo","41·42·43·44"],[12,"Elefante","45·46·47·48"],
+  [13,"Galo","49·50·51·52"],[14,"Gato","53·54·55·56"],[15,"Jacaré","57·58·59·60"],
+  [16,"Leão","61·62·63·64"],[17,"Macaco","65·66·67·68"],[18,"Porco","69·70·71·72"],
+  [19,"Pavão","73·74·75·76"],[20,"Peru","77·78·79·80"],[21,"Touro","81·82·83·84"],
+  [22,"Tigre","85·86·87·88"],[23,"Urso","89·90·91·92"],[24,"Veado","93·94·95·96"],
+  [25,"Vaca","97·98·99·00"]
+];
+
+/* monta os friezes do exterior */
+document.querySelectorAll('.frieze').forEach(fz=>{
+  const [a,b] = fz.dataset.bichos.split('-').map(Number);
+  let html='';
+  for(let g=a; g<=b; g++){
+    const [grp,nome,dez] = BICHOS[g-1];
+    html += `<div class="fbicho">
+      <div class="bicho" style="position:relative;">
+        <div class="ring"></div><div class="ring inner"></div><div class="diam"></div>
+        <div class="grp">${String(grp).padStart(2,'0')}</div>
+        <span class="fg">${String(grp).padStart(2,'0')}</span>
+      </div>
+      <div class="fn">${nome}</div>
+      <div class="fd">${dez}</div>
+    </div>`;
+  }
+  fz.innerHTML = html;
+});
+
+/* ===================== TOGGLE INTERIOR / EXTERIOR ===================== */
+function setFace(f){
+  document.querySelector('.face-int').style.display = f==='int' ? '' : 'none';
+  document.querySelector('.face-ext').style.display = f==='ext' ? '' : 'none';
+  document.getElementById('bInt').classList.toggle('on', f==='int');
+  document.getElementById('bExt').classList.toggle('on', f==='ext');
+  requestAnimationFrame(fit);
+}
+
+/* ===================== ESCALA NA TELA ===================== */
+function fit(){
+  const avail = window.innerWidth - 40;
+  const panelPx = 303*96/25.4;            // 303mm em px
+  const s = Math.min(1, avail/panelPx);
+  document.querySelectorAll('.pscaler').forEach(sc=>{
+    if(!sc.offsetParent && sc.closest('[style*="display: none"]')) return;
+    sc.style.transform = `scale(${s})`;
+    sc.style.height = (216*96/25.4*s) + 'px';
+  });
+}
+window.addEventListener('resize', fit);
+fit();
+</script>
+</body>
+</html>

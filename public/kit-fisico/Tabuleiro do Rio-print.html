@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Tabuleiro do Rio — Barões do Asfalto</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  body{ background:#2c2c2a; }
+
+  /* ---- controles de tela ---- */
+  .controls{ position:fixed; top:0; left:0; right:0; z-index:50; display:flex; align-items:center; gap:14px;
+    padding:10px 16px; background:rgba(20,20,18,.92); color:var(--creme); font-family:'Oswald',sans-serif;
+    font-size:12px; letter-spacing:.04em; box-shadow:0 2px 14px rgba(0,0,0,.5); }
+  .controls b{ font-family:'Anton'; letter-spacing:.06em; color:var(--dourado); text-transform:uppercase; }
+  .controls .seg{ display:flex; border:1px solid rgba(244,236,216,.35); border-radius:4px; overflow:hidden; }
+  .controls .seg button{ background:none; border:0; color:var(--creme); font-family:'Oswald'; font-size:11px;
+    text-transform:uppercase; letter-spacing:.05em; padding:5px 12px; cursor:pointer; }
+  .controls .seg button.on{ background:var(--dourado); color:var(--tinta); font-weight:600; }
+  .controls .hint{ margin-left:auto; opacity:.7; font-size:10.5px; }
+
+  /* ---- palco A2 ---- */
+  .a2-wrap{ padding:62px 20px 40px; display:flex; justify-content:center; }
+  .a2-scaler{ transform-origin:top center; }
+  .board{
+    position:relative; width:420mm; height:594mm; background:var(--creme);
+    background-image:
+      radial-gradient(circle at 20% 8%, rgba(180,150,90,.06), transparent 55%),
+      radial-gradient(circle at 85% 92%, rgba(120,90,40,.05), transparent 50%);
+    box-shadow:0 10px 50px rgba(0,0,0,.6); overflow:hidden;
+    color:var(--tinta);
+  }
+  .board::before{ content:""; position:absolute; inset:5mm; border:2pt solid var(--verde);
+    box-shadow:0 0 0 1.4pt var(--creme), 0 0 0 3pt var(--verde); pointer-events:none; z-index:30; }
+
+  /* camada de rotas (svg) */
+  .routes{ position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none; }
+
+  /* ---- masthead ---- */
+  .mast{ position:absolute; left:10mm; top:9mm; z-index:6; }
+  .mast .kick{ font-family:'Anton'; color:var(--vermelho); text-transform:uppercase; letter-spacing:.16em; font-size:9pt; }
+  .mast .logo{ font-family:'Playfair Display'; font-style:italic; font-weight:700; color:var(--verde);
+    font-size:33pt; line-height:.9; margin:.5mm 0; }
+  .mast .sub{ font-family:'Playfair Display'; font-style:italic; font-size:10pt; color:#5a5a50; }
+
+  /* trilha de meses */
+  .months{ position:absolute; right:10mm; top:10mm; z-index:6; display:flex; flex-direction:column; align-items:flex-end; gap:2mm; }
+  .months .lbl{ font-family:'Anton'; font-size:8pt; color:var(--verde); text-transform:uppercase; letter-spacing:.1em; }
+  .mtrack{ display:flex; gap:1.5mm; }
+  .mcell{ width:10mm; height:10mm; border:1.2pt solid var(--verde); display:flex; align-items:center; justify-content:center;
+    font-family:'Oswald'; font-weight:600; font-size:7pt; color:var(--verde); background:rgba(255,255,255,.3); }
+  .mcell.start{ background:var(--verde); color:var(--creme); }
+  .mcell.event{ border-color:var(--vermelho); border-width:2pt; color:var(--vermelho); position:relative; }
+  .evslot{ display:flex; align-items:center; gap:2mm; }
+  .evslot .card{ width:24mm; height:14mm; border:1.4pt dashed var(--vermelho); display:flex; align-items:center;
+    justify-content:center; text-align:center; font-family:'Oswald'; font-weight:600; font-size:5.6pt; color:var(--vermelho);
+    text-transform:uppercase; letter-spacing:.04em; line-height:1.15; padding:1mm; }
+
+  /* ---- carta de região ---- */
+  .region{ position:absolute; z-index:4; background:rgba(244,236,216,.55);
+    border:1.6pt solid var(--verde); box-shadow:3px 3px 0 rgba(27,67,50,.15);
+    padding:4mm 4.5mm; display:flex; flex-direction:column; overflow:hidden; }
+  .region .regionwm{ position:absolute; right:2mm; bottom:1mm; --s:38mm; z-index:0; opacity:.08; }
+  .region > *{ position:relative; z-index:1; }
+  .region.disp{ border-color:var(--vermelho); border-style:double; border-width:3.4pt; }
+
+  .r-head{ display:flex; align-items:flex-start; gap:2.5mm; }
+  .r-num{ font-family:'Anton'; font-size:18pt; line-height:.8; color:var(--verde); }
+  .region.disp .r-num{ color:var(--vermelho); }
+  .r-head h3{ font-family:'Anton'; font-size:11.5pt; line-height:.95; margin:0; text-transform:uppercase;
+    letter-spacing:.01em; color:var(--tinta); }
+  .r-sub{ font-family:'Source Serif 4'; font-size:6.6pt; color:#5f5f55; margin:.4mm 0 0; line-height:1.1; }
+
+  .r-seals{ display:flex; flex-wrap:wrap; gap:1.5mm; margin:2mm 0 1.5mm; align-items:center; }
+  .seal{ display:flex; align-items:center; gap:1mm; border:1pt solid var(--linha-2); border-radius:2px;
+    padding:.5mm 1.4mm; background:rgba(255,255,255,.4); }
+  .seal .glyph{ width:4.4mm; height:4.4mm; display:flex; align-items:center; justify-content:center; flex:none; }
+  .seal .nm{ font-family:'Oswald'; font-weight:600; font-size:5.2pt; text-transform:uppercase; letter-spacing:.03em; color:#3a3a34; }
+  .seal.dom{ border-color:var(--tinta); border-width:1.3pt; background:rgba(201,162,39,.14); }
+
+  /* glyphs das forças (formas simples) */
+  .g-fac{ width:4mm; height:4mm; border-radius:50%; background:var(--vermelho); }
+  .g-mil{ width:4mm; height:4.4mm; background:var(--kraft); border:1pt solid var(--tinta);
+    border-radius:1px 1px 45% 45%; position:relative; }
+  .g-mil::after{ content:""; position:absolute; left:50%; top:0; bottom:0; width:1pt; background:var(--tinta); transform:translateX(-.5px); }
+  .g-bich{ width:4.6mm; height:4.4mm; position:relative; }
+  .g-bich::before{ content:""; position:absolute; left:1mm; right:1mm; top:0; height:2.6mm; background:var(--dourado); border:.8pt solid var(--tinta); border-radius:1px; }
+  .g-bich::after{ content:""; position:absolute; left:0; right:0; bottom:.6mm; height:1pt; background:var(--tinta); }
+  .g-pol{ color:var(--azul); font-size:5pt; line-height:1; }
+  .g-disp{ color:var(--tinta); font-size:5.4pt; line-height:1; font-weight:700; }
+
+  .r-stats{ display:flex; flex-direction:column; gap:1.4mm; margin-bottom:2mm; }
+  .stat{ display:flex; align-items:center; gap:1.5mm; }
+  .stat .si{ width:4.4mm; height:4.4mm; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:'Anton'; font-size:6pt; color:#fff; flex:none; }
+  .stat .si.pol{ background:var(--azul); } .stat .si.pot{ background:var(--dourado); color:var(--tinta); }
+  .stat .sl{ font-family:'Oswald'; font-weight:600; font-size:5.6pt; text-transform:uppercase; letter-spacing:.03em;
+    color:#3a3a34; width:18mm; }
+  .pipbar{ display:flex; gap:.6mm; flex:1; }
+  .pipbar i{ flex:1; height:2.6mm; border:.7pt solid var(--tinta); background:rgba(255,255,255,.4); }
+  .pipbar i.on.pol{ background:var(--azul); } .pipbar i.on.pot{ background:var(--dourado); }
+  .stat .sv{ font-family:'Oswald'; font-weight:700; font-size:6.4pt; color:var(--tinta); width:9mm; text-align:right; }
+
+  .r-slots{ display:flex; flex-wrap:wrap; gap:2mm; margin:auto 0 2mm; align-content:flex-start; }
+  .slot{ width:24mm; height:24mm; border-radius:50%; border:1.4pt dashed rgba(27,67,50,.6);
+    display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.25); flex:none; }
+  .slot span{ width:2mm; height:2mm; border-radius:50%; background:rgba(27,67,50,.35); }
+
+  .r-cost{ font-family:'Oswald'; font-weight:600; font-size:6pt; text-transform:uppercase; letter-spacing:.03em;
+    color:var(--creme); background:var(--verde); padding:1mm 2mm; line-height:1.15; }
+  .region.disp .r-cost{ background:var(--vermelho); }
+  .r-cost b{ font-weight:700; }
+
+  .r-clima{ font-family:'Playfair Display'; font-style:italic; font-size:6.4pt; color:var(--verde);
+    margin-top:1.5mm; line-height:1.2; }
+
+  .r-conflict{ position:absolute; top:2mm; right:2.5mm; z-index:3; font-size:9pt; color:var(--vermelho); }
+
+  /* ---- baía ---- */
+  .bay-label{ position:absolute; z-index:3; font-family:'Playfair Display'; font-style:italic;
+    color:#2C5F7C; font-size:14pt; transform:rotate(-32deg); opacity:.8; }
+
+  /* ---- rodapé: mesa do banqueiro / legenda / bússola ---- */
+  .footer-zone{ position:absolute; left:10mm; right:10mm; bottom:9mm; z-index:6; display:flex; gap:5mm; align-items:stretch; }
+  .panel{ border:1.6pt solid var(--verde); background:rgba(244,236,216,.65); }
+  .panel .ph{ background:var(--verde); color:var(--creme); font-family:'Anton'; font-size:8.5pt;
+    text-transform:uppercase; letter-spacing:.05em; padding:1.4mm 2.5mm; }
+  .panel .pb{ padding:2.5mm 3mm; }
+
+  .banker{ flex:1.5; }
+  .steps{ display:flex; gap:2mm; }
+  .step{ flex:1; border:1pt solid var(--linha-2); padding:1.5mm; background:rgba(255,255,255,.4); position:relative; }
+  .step .num{ font-family:'Anton'; font-size:11pt; color:var(--dourado-2); line-height:.8; }
+  .step .tt{ font-family:'Oswald'; font-weight:600; font-size:6pt; text-transform:uppercase; letter-spacing:.02em;
+    color:var(--tinta); margin-top:.8mm; line-height:1.15; }
+  .step::after{ content:"▸"; position:absolute; right:-2.4mm; top:50%; transform:translateY(-50%); color:var(--dourado-2); font-size:8pt; z-index:2; }
+  .step:last-child::after{ content:""; }
+
+  .legend{ flex:1; }
+  .leg-grid{ display:grid; grid-template-columns:1fr 1fr; gap:1.2mm 3mm; }
+  .leg-item{ display:flex; align-items:center; gap:1.6mm; }
+  .leg-item .glyph{ width:5mm; height:5mm; display:flex; align-items:center; justify-content:center; flex:none; }
+  .leg-item span{ font-family:'Oswald'; font-weight:500; font-size:6.2pt; color:#3a3a34; line-height:1.1; }
+
+  .compass{ width:46mm; flex:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.5mm; }
+  .rose{ width:30mm; height:30mm; border:1.4pt solid var(--verde); border-radius:50%; position:relative; display:flex; align-items:center; justify-content:center; }
+  .rose .tick{ position:absolute; font-family:'Anton'; font-size:6.5pt; color:var(--verde); }
+  .rose .n{ top:.8mm; left:50%; transform:translateX(-50%); }
+  .rose .s{ bottom:.8mm; left:50%; transform:translateX(-50%); }
+  .rose .e{ right:1mm; top:50%; transform:translateY(-50%); }
+  .rose .o{ left:1mm; top:50%; transform:translateY(-50%); }
+  /* cristo estilizado (formas simples) */
+  .cristo{ position:relative; width:8mm; height:11mm; }
+  .cristo::before{ content:""; position:absolute; left:50%; top:0; width:1.3pt; height:7mm; background:var(--verde); transform:translateX(-50%); }
+  .cristo::after{ content:""; position:absolute; left:50%; top:2.2mm; width:6mm; height:1.3pt; background:var(--verde); transform:translateX(-50%); }
+  .cristo .hill{ position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:9mm; height:4mm;
+    border-top-left-radius:9mm; border-top-right-radius:9mm; border:1.2pt solid var(--verde); border-bottom:0; }
+  .scale-fake{ font-family:'Special Elite'; font-size:6pt; color:#6a6a60; letter-spacing:.05em; }
+
+  /* ---- impressão em 4 A4 ---- */
+  .tiles{ display:none; }
+  .tile{ position:relative; width:210mm; height:297mm; overflow:hidden; background:var(--creme); }
+  .tile .tclip{ position:absolute; }
+  .tile .corner{ position:absolute; width:7mm; height:7mm; z-index:60; }
+  .tile .corner::before{ content:""; position:absolute; left:0; top:0; width:7mm; height:.4pt; background:var(--tinta); }
+  .tile .corner::after{ content:""; position:absolute; left:0; top:0; width:.4pt; height:7mm; background:var(--tinta); }
+  .tile .corner.tr{ right:0; transform:scaleX(-1); } .tile .corner.bl{ bottom:0; transform:scaleY(-1); }
+  .tile .corner.br{ right:0; bottom:0; transform:scale(-1,-1); }
+  .tile .tlabel{ position:absolute; z-index:61; font-family:'Anton'; font-size:9pt; color:var(--vermelho);
+    background:var(--creme); padding:1mm 2mm; letter-spacing:.06em; text-transform:uppercase;
+    border:1pt solid var(--vermelho); }
+  .tile .tlabel.tl{ left:9mm; top:9mm; } .tile .tlabel.guide{ right:9mm; bottom:9mm; font-family:'Special Elite'; font-size:6.5pt; color:#555; border-color:#999; }
+
+  @page{ size:A4 portrait; margin:0; }
+  @media print{
+    body{ background:none; }
+    .controls, .a2-wrap{ display:none !important; }
+    .tiles{ display:block; }
+    .tile{ page-break-after:always; }
+    .tile:last-child{ page-break-after:avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="controls noprint">
+  <b>Tabuleiro do Rio</b>
+  <span>A2 420×594mm · 4×A4 para impressão doméstica</span>
+  <div class="seg">
+    <button id="bA2" class="on" onclick="setView('a2')">Ver A2</button>
+    <button id="bTile" onclick="setView('tile')">Folhas A4</button>
+  </div>
+  <span class="hint">Imprima as 4 folhas a 100% (sem “ajustar à página”), apare a borda branca e junte pelos cantos. Para gráfica, use o A2 inteiro.</span>
+</div>
+
+<div class="a2-wrap">
+  <div class="a2-scaler" id="scaler">
+    <div class="board" id="board"></div>
+  </div>
+</div>
+
+<div class="tiles" id="tiles"></div>
+
+<script>
+/* ================= DADOS DAS 10 REGIÕES ================= */
+const F = {
+  fac:{cls:'g-fac', nm:'Facção'},
+  mil:{cls:'g-mil', nm:'Milícia'},
+  bich:{cls:'g-bich', nm:'Bicheiros'},
+  pol:{cls:'g-pol', nm:'Polícia', ch:'★'},
+  disp:{cls:'g-disp', nm:'Disputado', ch:'✕'}
+};
+// x,y,w,h em mm. dom = força dominante (selo maior)
+const REGIONS = [
+  {n:'04', name:'ZONA OESTE', sub:'Campo Grande · Bangu · Santa Cruz', grp:'21', bicho:'Touro',
+   seals:['mil','bich'], dom:'mil', pol:4, pot:8, cost:'R$ 20–60 mil <b>+ taxa milícia</b>', slots:6,
+   x:9, y:64, w:98, h:140},
+  {n:'06', name:'BAIXADA', sub:'Caxias · Nova Iguaçu · São João', grp:'15', bicho:'Jacaré',
+   seals:['disp','mil','fac'], dom:'disp', pol:3, pot:9, cost:'R$ 15–50 mil <b>(alto risco)</b>', slots:7,
+   conflict:true, clima:'Aqui a polícia chega depois do enterro.', x:112, y:64, w:98, h:140},
+  {n:'07', name:'COMPLEXOS', sub:'Alemão · Maré · Rocinha', grp:'09', bicho:'Cobra',
+   seals:['fac'], dom:'fac', pol:2, pot:7, cost:'taxa de entrada <b>+ 25–30% da renda</b>', slots:7,
+   morro:true, clima:'Quem sobe sem avisar não desce.', x:215, y:64, w:98, h:140},
+
+  {n:'09', name:'BARRA · RECREIO', sub:'Barra da Tijuca · Recreio · Vargens', grp:'22', bicho:'Tigre',
+   seals:['bich','mil'], dom:'bich', pol:8, pot:5, cost:'R$ 120 mil+', slots:6,
+   clima:'Crime de camisa polo.', x:9, y:208, w:98, h:140},
+  {n:'03', name:'ZONA NORTE', sub:'Madureira · Méier · Penha', grp:'13', bicho:'Galo',
+   seals:['bich','fac','mil'], dom:'bich', pol:5, pot:10, cost:'R$ 30–80 mil', slots:8,
+   clima:'Madureira não dorme. Madureira aposta.', x:112, y:208, w:98, h:140},
+  {n:'08', name:'PORTUÁRIA', sub:'Gamboa · Caju · São Cristóvão', grp:'12', bicho:'Elefante',
+   seals:['bich','fac'], dom:'bich', pol:6, pot:6, cost:'R$ 40–80 mil', slots:6,
+   x:215, y:208, w:98, h:140},
+
+  {n:'02', name:'ZONA SUL', sub:'Copacabana → Gávea', grp:'19', bicho:'Pavão',
+   seals:['bich','fac'], dom:'bich', pol:9, pot:7, cost:'R$ 100 mil+', slots:6,
+   x:9, y:352, w:98, h:140},
+  {n:'05', name:'GRANDE TIJUCA', sub:'Tijuca · Maracanã · Vila Isabel', grp:'16', bicho:'Leão',
+   seals:['bich'], dom:'bich', pol:7, pot:8, cost:'R$ 50–100 mil', slots:6,
+   clima:'O berço do jogo — 1892.', x:112, y:352, w:98, h:140},
+  {n:'01', name:'CENTRO', sub:'Lapa · Saara · Central', grp:'02', bicho:'Águia',
+   seals:['disp','bich','mil','pol'], dom:'disp', pol:8, pot:9, cost:'R$ 60–150 mil', slots:8,
+   conflict:true, clima:'Onde tudo começou — e onde nada é de ninguém.', x:215, y:352, w:98, h:140},
+
+  {n:'10', name:'NITERÓI · S.G.', sub:'Niterói: bicheiros · S. Gonçalo: facção + milícia', grp:'08', bicho:'Camelo',
+   seals:['bich','fac','mil'], dom:'fac', pol:'7/4', pot:'7/9', cost:'R$ 40–100 mil', slots:7,
+   x:320, y:280, w:92, h:170}
+];
+
+/* conexões: pares de n° + rótulo da artéria + qual via */
+const LINKS = [
+  ['01','02'], ['01','05'], ['01','08'], ['01','10','PONTE RIO–NITERÓI'],
+  ['02','05','TÚNEIS'], ['02','09'], ['02','07'],
+  ['03','05'], ['03','04'], ['03','06','AV. BRASIL'], ['03','07'], ['03','08','LINHA AMARELA'],
+  ['04','06'], ['04','09'],
+  ['08','06','LINHA VERMELHA'], ['08','07']
+];
+
+const STEPS = [
+  ['1','Coletar renda dos pontos'],
+  ['2','Pagar proteção — facção · milícia · polícia'],
+  ['3','Pagar equipe e contatos'],
+  ['4','Decidir lavagem'],
+  ['5','Investir'],
+  ['6','Virar carta de evento do mês']
+];
+
+/* ================= CONSTRUÇÃO ================= */
+const board = document.getElementById('board');
+
+function bichoWM(grp){
+  return `<div class="bicho wm regionwm"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div><div class="grp">${grp}</div></div>`;
+}
+function sealHTML(key, dom){
+  const f = F[key];
+  let inner = (key==='pol'||key==='disp') ? `<span class="${f.cls}">${f.ch}</span>` : `<span class="${f.cls}"></span>`;
+  return `<div class="seal${key===dom?' dom':''}"><span class="glyph">${inner}</span><span class="nm">${f.nm}</span></div>`;
+}
+function pipbar(val, cls){
+  let s='';
+  for(let i=1;i<=10;i++) s+=`<i class="${i<=val?'on '+cls:''}"></i>`;
+  return s;
+}
+function statRow(icon, cls, label, val){
+  const num = (typeof val==='number') ? val : parseInt(String(val))||0;
+  const display = String(val);
+  return `<div class="stat"><span class="si ${cls}">${icon}</span><span class="sl">${label}</span>
+    <span class="pipbar">${pipbar(num, cls)}</span><span class="sv">${display}<span style="font-size:.7em;opacity:.6">/10</span></span></div>`;
+}
+function slots(n){
+  let s='';
+  for(let i=0;i<n;i++) s+=`<div class="slot"><span></span></div>`;
+  return s;
+}
+
+function regionHTML(r){
+  return `<div class="region${r.dom==='disp'?' disp':''}" style="left:${r.x}mm;top:${r.y}mm;width:${r.w}mm;height:${r.h}mm" data-screen-label="Região ${r.n}: ${r.name}" data-n="${r.n}">
+    ${bichoWM(r.grp)}
+    ${r.conflict?'<div class="r-conflict">⚔</div>':''}
+    <div class="r-head"><span class="r-num">${r.n}</span><div><h3>${r.name}</h3><p class="r-sub">${r.sub}</p></div></div>
+    <div class="r-seals">${r.seals.map(k=>sealHTML(k, r.dom)).join('')}</div>
+    <div class="r-stats">
+      ${statRow('★','pol','Policiamento', r.pol)}
+      ${statRow('$','pot','Potencial', r.pot)}
+    </div>
+    <div class="r-slots">${slots(r.slots)}</div>
+    <div class="r-cost">Custo de entrada · ${r.cost}</div>
+    ${r.clima?`<div class="r-clima">“${r.clima}”</div>`:''}
+  </div>`;
+}
+
+// centro de cada região (mm) p/ rotas
+const C = {};
+REGIONS.forEach(r=>{ C[r.n] = {x:r.x+r.w/2, y:r.y+r.h/2}; });
+
+function buildRoutes(){
+  let lines='', labels='';
+  LINKS.forEach(([a,b,lab])=>{
+    const p=C[a], q=C[b]; if(!p||!q) return;
+    const bridge = lab && lab.includes('PONTE');
+    lines += `<line x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}" stroke="${bridge?'#1B4332':'#1B4332'}" stroke-width="${bridge?'2.4':'1.4'}" stroke-dasharray="${bridge?'0':'5 3'}" opacity="${bridge?'.85':'.5'}" stroke-linecap="round"/>`;
+    if(bridge){ // segunda linha paralela da ponte
+      lines += `<line x1="${p.x}" y1="${p.y+2.4}" x2="${q.x}" y2="${q.y+2.4}" stroke="#1B4332" stroke-width="2.4" opacity=".85" stroke-linecap="round"/>`;
+    }
+    if(lab){
+      const mx=(p.x+q.x)/2, my=(p.y+q.y)/2;
+      labels += `<g><rect x="${mx-lab.length*1.55}" y="${my-2.8}" width="${lab.length*3.1}" height="5.4" rx="1" fill="#F4ECD8" stroke="#C9A227" stroke-width=".5"/>
+        <text x="${mx}" y="${my+1.4}" text-anchor="middle" font-family="Oswald, sans-serif" font-weight="600" font-size="3.4" fill="#1B4332" letter-spacing=".2">${lab}</text></g>`;
+    }
+  });
+  // estações (nó em cada conexão)
+  let nodes='';
+  REGIONS.forEach(r=>{ const c=C[r.n]; nodes+=`<circle cx="${c.x}" cy="${c.y}" r="2.2" fill="#F4ECD8" stroke="#1B4332" stroke-width="1.2"/>`; });
+  return lines+labels+nodes;
+}
+
+function build(){
+  // svg de rotas + baía
+  board.insertAdjacentHTML('beforeend', `<svg class="routes" viewBox="0 0 420 594" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id="wave" width="8" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-30)">
+        <path d="M0 3 Q 2 0 4 3 T 8 3" fill="none" stroke="#2C5F7C" stroke-width=".6" opacity=".5"/>
+      </pattern>
+    </defs>
+    <polygon points="312,250 420,210 420,470 300,500 305,360" fill="#2C5F7C" opacity=".16"/>
+    <polygon points="312,250 420,210 420,470 300,500 305,360" fill="url(#wave)"/>
+    ${buildRoutes()}
+  </svg>`);
+
+  // baía label
+  board.insertAdjacentHTML('beforeend', `<div class="bay-label" style="left:300mm;top:230mm;">Baía de Guanabara</div>`);
+
+  // masthead
+  board.insertAdjacentHTML('beforeend', `<div class="mast">
+    <div class="kick">Mapa de Territórios</div>
+    <div class="logo">Barões do Asfalto</div>
+    <div class="sub">o Rio repartido — diagrama do crime organizado</div>
+  </div>`);
+
+  // trilha de meses + evento
+  let cells=''; for(let i=1;i<=12;i++) cells+=`<div class="mcell${i===1?' start':''}">${String(i).padStart(2,'0')}</div>`;
+  board.insertAdjacentHTML('beforeend', `<div class="months">
+    <div class="lbl">Trilha de meses · fase econômica</div>
+    <div class="mtrack">${cells}</div>
+    <div class="evslot"><span class="lbl" style="font-size:6.5pt;color:var(--vermelho)">▸ Evento do mês</span>
+      <div class="card">CARTA DE<br>EVENTO<br>AQUI</div></div>
+  </div>`);
+
+  // regiões
+  REGIONS.forEach(r=> board.insertAdjacentHTML('beforeend', regionHTML(r)));
+
+  // rodapé: banqueiro + legenda + bússola
+  const steps = STEPS.map(([n,t])=>`<div class="step"><div class="num">${n}</div><div class="tt">${t}</div></div>`).join('');
+  const legItems = [
+    ['g-fac','','Facção — punho fechado'],
+    ['g-mil','','Milícia — escudo partido'],
+    ['g-bich','','Bicheiros — a cartola do Barão'],
+    ['g-pol','★','Polícia / Estado — estrela'],
+    ['g-disp','✕','Território disputado — punhais']
+  ].map(([cls,ch,txt])=>`<div class="leg-item"><span class="glyph"><span class="${cls}" ${cls==='g-pol'?'style="color:var(--azul);font-size:6pt"':''} ${cls==='g-disp'?'style="font-weight:700;font-size:6pt"':''}>${ch}</span></span><span>${txt}</span></div>`).join('');
+
+  board.insertAdjacentHTML('beforeend', `<div class="footer-zone">
+    <div class="panel banker">
+      <div class="ph">Mesa do Banqueiro — sequência da Fase Econômica</div>
+      <div class="pb"><div class="steps">${steps}</div></div>
+    </div>
+    <div class="panel legend">
+      <div class="ph">Legenda — forças do Rio</div>
+      <div class="pb"><div class="leg-grid">${legItems}</div></div>
+    </div>
+    <div class="compass">
+      <div class="rose">
+        <span class="tick n">N</span><span class="tick s">S</span><span class="tick e">L</span><span class="tick o">O</span>
+        <div class="cristo"><div class="hill"></div></div>
+      </div>
+      <div class="scale-fake">ESCALA 1 : CRIME</div>
+    </div>
+  </div>`);
+}
+
+build();
+
+/* ================= ESCALA NA TELA ================= */
+function fit(){
+  const scaler=document.getElementById('scaler');
+  const avail = window.innerWidth - 48;
+  const boardPx = 420*96/25.4; // 420mm em px
+  const s = Math.min(1, avail/boardPx);
+  scaler.style.transform = `scale(${s})`;
+  // compensa altura colapsada do scale
+  const h = 594*96/25.4*s;
+  scaler.style.height = h+'px';
+  document.querySelector('.a2-wrap').style.minHeight = (h+100)+'px';
+}
+window.addEventListener('resize', fit); fit();
+
+/* ================= TILING 4×A4 ================= */
+function buildTiles(){
+  const tiles=document.getElementById('tiles');
+  tiles.innerHTML='';
+  const quads=[
+    {x:0,   y:0,   n:1, guide:'junte → Folha 2  ·  ↓ Folha 3'},
+    {x:-210,y:0,   n:2, guide:'← Folha 1  ·  ↓ Folha 4'},
+    {x:0,   y:-297,n:3, guide:'↑ Folha 1  ·  → Folha 4'},
+    {x:-210,y:-297,n:4, guide:'↑ Folha 2  ·  ← Folha 3'}
+  ];
+  quads.forEach(q=>{
+    const tile=document.createElement('div'); tile.className='tile';
+    const clip=document.createElement('div'); clip.className='tclip';
+    clip.style.left=q.x+'mm'; clip.style.top=q.y+'mm';
+    clip.innerHTML = board.outerHTML; // clone estático
+    const cloned = clip.firstElementChild;
+    cloned.style.boxShadow='none';
+    tile.appendChild(clip);
+    tile.insertAdjacentHTML('beforeend',
+      `<div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+       <div class="tlabel tl">Folha ${q.n} de 4</div>
+       <div class="tlabel guide">${q.guide}</div>`);
+    tiles.appendChild(tile);
+  });
+}
+
+function setView(v){
+  document.getElementById('bA2').classList.toggle('on', v==='a2');
+  document.getElementById('bTile').classList.toggle('on', v==='tile');
+  if(v==='tile'){
+    buildTiles();
+    document.querySelector('.a2-wrap').style.display='none';
+    const t=document.getElementById('tiles');
+    t.style.display='flex'; t.style.flexDirection='column'; t.style.alignItems='center';
+    t.style.gap='24px'; t.style.padding='62px 20px 40px';
+    t.querySelectorAll('.tile').forEach(el=>{ el.style.boxShadow='0 8px 30px rgba(0,0,0,.5)'; el.style.transformOrigin='top center';
+      const s=Math.min(1,(window.innerWidth-48)/(210*96/25.4)); el.style.transform=`scale(${s})`; });
+  } else {
+    document.querySelector('.a2-wrap').style.display='flex';
+    document.getElementById('tiles').style.display='none';
+  }
+}
+// monta tiles para impressão sempre
+buildTiles();
+window.addEventListener('beforeprint', buildTiles);
+</script>
+<script>
+(async () => {
+  // Prepend so page-supplied @page / break rules (deck-stage's margin:0,
+  // author CSS) keep source-order precedence over the baseline.
+  const baseCss = document.createElement('style');
+  baseCss.textContent = "@media print {\n  @page { margin: 0.5cm; }\n  html, body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }\n  section, article, figure, table { break-inside: avoid; }\n  *, *::before, *::after {\n    animation-delay: -99s !important; animation-duration: .001s !important;\n    animation-iteration-count: 1 !important; animation-fill-mode: both !important;\n    animation-play-state: running !important; transition-duration: 0s !important;\n  }\n}";
+  document.head.prepend(baseCss);
+  if (document.readyState === 'loading') {
+    await new Promise((r) => document.addEventListener('DOMContentLoaded', r, { once: true }));
+  }
+  let ds = document.querySelector('deck-stage');
+  // whenDefined never resolves when nothing registers the element, so only
+  // await it when a <deck-stage> tag exists (and race a timeout regardless).
+  if (ds && !customElements.get('deck-stage')) {
+    try {
+      await Promise.race([
+        customElements.whenDefined('deck-stage'),
+        new Promise((r) => setTimeout(r, 3000)),
+      ]);
+    } catch (e) {}
+    ds = document.querySelector('deck-stage');
+  }
+  // dc-runtime assigns window.DCLogic at init and mounts into #dc-root on
+  // DOMContentLoaded; settle on that subtree so React has rendered before
+  // print(). Non-DC pages fall through to weighing body.
+  const isDc = !ds && 'DCLogic' in window;
+  const settleRoot = ds || (isDc ? document.getElementById('dc-root') : null) || document.body;
+  if (settleRoot) {
+    // Weigh only content children — skip script/style/template so inline
+    // Babel/CSS doesn't register as stable "content" before the framework
+    // has mounted anything.
+    const MEDIA = 'img,svg,canvas,video,picture,iframe,embed,object';
+    const weigh = () => {
+      let text = 0, media = 0;
+      for (const c of settleRoot.children) {
+        const t = c.tagName;
+        if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+        text += (c.textContent || '').trim().length;
+        media += c.querySelectorAll(MEDIA).length + (c.matches(MEDIA) ? 1 : 0);
+      }
+      return text + media * 100;
+    };
+    // "Non-zero and stable" alone is not sufficient to mean rendered: generic
+    // body can carry a static shell while async main content is pending, and
+    // #dc-root can carry the root DC's static text while child refs are still
+    // .sc-placeholder boxes. Gate generic on readyState 'complete', and never
+    // accept stability while a dc-runtime placeholder is present.
+    const isGeneric = settleRoot === document.body;
+    const deadline = Date.now() + 15000;
+    let last = -1, stable = 0;
+    while (Date.now() < deadline) {
+      const n = weigh();
+      const ready =
+        (!isGeneric || document.readyState === 'complete') &&
+        !settleRoot.querySelector('.sc-placeholder');
+      if (n > 0 && n === last && ready) { if (++stable >= 2) break; } else { stable = 0; }
+      last = n;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+  try { await document.fonts.ready; } catch (e) {}
+  // Jump every animation to its end state so print() never captures a slide
+  // mid-entrance. Ordering matters: the 0s-transition style must be live
+  // BEFORE data-deck-active is set so attribute-keyed transitions don't
+  // start a (now-0s) run from the pre-active base.
+  const st = document.createElement('style');
+  st.textContent = '*,*::before,*::after{animation-delay:-99s !important;animation-duration:.001s !important;animation-iteration-count:1 !important;animation-fill-mode:both !important;animation-play-state:running !important;transition-duration:0s !important}';
+  document.head.appendChild(st);
+  for (const d of document.querySelectorAll('deck-stage')) {
+    for (const c of d.children) {
+      const t = c.tagName;
+      if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+      c.setAttribute('data-deck-active', '');
+    }
+  }
+  try {
+    const sweep = () => {
+      for (const a of document.getAnimations()) {
+        try { a.finish(); } catch (e) {
+          try { a.currentTime = (a.effect && a.effect.getComputedTiming().duration) || 0; a.pause(); } catch (e2) {}
+        }
+      }
+    };
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+  } catch (e) {}
+  setTimeout(() => { try { window.print(); } catch (e) {} }, 200);
+})();
+</script>
+</body>
+</html>

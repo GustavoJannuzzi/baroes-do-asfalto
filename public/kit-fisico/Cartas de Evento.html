@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Cartas de Evento — Barões do Asfalto</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  body{ background:#2c2c2a; }
+  .controls{ position:fixed; top:0; left:0; right:0; z-index:80; display:flex; align-items:center; gap:14px;
+    padding:10px 16px; background:rgba(16,16,14,.94); color:var(--creme); font-family:'Oswald',sans-serif;
+    font-size:12px; letter-spacing:.04em; box-shadow:0 2px 14px rgba(0,0,0,.55); }
+  .controls b{ font-family:'Anton'; letter-spacing:.06em; color:var(--dourado); text-transform:uppercase; }
+  .controls .hint{ margin-left:auto; opacity:.66; font-size:10.5px; font-family:'Special Elite',monospace; }
+
+  .stage{ padding:60px 18px 46px; display:flex; flex-wrap:wrap; justify-content:center; gap:5mm; align-items:flex-start; }
+
+  /* ===== CARTA POKER 63,5 x 88,9 mm ===== */
+  @page{ size:A4; margin:8mm; }
+  .ev{ position:relative; width:63.5mm; height:88.9mm; overflow:hidden; background:var(--creme);
+    background-image:radial-gradient(circle at 18% 10%, rgba(180,150,90,.08), transparent 60%);
+    color:var(--tinta); display:flex; flex-direction:column; font-family:'Source Serif 4', Georgia, serif;
+    box-shadow:0 6px 20px rgba(0,0,0,.4); border:.5pt solid #b8a988; }
+  .ev::before{ content:""; position:absolute; inset:2.2mm; border:1pt solid var(--verde); pointer-events:none; z-index:0; }
+  .ev > .pad{ position:relative; z-index:1; padding:3.4mm 3.4mm 2.6mm; display:flex; flex-direction:column; height:100%; }
+
+  .ev .top{ display:flex; align-items:center; gap:2mm; }
+  .ev .d20{ width:11mm; height:11mm; flex:none; position:relative; display:flex; align-items:center; justify-content:center; }
+  .ev .d20 .hex{ position:absolute; inset:0; background:var(--verde);
+    clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%); }
+  .ev .d20 .n{ position:relative; z-index:1; font-family:'Anton'; font-size:9pt; color:var(--creme); }
+  .ev .kk{ font-family:'Special Elite',monospace; font-size:5pt; letter-spacing:.1em; color:#7a7060; text-transform:uppercase; }
+  .ev .tone{ font-family:'Oswald'; font-weight:700; font-size:5.4pt; text-transform:uppercase; letter-spacing:.05em; margin-top:.4mm; }
+  hr.s{ height:0; border:0; border-top:1pt dashed var(--dourado-2); opacity:.6; margin:2mm 0; }
+  .ev h3{ font-family:'Anton'; font-size:12pt; line-height:.98; margin:1mm 0 0; text-transform:uppercase; letter-spacing:.01em; color:var(--verde); }
+  .ev .eff{ font-family:'Source Serif 4'; font-size:8pt; line-height:1.34; margin-top:1.6mm; }
+  .ev .eff b{ color:var(--vermelho); }
+  .ev .foot{ margin-top:auto; display:flex; justify-content:space-between; align-items:flex-end; padding-top:2mm; }
+  .ev .se{ font-family:'Special Elite',monospace; font-size:4.6pt; color:#8a8068; letter-spacing:.04em; }
+  .ev .icon{ font-family:'Anton'; font-size:10pt; }
+
+  /* faixa de tom */
+  .ev .band{ position:absolute; left:0; right:0; bottom:0; height:3mm; z-index:0; }
+  .ev.bad   .d20 .hex{ background:var(--vermelho); } .ev.bad   h3{ color:var(--vermelho); } .ev.bad   .tone{ color:var(--vermelho); } .ev.bad   .band{ background:var(--vermelho); } .ev.bad .icon{ color:var(--vermelho); }
+  .ev.good  .d20 .hex{ background:var(--verde); }    .ev.good  h3{ color:var(--verde); }    .ev.good  .tone{ color:var(--verde); }    .ev.good  .band{ background:var(--verde); }
+  .ev.opp   .d20 .hex{ background:var(--dourado-2); } .ev.opp   h3{ color:var(--dourado-2); } .ev.opp .tone{ color:var(--dourado-2); }  .ev.opp   .band{ background:var(--dourado); } .ev.opp .icon{ color:var(--dourado-2); }
+  .ev.neu   .d20 .hex{ background:#6a6a60; }          .ev.neu   h3{ color:#5a5a50; }          .ev.neu   .tone{ color:#7a7060; }          .ev.neu   .band{ background:#9a9484; }
+
+  /* verso */
+  .ev.back{ background:var(--verde); background-image:repeating-linear-gradient(45deg, rgba(201,162,39,.06) 0 6px, transparent 6px 12px); }
+  .ev.back::before{ border-color:var(--dourado); }
+  .ev.back .pad{ align-items:center; justify-content:center; text-align:center; gap:2mm; }
+  .ev.back .die{ width:18mm; height:18mm; position:relative; display:flex; align-items:center; justify-content:center; }
+  .ev.back .die .hex{ position:absolute; inset:0; background:transparent; border:1.6pt solid var(--dourado);
+    clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%); }
+  .ev.back .die .q{ font-family:'Anton'; font-size:14pt; color:var(--creme); z-index:1; }
+  .ev.back .bk{ font-family:'Anton'; color:var(--creme); font-size:12pt; text-transform:uppercase; line-height:.95; }
+  .ev.back .wm{ font-family:'Playfair Display'; font-style:italic; color:var(--dourado); font-size:9pt; }
+
+  .sectlabel{ flex-basis:100%; text-align:center; font-family:'Anton'; color:var(--dourado); text-transform:uppercase; letter-spacing:.1em; font-size:13px; margin:8px 0 0; }
+
+  @media print{
+    body{ background:#fff; }
+    .controls{ display:none !important; }
+    .stage{ padding:0; gap:0; display:flex; flex-wrap:wrap; align-content:flex-start; }
+    .ev{ box-shadow:none; }
+    .sectlabel{ display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="controls noprint">
+  <b>Cartas de Evento — Fase Econômica</b>
+  <span class="hint">20 cartas poker · no passo 6 da Fase Econômica, o banqueiro vira 1 carta (ou role 1d20) · ponha sobre o slot do tabuleiro</span>
+</div>
+<div class="stage" id="stage"></div>
+
+<script>
+  // tone: bad | good | opp(ortunidade) | neu(tro)
+  const EV = [
+    [1,"Operação de Vitrine","Pontos com Exposição <b>5+</b> fecham 1 semana (−25% da renda deles).","bad","🚓"],
+    [2,"Receita Aperta o Cerco","Lavagem: complicação em <b>1–2</b> no d6 em todas as operações do mês.","bad","👁"],
+    [3,"Blitz nas Vias","Logística <b>+1 dificuldade</b>; transporte de coleta arriscado.","bad","🚧"],
+    [4,"PM Sobe o Morro","Pontos em comunidade fecham 3 dias; Heat regional <b>+1</b>.","bad","🚓"],
+    [5,"Guerra de Facção","Região aleatória: pontos <b>−50%</b> de renda; passagem proibida.","bad","✕"],
+    [6,"Milícia Aumenta a Taxa","<b>+20%</b> no custo de proteção em território de milícia.","bad","▣"],
+    [7,"Eleições Chegando","Favores políticos custam o <b>dobro</b>; políticos somem.","bad","🏛"],
+    [8,"Crise Econômica","Apostas <b>−20%</b> em todas as regiões.","bad","📉"],
+    [9,"Mês Morno","Sem efeito. O Rio respira — aproveite a calmaria.","neu","•"],
+    [10,"Mês Morno","Sem efeito. Nada de novo no submundo este mês.","neu","•"],
+    [11,"Clássico no Maracanã","<b>+30%</b> de renda no Centro, Tijuca e Zona Norte.","good","⚽"],
+    [12,"Alta Temporada / Verão","<b>+30%</b> na Zona Sul e Barra; polícia ocupada com turismo.","good","☀"],
+    [13,"Morre um da Velha Guarda","<b>1d3</b> pontos órfãos no mercado a <b>50%</b> do preço.","opp","🎩"],
+    [14,"Delegado Transferido","Acordos policiais da região zerados — renegociar do zero.","bad","🔁"],
+    [15,"Caminhão de Carga \"Cai\"","Oportunidade: mercadoria barata via Submundo.","opp","📦"],
+    [16,"Influencer Viraliza o Bicho","Pontos online <b>+40%</b>; Exposição deles <b>+1</b>.","good","📱"],
+    [17,"CPI do Jogo na Câmara","Heat <b>+1</b> geral; favores políticos travados.","bad","🏛"],
+    [18,"Paz Comprada entre Facções","Comunidades estáveis: <b>+20%</b> de renda lá.","good","🕊"],
+    [19,"Auditoria do COAF","Quem lavou <b>R$ 200k+</b> este mês: teste de Lavagem ou complicação grave.","bad","🔎"],
+    [20,"13º do Trabalhador","<b>TODOS</b> os pontos <b>+40%</b> — mês de ouro.","good","💰"]
+  ];
+  const TONEL = { bad:"Má notícia", good:"Boa notícia", opp:"Oportunidade", neu:"Neutro" };
+
+  const stage = document.getElementById('stage');
+  stage.insertAdjacentHTML('beforeend', `<div class="sectlabel">20 Cartas de Evento (frente)</div>`);
+  EV.forEach(([n,t,eff,tone,icon])=>{
+    stage.insertAdjacentHTML('beforeend', `<div class="ev ${tone}"><div class="pad">
+      <div class="top"><div class="d20"><span class="hex"></span><span class="n">${n}</span></div>
+        <div><div class="kk">Evento do mês · 1d20 = ${n}</div><div class="tone">${TONEL[tone]}</div></div></div>
+      <hr class="s">
+      <h3>${t}</h3>
+      <div class="eff">${eff}</div>
+      <div class="foot"><span class="se">Nº 041892 · SÉRIE VB</span><span class="icon">${icon}</span></div>
+      <div class="band"></div>
+    </div></div>`);
+  });
+  stage.insertAdjacentHTML('beforeend', `<div class="sectlabel">Verso comum (imprima no verso de todas)</div>`);
+  stage.insertAdjacentHTML('beforeend', `<div class="ev back"><div class="pad">
+    <div class="wm">Barões do Asfalto</div>
+    <div class="die"><span class="hex"></span><span class="q">?</span></div>
+    <div class="bk">Evento<br>do Mês</div>
+    <div class="se" style="color:var(--creme);opacity:.6;font-family:'Special Elite',monospace;font-size:5pt">O RIO REAGE · FASE ECONÔMICA · PASSO 6</div>
+  </div></div>`);
+</script>
+</body>
+</html>

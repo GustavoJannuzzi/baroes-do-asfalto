@@ -21,6 +21,9 @@ export async function PortalHeader() {
         <Link href="/dashboard" className="px-3 py-1.5 rounded hover:bg-[rgba(201,162,39,.1)] text-txt-dim hover:text-creme">
           Dashboard
         </Link>
+        <Link href="/kit" className="px-3 py-1.5 rounded hover:bg-[rgba(201,162,39,.1)] text-txt-dim hover:text-creme">
+          Kit
+        </Link>
         {profile?.role === "admin" && (
           <Link href="/admin" className="px-3 py-1.5 rounded hover:bg-[rgba(201,162,39,.1)] text-txt-dim hover:text-creme">
             Admin

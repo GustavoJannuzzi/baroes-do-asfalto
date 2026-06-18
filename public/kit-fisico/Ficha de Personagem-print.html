@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Ficha de Personagem — Barões do Asfalto</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  /* ---- específico da ficha ---- */
+  .mast{ display:flex; justify-content:space-between; align-items:flex-start; gap:5mm; }
+  .mast .kicker{ font-size:9pt; }
+  .mast .wordmark{ font-size:25pt; margin:.3mm 0 .8mm; }
+  .mast .tag{ font-family:'Playfair Display',serif; font-style:italic; font-size:8pt; color:#5a5a50; }
+  .mast .pageid{ font-family:'Anton'; font-size:11pt; color:var(--verde); letter-spacing:.04em;
+    text-transform:uppercase; border-top:1.4pt solid var(--dourado); margin-top:1.2mm; padding-top:1mm; }
+  .photo{ width:27mm; height:35mm; border:1.4pt dashed var(--tinta); display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center; gap:1mm; background:rgba(255,255,255,.25); }
+  .photo .lab{ font-size:5.6pt; line-height:1.2; }
+  .brasao{ display:flex; align-items:center; gap:2mm; margin-top:1.5mm; }
+  .brasao .f{ flex:1; }
+
+  .gridform{ display:grid; gap:1.2mm 4mm; }
+  .attr{ text-align:center; }
+  .attr h3{ font-family:'Anton'; font-size:8.4pt; color:var(--verde); margin:0; text-transform:uppercase; letter-spacing:.02em; }
+  .attr .leg{ font-size:5.4pt; color:#6a6a60; text-transform:uppercase; letter-spacing:.02em; min-height:6mm; line-height:1.15; margin:.4mm 0; }
+  .attr .circ{ justify-content:center; }
+
+  .skcols{ display:grid; grid-template-columns:repeat(5,1fr); gap:0 3mm; }
+  .skcol h4{ font-family:'Anton'; font-size:7.2pt; text-transform:uppercase; letter-spacing:.03em;
+    color:var(--vermelho); margin:0 0 .8mm; padding-bottom:.6mm; border-bottom:1pt solid var(--dourado); }
+  .sk{ display:flex; justify-content:space-between; align-items:center; gap:1.5mm; padding:1mm 0; border-bottom:.5pt dotted var(--linha-2); }
+  .skn{ font-family:'Oswald'; font-weight:500; font-size:6.6pt; line-height:1.05; min-width:0; }
+  .skn em{ display:block; font-style:normal; font-size:4.6pt; color:var(--dourado-2); font-weight:600; letter-spacing:.04em; margin-top:.4mm; }
+  .pips i{ width:2.5mm; height:2.5mm; }
+
+  .traco{ border:1pt solid var(--linha-2); padding:1.2mm 2mm; }
+  .traco .t{ font-family:'Anton'; font-size:7.2pt; text-transform:uppercase; color:var(--verde); letter-spacing:.03em; }
+  .traco .t small{ font-family:'Source Serif 4'; font-style:italic; font-weight:400; color:#6a6a60; font-size:5.8pt; text-transform:none; letter-spacing:0; }
+
+  .arqbox{ border:1.2pt solid var(--verde); }
+  .arqbox .t{ background:var(--verde); color:var(--creme); font-family:'Oswald'; font-weight:600;
+    font-size:6.6pt; text-transform:uppercase; letter-spacing:.04em; padding:.8mm 2mm; }
+  .arqbox.red{ border-color:var(--vermelho); }
+  .arqbox.red .t{ background:var(--vermelho); }
+  .arqbox .b{ padding:1.4mm 2mm; }
+
+  /* página 2 */
+  .metric{ margin-bottom:1.8mm; }
+  .metric .head{ display:flex; align-items:center; gap:2.5mm; }
+  .mi{ width:6.2mm; height:6.2mm; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:'Anton'; font-size:8pt; color:#fff; flex:none; }
+  .mi.h{ background:var(--vermelho);} .mi.e{ background:var(--azul);} .mi.c{ background:var(--dourado); color:var(--tinta);} .mi.p{ background:var(--tinta);}
+  .mname{ font-family:'Anton'; font-size:11pt; min-width:38mm; text-transform:uppercase; letter-spacing:.02em; }
+  .track{ display:flex; gap:1mm; }
+  .track i{ width:5.2mm; height:6.4mm; border:1.1pt solid var(--tinta); display:flex; align-items:flex-start;
+    justify-content:flex-end; font-family:'Oswald'; font-size:4.6pt; color:var(--linha); padding:.3mm .4mm; }
+  .track i.cap{ border-color:var(--vermelho); border-width:1.7pt; color:var(--vermelho); }
+  .eff{ font-size:5.8pt; color:#555; font-family:'Oswald'; line-height:1.3; margin:.6mm 0 0 8.7mm; }
+  .eff b{ color:var(--verde); }
+
+  .extrato{ border:1.2pt solid var(--verde); }
+  .extrato .t{ background:var(--verde); color:var(--creme); font-family:'Oswald'; font-weight:600; line-height:1.15;
+    font-size:6.4pt; text-transform:uppercase; letter-spacing:.04em; padding:.8mm 2mm; display:flex; justify-content:space-between; align-items:center; gap:2mm;}
+  .extrato .t span:first-child{ white-space:nowrap; }
+  .pageid{ line-height:1.08; }
+  .extrato .b{ padding:2.4mm 2mm 3mm; display:flex; align-items:baseline; gap:1.5mm; }
+  .extrato .b .rs{ font-family:'Oswald'; font-weight:700; color:var(--verde); font-size:10pt; }
+  .extrato.red{ border-color:var(--vermelho);} .extrato.red .t{ background:var(--vermelho);} .extrato.red .b .rs{ color:var(--vermelho);}
+  .extrato.blue{ border-color:var(--azul);} .extrato.blue .t{ background:var(--azul);} .extrato.blue .b .rs{ color:var(--azul);}
+
+  .custos{ font-family:'Oswald'; font-size:6.4pt; }
+  .custos b{ color:var(--verde); }
+
+  /* página 3 / 4 */
+  table.grid td .rs{ font-family:'Oswald'; font-weight:700; font-size:7pt; color:var(--verde); }
+  .total{ display:flex; justify-content:space-between; align-items:center;
+    background:var(--verde); color:var(--creme); font-family:'Anton'; font-size:8.6pt; line-height:1.1;
+    text-transform:uppercase; letter-spacing:.04em; padding:1.2mm 3mm; gap:3mm; }
+  .total span:first-child{ white-space:nowrap; }
+  .resumo{ display:grid; grid-template-columns:1fr 1fr; gap:3mm; }
+  .resline{ display:flex; justify-content:space-between; align-items:baseline; gap:2mm;
+    font-family:'Oswald'; font-size:7pt; padding:.5mm 0; border-bottom:1px dotted var(--linha); }
+  .resline .lab{ font-weight:500; }
+  .lucro{ border:1.6pt solid var(--verde); margin-top:1.5mm; position:relative; }
+  .lucro .t{ background:var(--verde); color:var(--creme); font-family:'Anton'; font-size:9pt; line-height:1.1;
+    padding:1mm 3mm; display:flex; justify-content:space-between; align-items:center; text-transform:uppercase; letter-spacing:.03em; gap:3mm;}
+  .lucro .t span:first-child{ white-space:nowrap; }
+  .lucro .b{ padding:2.4mm 3mm; display:flex; justify-content:space-between; align-items:center; gap:3mm;}
+  .stamps2{ display:flex; gap:3mm; }
+
+  .cad{ border:1.4pt solid var(--vermelho); }
+  .cad .t{ background:var(--vermelho); color:var(--creme); font-family:'Anton'; font-size:8.4pt; line-height:1.1;
+    text-transform:uppercase; letter-spacing:.05em; padding:1mm 2.5mm; display:flex; justify-content:space-between; align-items:center; gap:2mm;}
+  .cad .t span:first-child{ white-space:nowrap; }
+  .cad .t .sub{ font-family:'Special Elite'; font-size:6pt; color:var(--creme); letter-spacing:.04em; }
+  .cad.green{ border-color:var(--verde);} .cad.green .t{ background:var(--verde);}
+
+  .sectitle{ font-family:'Anton'; font-size:8pt; text-transform:uppercase; color:var(--verde);
+    letter-spacing:.04em; border-bottom:1pt solid var(--dourado); padding-bottom:.5mm; margin:0 0 1mm; }
+
+  .footer{ margin-top:auto; }
+  .serie{ font-family:'Special Elite'; font-size:6pt; color:#7a7a6e; letter-spacing:.05em; }
+  .quote{ font-family:'Playfair Display'; font-style:italic; font-size:7.6pt; color:var(--verde); }
+  .cornerwm{ position:absolute; bottom:7mm; right:7mm; --s:30mm; z-index:0; }
+</style>
+</head>
+<body>
+
+<!-- ================= FOLHA 1 — FRENTE : QUEM É VOCÊ ================= -->
+<section class="sheet" data-screen-label="Ficha · Folha 1 Frente">
+  <div class="cornerwm bicho wm"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div><div class="grp">00</div></div>
+
+  <!-- masthead -->
+  <div class="mast">
+    <div class="grow">
+      <div class="kicker">Ficha de Personagem</div>
+      <div class="wordmark">Barões do Asfalto</div>
+      <div class="tag">dossiê do jogador · jogo do bicho &amp; crime organizado no Rio</div>
+      <div class="pageid">Folha 1 · Frente — Quem é você</div>
+    </div>
+    <div class="col" style="align-items:center; gap:1mm;">
+      <div class="photo"><span class="lab">FOTO 3×4<br>RETRATO<br>FALADO</span></div>
+    </div>
+  </div>
+
+  <div class="brasao">
+    <div class="bicho" style="--s:13mm"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div><div class="grp">00</div></div>
+    <div class="f grow"><label>Bicho-brasão (1 de 25)</label><span class="line"></span></div>
+    <div class="f" style="width:30mm;"><label>Grupo nº</label><span class="line"></span></div>
+  </div>
+
+  <hr class="serrilha">
+
+  <!-- identificação -->
+  <div class="bar">Identificação <span class="sub">Nº DE INSCRIÇÃO ___________</span></div>
+  <div class="gridform" style="grid-template-columns:2.4fr 1.6fr 1.4fr; margin:1.6mm 0;">
+    <div class="f"><label>Nome completo</label><span class="line"></span></div>
+    <div class="f"><label>Apelido (na rua)</label><span class="line"></span></div>
+    <div class="f"><label>Arquétipo</label><span class="line"></span></div>
+    <div class="f"><label>Idade</label><span class="line"></span></div>
+    <div class="f"><label>Origem</label><span class="line"></span></div>
+    <div class="f"><label>Residência atual</label><span class="line"></span></div>
+  </div>
+  <div class="f" style="margin-bottom:1mm;"><label>Histórico criminal (1 linha)</label><span class="line"></span></div>
+
+  <hr class="serrilha green">
+
+  <!-- atributos -->
+  <div class="bar">Atributos <span class="sub">PINTE OS CÍRCULOS · ESCALA 1–5</span></div>
+  <div class="gridform" style="grid-template-columns:repeat(6,1fr); margin:1.6mm 0 0;">
+    <div class="attr"><h3>Mente</h3><div class="leg">raciocínio · cálculo · memória</div><span class="circ"><i></i><i></i><i></i><i></i><i></i></span></div>
+    <div class="attr"><h3>Lábia</h3><div class="leg">convence · seduz · engana</div><span class="circ"><i></i><i></i><i></i><i></i><i></i></span></div>
+    <div class="attr"><h3>Sangue Frio</h3><div class="leg">aguenta · resiste · encara</div><span class="circ"><i></i><i></i><i></i><i></i><i></i></span></div>
+    <div class="attr"><h3>Operação</h3><div class="leg">dirige · atira · executa</div><span class="circ"><i></i><i></i><i></i><i></i><i></i></span></div>
+    <div class="attr"><h3>Contatos</h3><div class="leg">conhece · alcança · mobiliza</div><span class="circ"><i></i><i></i><i></i><i></i><i></i></span></div>
+    <div class="attr"><h3>Instinto</h3><div class="leg">percebe · fareja · pressente</div><span class="circ"><i></i><i></i><i></i><i></i><i></i></span></div>
+  </div>
+
+  <hr class="serrilha">
+
+  <!-- perícias -->
+  <div class="bar">Perícias <span class="sub">MARQUE OS QUADROS · 0–5 · (ATRIBUTO-BASE)</span></div>
+  <div class="skcols" style="margin:1.6mm 0;">
+    <div class="skcol">
+      <h4>Sociais</h4>
+      <div class="sk"><span class="skn">Negociação <em>LÁB</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Intimidação <em>LÁB/SF</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Sedução <em>LÁB</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Mentira <em>LÁB/SF</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Leitura Intenç. <em>INS/LÁB</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+    </div>
+    <div class="skcol">
+      <h4>Estratégicas</h4>
+      <div class="sk"><span class="skn">Planejamento <em>MEN</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Economia Ileg. <em>MEN</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Lavagem <em>MEN</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Logística <em>MEN/OP</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+    </div>
+    <div class="skcol">
+      <h4>Operacionais</h4>
+      <div class="sk"><span class="skn">Direção <em>OP</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Fuga <em>OP/INS</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Disfarce <em>OP/LÁB</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Invasão <em>OP</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Ocultação <em>OP/INS</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+    </div>
+    <div class="skcol">
+      <h4>Combate</h4>
+      <div class="sk"><span class="skn">Armas de Fogo <em>OP</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Corpo a Corpo <em>OP/SF</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Táticas <em>MEN/OP</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <h4 style="margin-top:2mm;">Especializações</h4>
+      <div class="f" style="margin-top:.6mm;"><span class="line"></span></div>
+      <div class="f" style="margin-top:1.4mm;"><span class="line"></span></div>
+      <div class="f" style="margin-top:1.4mm;"><span class="line"></span></div>
+      <div class="tiny muted" style="margin-top:.6mm;">+1 dado quando se aplica</div>
+    </div>
+    <div class="skcol">
+      <h4>Conhecimento</h4>
+      <div class="sk"><span class="skn">Submundo Car. <em>MEN/CON</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Política <em>MEN/CON</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Tecnologia <em>MEN</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Direito <em>MEN</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="sk"><span class="skn">Medicina de Rua <em>INS/MEN</em></span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
+    </div>
+  </div>
+
+  <hr class="serrilha green">
+
+  <!-- traços narrativos -->
+  <div class="bar gold">Traços Narrativos <span class="sub">QUEM VOCÊ É QUANDO NINGUÉM VÊ</span></div>
+  <div class="gridform" style="grid-template-columns:1fr 1fr; margin:1.6mm 0;">
+    <div class="traco"><div class="t">Ambição <small>o que realmente quer</small></div><span class="line"></span><span class="line" style="margin-top:1mm;"></span></div>
+    <div class="traco"><div class="t">Trauma / Medo</div><span class="line"></span><span class="line" style="margin-top:1mm;"></span></div>
+    <div class="traco"><div class="t">Código Pessoal <small>a linha que não cruza</small></div><span class="line"></span><span class="line" style="margin-top:1mm;"></span></div>
+    <div class="traco"><div class="t">Vício / Dependência</div><span class="line"></span><span class="line" style="margin-top:1mm;"></span></div>
+  </div>
+
+  <!-- arquétipo -->
+  <div class="gridform" style="grid-template-columns:1fr 1fr; gap:3mm;">
+    <div class="arqbox"><div class="t">Vantagem de Arquétipo ▸ ver carta</div><div class="b"><span class="line tall"></span></div></div>
+    <div class="arqbox red"><div class="t">Desvantagem ▸ ver carta</div><div class="b"><span class="line tall"></span></div></div>
+  </div>
+
+  <div class="footer row between" style="align-items:flex-end; margin-top:1.6mm;">
+    <span class="serie">Nº 041892 · SÉRIE VB · BARÕES DO ASFALTO™</span>
+    <span class="quote">“Todo carioca tem um bicho.”</span>
+  </div>
+</section>
+
+<!-- ================= FOLHA 1 — VERSO : O QUE VOCÊ VALE ================= -->
+<section class="sheet" data-screen-label="Ficha · Folha 1 Verso">
+  <div class="cornerwm bicho wm"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div><div class="grp">00</div></div>
+
+  <div class="row between" style="align-items:flex-end;">
+    <div><span class="kicker" style="font-size:8pt;">Barões do Asfalto</span>
+      <div class="pageid" style="font-family:'Anton'; font-size:13pt; color:var(--verde); text-transform:uppercase; letter-spacing:.04em; border-top:1.4pt solid var(--dourado); margin-top:1mm; padding-top:1mm;">Folha 1 · Verso — O que você vale</div></div>
+    <div class="f" style="width:55mm;"><label>Personagem</label><span class="line"></span></div>
+  </div>
+
+  <hr class="serrilha">
+
+  <!-- métricas -->
+  <div class="bar">As Quatro Métricas <span class="sub">ESCALA 0–10 · MARQUE A LÁPIS</span></div>
+  <div style="margin:2mm 0;">
+    <div class="metric">
+      <div class="head"><div class="mi h">H</div><div class="mname">Heat</div>
+        <div class="track"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>6</i><i>7</i><i>8</i><i>9</i><i class="cap">10</i></div></div>
+      <div class="eff"><b>3+</b> −1 social c/ civis &nbsp;·&nbsp; <b>5+</b> investigação ativa, −2 &nbsp;·&nbsp; <b>7+</b> operações contra você, −3 &nbsp;·&nbsp; <b>9+</b> força-tarefa</div>
+    </div>
+    <div class="metric">
+      <div class="head"><div class="mi e">E</div><div class="mname">Exposição</div>
+        <div class="track"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>6</i><i>7</i><i>8</i><i>9</i><i class="cap">10</i></div></div>
+      <div class="eff">rastro legal: alta = fácil de investigar &nbsp;·&nbsp; <b>7+</b> não usa banco &nbsp;·&nbsp; <b>8+</b> Receita entra automático</div>
+    </div>
+    <div class="metric">
+      <div class="head"><div class="mi c">C</div><div class="mname">Capital de Rua</div>
+        <div class="track"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>6</i><i>7</i><i>8</i><i>9</i><i class="cap">10</i></div></div>
+      <div class="eff">reputação no submundo: <b>+1 dado</b> social no crime a cada 2 pontos &nbsp;·&nbsp; 5% de desconto por ponto</div>
+    </div>
+    <div class="metric">
+      <div class="head"><div class="mi p">P</div><div class="mname">Pressão</div>
+        <div class="track"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>6</i><i>7</i><i>8</i><i>9</i><i class="cap">10</i></div></div>
+      <div class="eff"><b>3-4</b> −1 Sangue Frio &nbsp;·&nbsp; <b>5-6</b> −1 SF e Instinto &nbsp;·&nbsp; <b>7-8</b> −2 testes mentais &nbsp;·&nbsp; <b>9-10</b> −3 em tudo &nbsp;·&nbsp; <b style="color:var(--vermelho)">10 = COLAPSO (role 1d6)</b></div>
+    </div>
+  </div>
+
+  <hr class="serrilha green">
+
+  <div class="row gap4">
+    <!-- condições -->
+    <div class="grow">
+      <div class="bar red">Condições</div>
+      <div style="margin:1.6mm 0;">
+        <div class="osw" style="font-size:7.4pt;">
+          <span class="chk"></span>Ferimento Leve <b>(−1)</b> &nbsp;&nbsp;
+          <span class="chk"></span>Grave <b>(−2)</b> &nbsp;&nbsp;
+          <span class="chk"></span>Crítico <b>(−3)</b>
+        </div>
+        <div class="lab" style="margin:2mm 0 .6mm;">Complicações legais ativas</div>
+        <span class="line"></span><span class="line" style="display:block;margin-top:1.4mm;"></span><span class="line" style="display:block;margin-top:1.4mm;"></span>
+      </div>
+    </div>
+    <!-- dívidas -->
+    <div class="grow">
+      <div class="bar red">Dívidas Urgentes <span class="sub">CREDOR · VALOR · PRAZO</span></div>
+      <table class="grid" style="margin-top:1.6mm;">
+        <tr><th style="width:42%">Credor</th><th>Valor R$</th><th>Prazo</th></tr>
+        <tr><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <hr class="serrilha green">
+
+  <!-- dinheiro -->
+  <div class="bar">Dinheiro <span class="sub">EXTRATO PESSOAL</span></div>
+  <div class="row gap3" style="margin:1.6mm 0;">
+    <div class="extrato grow"><div class="t"><span>Limpo</span><span class="mono" style="font-size:5.6pt;">usa em tudo</span></div><div class="b"><span class="rs">R$</span><span class="line"></span></div></div>
+    <div class="extrato red grow"><div class="t"><span>Sujo</span><span class="mono" style="font-size:5.6pt;">até 10 mil informal</span></div><div class="b"><span class="rs">R$</span><span class="line"></span></div></div>
+    <div class="extrato blue grow"><div class="t"><span>Em Trânsito</span><span class="mono" style="font-size:5.6pt;">lavando</span></div><div class="b"><span class="rs">R$</span><span class="line"></span></div></div>
+  </div>
+  <div class="f"><label>Fica pronto em</label><span class="line" style="max-width:30mm;"></span><span class="lab">semanas (2–16, perde a taxa da empresa)</span></div>
+
+  <hr class="serrilha green">
+
+  <!-- evolução -->
+  <div class="bar gold">Evolução <span class="sub">XP &amp; MARCOS</span></div>
+  <div class="row gap4" style="margin:1.6mm 0;">
+    <div class="col gap2" style="width:60mm;">
+      <div class="f"><label>XP atual</label><span class="line"></span></div>
+      <div class="f"><label>Próxima compra planejada</label><span class="line"></span></div>
+      <div class="custos" style="border:1pt solid var(--linha-2); padding:1.4mm 2mm; line-height:1.5;">
+        <b>Atributo:</b> 4 / 8 / 12 / 16 XP<br>
+        <b>Perícia:</b> 2 / 3 / 4 / 6 / 8 XP<br>
+        <b>Especialização:</b> 3 XP
+      </div>
+    </div>
+    <div class="grow">
+      <div class="lab" style="margin-bottom:1mm;">Marcos narrativos</div>
+      <div class="gridform" style="grid-template-columns:1fr 1fr; gap:1.6mm 4mm;">
+        <span class="line"></span><span class="line"></span>
+        <span class="line"></span><span class="line"></span>
+        <span class="line"></span><span class="line"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer row between" style="align-items:flex-end; margin-top:1.6mm;">
+    <span class="serie">Nº 041892 · SÉRIE VB · VERSO</span>
+    <span class="quote">“Dívida nunca prescreve.”</span>
+  </div>
+</section>
+
+<!-- ================= FOLHA 2 — FRENTE : SEU IMPÉRIO ================= -->
+<section class="sheet" data-screen-label="Ficha · Folha 2 Frente">
+  <div class="cornerwm bicho wm"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div><div class="grp">00</div></div>
+
+  <div class="row between" style="align-items:flex-end;">
+    <div><span class="kicker" style="font-size:8pt;">Barões do Asfalto</span>
+      <div class="pageid" style="font-family:'Anton'; font-size:13pt; color:var(--verde); text-transform:uppercase; letter-spacing:.04em; border-top:1.4pt solid var(--dourado); margin-top:1mm; padding-top:1mm;">Folha 2 · Frente — Seu império</div></div>
+    <div class="f" style="width:55mm;"><label>Organização / brasão</label><span class="line"></span></div>
+  </div>
+
+  <hr class="serrilha">
+
+  <!-- pontos do bicho -->
+  <div class="bar">Pontos de Jogo do Bicho <span class="sub">A BANCA QUE VOCÊ SUSTENTA</span></div>
+  <table class="grid" style="margin:1.6mm 0;">
+    <tr><th style="width:30%">Nome / Local</th><th>Tipo</th><th>Renda líq./mês</th><th>Proteção paga a</th><th style="width:13%">Exp. /10</th></tr>
+    <tr><td></td><td></td><td><span class="rs">R$</span></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td><span class="rs">R$</span></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td><span class="rs">R$</span></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td><span class="rs">R$</span></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td><span class="rs">R$</span></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td><span class="rs">R$</span></td><td></td><td></td></tr>
+  </table>
+  <div class="total"><span>Total de renda mensal</span><span>R$ ______________</span></div>
+
+  <hr class="serrilha green">
+
+  <div class="row gap4">
+    <!-- empresas de fachada -->
+    <div class="grow">
+      <div class="bar">Empresas de Fachada</div>
+      <table class="grid" style="margin-top:1.6mm;">
+        <tr><th>Nome</th><th>Tipo</th><th>Cap./mês</th><th>Taxa%</th><th>Custo</th></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <hr class="serrilha green">
+
+  <!-- propriedades -->
+  <div class="bar">Propriedades &amp; Veículos</div>
+  <table class="grid" style="margin:1.6mm 0;">
+    <tr><th style="width:34%">Descrição</th><th>Tipo</th><th>Onde</th><th>Em nome de (laranja)</th></tr>
+    <tr><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td></tr>
+  </table>
+
+  <hr class="serrilha green">
+
+  <div class="row gap4">
+    <!-- resumo financeiro -->
+    <div style="flex:1.25;">
+      <div class="bar gold">Resumo Financeiro Mensal</div>
+      <div class="resumo" style="margin-top:1.6mm;">
+        <div>
+          <div class="sectitle">Receitas</div>
+          <div class="resline"><span class="lab">Pontos do bicho</span><span class="mono">R$</span></div>
+          <div class="resline"><span class="lab">Empresas</span><span class="mono">R$</span></div>
+          <div class="resline"><span class="lab">Outros</span><span class="mono">R$</span></div>
+          <div class="resline" style="border-bottom:1.4pt solid var(--verde);"><span class="lab" style="color:var(--verde)">Total</span><span class="mono">R$</span></div>
+        </div>
+        <div>
+          <div class="sectitle">Despesas</div>
+          <div class="resline"><span class="lab">Seguranças</span><span class="mono">R$</span></div>
+          <div class="resline"><span class="lab">Proteção</span><span class="mono">R$</span></div>
+          <div class="resline"><span class="lab">Contatos</span><span class="mono">R$</span></div>
+          <div class="resline"><span class="lab">Laranjas</span><span class="mono">R$</span></div>
+          <div class="resline"><span class="lab">Aluguéis</span><span class="mono">R$</span></div>
+          <div class="resline"><span class="lab">Advogado</span><span class="mono">R$</span></div>
+          <div class="resline" style="border-bottom:1.4pt solid var(--vermelho);"><span class="lab" style="color:var(--vermelho)">Total</span><span class="mono">R$</span></div>
+        </div>
+      </div>
+      <div class="lucro">
+        <div class="t"><span>Lucro líquido mensal</span><span>R$ ____________</span></div>
+        <div class="b">
+          <span class="tiny muted">marque o resultado do mês ▸</span>
+          <span class="stamps2"><span class="stamp green">No Verde</span><span class="stamp">No Vermelho</span></span>
+        </div>
+      </div>
+    </div>
+    <!-- segurança -->
+    <div class="grow">
+      <div class="bar red">Segurança</div>
+      <div class="col gap2" style="margin-top:1.6mm;">
+        <div class="f"><label>Chefe de segurança</label><span class="line"></span></div>
+        <div class="row gap3">
+          <div class="f grow"><label>Lealdade /10</label><span class="line"></span></div>
+          <div class="f grow"><label>Nº seguranças</label><span class="line"></span></div>
+        </div>
+        <div class="row gap3">
+          <div class="f grow"><label>Lealdade média</label><span class="line"></span></div>
+          <div class="f grow"><label>Custo mensal R$</label><span class="line"></span></div>
+        </div>
+        <div class="lab" style="margin-top:.6mm;">Locais protegidos</div>
+        <span class="line"></span><span class="line" style="display:block;margin-top:1.4mm;"></span><span class="line" style="display:block;margin-top:1.4mm;"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer row between" style="align-items:flex-end; margin-top:1.6mm;">
+    <span class="serie">Nº 041892 · SÉRIE VB · IMPÉRIO</span>
+    <span class="quote">“Banca grande, sono curto.”</span>
+  </div>
+</section>
+
+<!-- ================= FOLHA 2 — VERSO : SUA REDE ================= -->
+<section class="sheet" data-screen-label="Ficha · Folha 2 Verso">
+  <div class="cornerwm bicho wm"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div><div class="grp">00</div></div>
+
+  <div class="row between" style="align-items:flex-end;">
+    <div><span class="kicker" style="font-size:8pt;">Barões do Asfalto</span>
+      <div class="pageid" style="font-family:'Anton'; font-size:13pt; color:var(--verde); text-transform:uppercase; letter-spacing:.04em; border-top:1.4pt solid var(--dourado); margin-top:1mm; padding-top:1mm;">Folha 2 · Verso — Sua rede</div></div>
+    <div class="f" style="width:55mm;"><label>Personagem</label><span class="line"></span></div>
+  </div>
+
+  <hr class="serrilha">
+
+  <div class="row gap4">
+    <!-- contatos -->
+    <div style="flex:1.15;">
+      <div class="bar">Contatos <span class="sub">QUEM ATENDE O TELEFONE</span></div>
+      <table class="grid" style="margin-top:1.6mm;">
+        <tr><th style="width:26%">Nome</th><th>Função</th><th style="width:14%">Leal./10</th><th>Serviço</th><th style="width:14%">Custo</th></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td></tr>
+      </table>
+    </div>
+    <!-- favores -->
+    <div class="grow col gap2">
+      <div class="cad">
+        <div class="t"><span>Devo</span><span class="sub">caderneta de cobrança</span></div>
+        <table class="grid" style="border:0;">
+          <tr><th style="width:30%">A quem</th><th>O quê</th><th>Grau</th><th>Pts</th><th>Prazo</th></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td></tr>
+        </table>
+      </div>
+      <div class="cad green">
+        <div class="t"><span>Me devem</span><span class="sub">P / M / G / C</span></div>
+        <table class="grid" style="border:0;">
+          <tr><th style="width:34%">Quem</th><th>O quê</th><th>Grau</th><th>Pontos</th></tr>
+          <tr><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <hr class="serrilha green">
+
+  <!-- relacionamentos -->
+  <div class="bar">Relacionamentos</div>
+  <div class="row gap4" style="margin:1.6mm 0;">
+    <div class="grow">
+      <div class="sectitle">Aliados</div>
+      <span class="line"></span><span class="line" style="display:block;margin-top:1.6mm;"></span><span class="line" style="display:block;margin-top:1.6mm;"></span><span class="line" style="display:block;margin-top:1.6mm;"></span>
+    </div>
+    <div class="grow">
+      <div class="sectitle" style="color:var(--vermelho); border-color:var(--vermelho);">Inimigos <span class="tiny muted" style="font-family:'Source Serif 4';">+ motivo</span></div>
+      <span class="line"></span><span class="line" style="display:block;margin-top:1.6mm;"></span><span class="line" style="display:block;margin-top:1.6mm;"></span><span class="line" style="display:block;margin-top:1.6mm;"></span>
+    </div>
+    <div class="grow">
+      <div class="sectitle">Família / Civis</div>
+      <span class="line"></span><span class="line" style="display:block;margin-top:1.6mm;"></span><span class="line" style="display:block;margin-top:1.6mm;"></span>
+      <div class="quote" style="font-size:6.6pt; margin-top:1mm;">“eles não sabem — ou sabem?”</div>
+    </div>
+  </div>
+
+  <hr class="serrilha green">
+
+  <!-- objetivos -->
+  <div class="bar gold">Objetivos</div>
+  <div class="row gap4" style="margin:1.6mm 0;">
+    <div class="grow">
+      <div class="lab" style="margin-bottom:1mm;">Curto prazo</div>
+      <span class="line"></span><span class="line" style="display:block;margin-top:1.6mm;"></span><span class="line" style="display:block;margin-top:1.6mm;"></span>
+    </div>
+    <div class="grow">
+      <div class="lab" style="margin-bottom:1mm;">Médio prazo</div>
+      <span class="line"></span><span class="line" style="display:block;margin-top:1.6mm;"></span>
+    </div>
+    <div style="flex:1.3;">
+      <div class="lab" style="margin-bottom:1mm;">Longo prazo / ambição final</div>
+      <span class="line tall"></span>
+    </div>
+  </div>
+
+  <hr class="serrilha green">
+
+  <!-- anotações -->
+  <div class="bar">Anotações da Sessão</div>
+  <div style="margin:1.6mm 0;">
+    <span class="line"></span><span class="line" style="display:block;margin-top:2mm;"></span><span class="line" style="display:block;margin-top:2mm;"></span>
+  </div>
+
+  <div class="footer row between" style="align-items:flex-end; margin-top:1.2mm;">
+    <span class="serie">Nº 041892 · SÉRIE VB · REDE</span>
+    <span class="quote">“No Rio, palavra vale mais que contrato. E dívida nunca prescreve.”</span>
+  </div>
+</section>
+
+<script>
+(async () => {
+  // Prepend so page-supplied @page / break rules (deck-stage's margin:0,
+  // author CSS) keep source-order precedence over the baseline.
+  const baseCss = document.createElement('style');
+  baseCss.textContent = "@media print {\n  @page { margin: 0.5cm; }\n  html, body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }\n  section, article, figure, table { break-inside: avoid; }\n  *, *::before, *::after {\n    animation-delay: -99s !important; animation-duration: .001s !important;\n    animation-iteration-count: 1 !important; animation-fill-mode: both !important;\n    animation-play-state: running !important; transition-duration: 0s !important;\n  }\n}";
+  document.head.prepend(baseCss);
+  if (document.readyState === 'loading') {
+    await new Promise((r) => document.addEventListener('DOMContentLoaded', r, { once: true }));
+  }
+  let ds = document.querySelector('deck-stage');
+  // whenDefined never resolves when nothing registers the element, so only
+  // await it when a <deck-stage> tag exists (and race a timeout regardless).
+  if (ds && !customElements.get('deck-stage')) {
+    try {
+      await Promise.race([
+        customElements.whenDefined('deck-stage'),
+        new Promise((r) => setTimeout(r, 3000)),
+      ]);
+    } catch (e) {}
+    ds = document.querySelector('deck-stage');
+  }
+  // dc-runtime assigns window.DCLogic at init and mounts into #dc-root on
+  // DOMContentLoaded; settle on that subtree so React has rendered before
+  // print(). Non-DC pages fall through to weighing body.
+  const isDc = !ds && 'DCLogic' in window;
+  const settleRoot = ds || (isDc ? document.getElementById('dc-root') : null) || document.body;
+  if (settleRoot) {
+    // Weigh only content children — skip script/style/template so inline
+    // Babel/CSS doesn't register as stable "content" before the framework
+    // has mounted anything.
+    const MEDIA = 'img,svg,canvas,video,picture,iframe,embed,object';
+    const weigh = () => {
+      let text = 0, media = 0;
+      for (const c of settleRoot.children) {
+        const t = c.tagName;
+        if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+        text += (c.textContent || '').trim().length;
+        media += c.querySelectorAll(MEDIA).length + (c.matches(MEDIA) ? 1 : 0);
+      }
+      return text + media * 100;
+    };
+    // "Non-zero and stable" alone is not sufficient to mean rendered: generic
+    // body can carry a static shell while async main content is pending, and
+    // #dc-root can carry the root DC's static text while child refs are still
+    // .sc-placeholder boxes. Gate generic on readyState 'complete', and never
+    // accept stability while a dc-runtime placeholder is present.
+    const isGeneric = settleRoot === document.body;
+    const deadline = Date.now() + 15000;
+    let last = -1, stable = 0;
+    while (Date.now() < deadline) {
+      const n = weigh();
+      const ready =
+        (!isGeneric || document.readyState === 'complete') &&
+        !settleRoot.querySelector('.sc-placeholder');
+      if (n > 0 && n === last && ready) { if (++stable >= 2) break; } else { stable = 0; }
+      last = n;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+  try { await document.fonts.ready; } catch (e) {}
+  // Jump every animation to its end state so print() never captures a slide
+  // mid-entrance. Ordering matters: the 0s-transition style must be live
+  // BEFORE data-deck-active is set so attribute-keyed transitions don't
+  // start a (now-0s) run from the pre-active base.
+  const st = document.createElement('style');
+  st.textContent = '*,*::before,*::after{animation-delay:-99s !important;animation-duration:.001s !important;animation-iteration-count:1 !important;animation-fill-mode:both !important;animation-play-state:running !important;transition-duration:0s !important}';
+  document.head.appendChild(st);
+  for (const d of document.querySelectorAll('deck-stage')) {
+    for (const c of d.children) {
+      const t = c.tagName;
+      if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+      c.setAttribute('data-deck-active', '');
+    }
+  }
+  try {
+    const sweep = () => {
+      for (const a of document.getAnimations()) {
+        try { a.finish(); } catch (e) {
+          try { a.currentTime = (a.effect && a.effect.getComputedTiming().duration) || 0; a.pause(); } catch (e2) {}
+        }
+      }
+    };
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+  } catch (e) {}
+  setTimeout(() => { try { window.print(); } catch (e) {} }, 200);
+})();
+</script>
+</body>
+</html>

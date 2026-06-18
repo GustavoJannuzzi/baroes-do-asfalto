@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Livro Rápido do Mestre — Barões do Asfalto</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+  body{ background:#201f1b; }
+
+  /* ===================== CONTROLES ===================== */
+  .controls{ position:fixed; top:0; left:0; right:0; z-index:80; display:flex; align-items:center; gap:14px;
+    padding:10px 16px; background:rgba(16,16,14,.94); color:var(--creme); font-family:'Oswald',sans-serif;
+    font-size:12px; letter-spacing:.04em; box-shadow:0 2px 14px rgba(0,0,0,.55); }
+  .controls b{ font-family:'Anton'; letter-spacing:.06em; color:var(--dourado); text-transform:uppercase; }
+  .controls .seg{ display:flex; border:1px solid rgba(244,236,216,.32); border-radius:4px; overflow:hidden; }
+  .controls .seg button{ background:none; border:0; color:var(--creme); font-family:'Oswald'; font-size:11px;
+    text-transform:uppercase; letter-spacing:.05em; padding:5px 13px; cursor:pointer; }
+  .controls .seg button.on{ background:var(--dourado); color:var(--tinta); font-weight:600; }
+  .controls .hint{ margin-left:auto; opacity:.66; font-size:10.5px; font-family:'Special Elite',monospace; }
+
+  .stage{ padding:62px 18px 46px; }
+  .group-label{ font-family:'Special Elite',monospace; color:var(--dourado); font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; opacity:.8; text-align:center; margin:0 0 14px; }
+
+  /* ===================== PÁGINA A5 ===================== */
+  @page{ size:297mm 210mm; margin:0; }   /* A4 paisagem p/ imposição grampo canoa */
+  .page{
+    --w:148mm; --h:210mm;
+    position:relative; width:var(--w); height:var(--h); overflow:hidden;
+    background:var(--creme);
+    background-image:
+      radial-gradient(circle at 16% 10%, rgba(180,150,90,.06), transparent 58%),
+      radial-gradient(circle at 84% 90%, rgba(120,90,40,.05), transparent 55%);
+    color:var(--tinta);
+    padding:11mm 11mm 8mm; display:flex; flex-direction:column;
+    font-family:'Source Serif 4', Georgia, serif;
+  }
+  .page::before{ content:""; position:absolute; inset:5mm; border:1pt solid var(--verde);
+    box-shadow:0 0 0 1pt var(--creme), 0 0 0 2pt var(--verde); pointer-events:none; z-index:0; }
+  .page > *{ position:relative; z-index:1; }
+
+  .page.dark{ color:var(--creme);
+    background:#15392a;
+    background-image:
+      radial-gradient(circle at 14% 10%, rgba(201,162,39,.07), transparent 52%),
+      radial-gradient(circle at 88% 92%, rgba(0,0,0,.34), transparent 55%),
+      repeating-linear-gradient(46deg, rgba(0,0,0,.045) 0 2px, transparent 2px 5px),
+      linear-gradient(160deg, #1a4231 0%, #143726 100%); }
+  .page.dark::before{ border-color:var(--dourado);
+    box-shadow:0 0 0 1pt rgba(20,55,38,.9), 0 0 0 2pt rgba(201,162,39,.45); }
+
+  /* tela: scaler */
+  .pscale{ transform-origin:top left; }
+  .read-view{ display:flex; flex-wrap:wrap; justify-content:center; gap:22px 20px; align-items:flex-start; }
+
+  /* ===================== CABEÇALHO / RODAPÉ ===================== */
+  .runhead{ display:flex; justify-content:space-between; align-items:baseline; gap:3mm;
+    font-family:'Special Elite',monospace; font-size:5.8pt; color:#8a8068; letter-spacing:.05em;
+    text-transform:uppercase; border-bottom:.6pt solid var(--linha-2); padding-bottom:1.6mm; margin-bottom:3.4mm; }
+  .page.dark .runhead{ color:#b9ad8e; border-color:rgba(244,236,216,.22); }
+  .pfoot{ margin-top:auto; display:flex; justify-content:space-between; align-items:flex-end; gap:3mm;
+    padding-top:2.2mm; border-top:.6pt solid var(--linha-2); }
+  .page.dark .pfoot{ border-color:rgba(244,236,216,.22); }
+  .serie{ font-family:'Special Elite',monospace; font-size:5.6pt; color:#9a8f74; letter-spacing:.05em; }
+  .pageno{ font-family:'Anton'; font-size:13pt; color:var(--verde); line-height:.8; }
+  .page.dark .pageno{ color:var(--dourado); }
+
+  /* ===================== TIPOGRAFIA ===================== */
+  .kick{ font-family:'Anton',sans-serif; color:var(--vermelho); text-transform:uppercase; letter-spacing:.14em; font-size:7.6pt; }
+  .page.dark .kick{ color:#ef8e90; }
+  .h1{ font-family:'Anton',sans-serif; font-size:19pt; line-height:.92; color:var(--verde);
+    text-transform:uppercase; letter-spacing:.01em; margin:.6mm 0 1.4mm; }
+  .page.dark .h1{ color:var(--creme); }
+  .h1 .em{ color:var(--dourado); }
+  .lede{ font-family:'Playfair Display',serif; font-style:italic; font-size:9.6pt; color:#5a5a50; line-height:1.3; margin-bottom:2mm; }
+  .page.dark .lede{ color:#cdc1a4; }
+  .body{ font-family:'Source Serif 4',serif; font-size:9pt; line-height:1.46; color:#2c2c27; }
+  .body p{ margin:0 0 2.4mm; }
+  .body b{ color:var(--verde); font-weight:600; }
+  .page.dark .body{ color:#e7ddc6; }
+  .page.dark .body b{ color:var(--dourado); }
+  .small{ font-size:8pt; }
+  .typed{ font-family:'Special Elite',monospace; font-size:6.6pt; line-height:1.4; color:#7a7060; letter-spacing:.01em; }
+  .page.dark .typed{ color:#c7bb9d; }
+
+  /* barras de seção (kit .bar verde já carregado); variante ghost p/ dark */
+  .h2{ font-family:'Anton',sans-serif; text-transform:uppercase; letter-spacing:.045em; font-size:9.4pt;
+    color:var(--verde); border-bottom:1.2pt solid var(--dourado); padding-bottom:.8mm; margin:0 0 2mm; display:flex; justify-content:space-between; align-items:baseline; gap:3mm; }
+  .h2 .sub{ font-family:'Special Elite',monospace; font-size:5.6pt; color:#8a8068; letter-spacing:.03em; }
+  .page.dark .h2{ color:var(--dourado); border-color:var(--dourado); }
+  .page.dark .h2 .sub{ color:#b9ad8e; }
+  .h2.red{ color:var(--vermelho); border-color:var(--vermelho); }
+  .page.dark .h2.red{ color:#ef8e90; border-color:#c8484b; }
+
+  /* lista numerada (fases / passos) */
+  .steps{ display:flex; flex-direction:column; gap:2mm; }
+  .step{ display:flex; align-items:flex-start; gap:3mm; }
+  .step .num{ flex:none; width:7mm; height:7mm; border-radius:50%; border:1.4pt solid var(--verde);
+    color:var(--verde); font-family:'Anton'; font-size:9pt; display:flex; align-items:center; justify-content:center; }
+  .page.dark .step .num{ border-color:var(--dourado); color:var(--dourado); }
+  .step .tt{ font-family:'Source Serif 4'; font-size:8.6pt; line-height:1.32; padding-top:.4mm; }
+  .step .tt b{ font-family:'Anton'; font-weight:400; font-size:8.8pt; text-transform:uppercase; letter-spacing:.02em; color:var(--verde); display:block; margin-bottom:.3mm; }
+  .step .tt .time{ font-family:'Oswald'; font-weight:600; font-size:6.6pt; color:var(--vermelho); letter-spacing:.04em; }
+  .page.dark .step .tt b{ color:var(--creme); }
+
+  /* checklist */
+  .check{ display:flex; flex-direction:column; gap:2.6mm; }
+  .ci{ display:flex; align-items:flex-start; gap:2.6mm; font-family:'Source Serif 4'; font-size:9pt; line-height:1.3; }
+  .ci .box{ flex:none; width:4.4mm; height:4.4mm; border:1.4pt solid var(--verde); margin-top:.3mm; }
+  .ci b{ color:var(--verde); }
+
+  /* tabelas */
+  .bt{ width:100%; border-collapse:collapse; font-family:'Oswald',sans-serif; }
+  .bt th{ font-size:6.6pt; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--creme);
+    background:var(--verde); text-align:left; padding:1mm 1.8mm; }
+  .bt td{ font-size:8pt; padding:1mm 1.8mm; border-bottom:.6pt solid var(--linha-2); vertical-align:top; line-height:1.18; }
+  .bt tr:last-child td{ border-bottom:0; }
+  .bt .n{ font-weight:700; color:var(--verde); white-space:nowrap; text-align:center; }
+  .bt .em{ color:var(--vermelho); font-weight:700; }
+  .bt.zebra tr:nth-child(even) td{ background:rgba(27,67,50,.05); }
+  .page.dark .bt th{ background:transparent; color:var(--dourado); border-bottom:1pt solid var(--dourado); }
+  .page.dark .bt td{ color:#ede3cc; border-color:rgba(244,236,216,.18); }
+  .page.dark .bt .n{ color:#fff; } .page.dark .bt .em{ color:#ef8e90; }
+  .page.dark .bt.zebra tr:nth-child(even) td{ background:rgba(244,236,216,.05); }
+
+  /* caixa destaque */
+  .callout{ border:1.3pt solid var(--dourado); background:rgba(201,162,39,.1); padding:2mm 2.6mm; margin-top:2mm; }
+  .callout.red{ border-color:var(--vermelho); background:rgba(164,22,26,.08); }
+  .callout .t{ font-family:'Anton'; font-size:8.4pt; text-transform:uppercase; letter-spacing:.03em; color:var(--verde); margin-bottom:1mm; }
+  .callout.red .t{ color:var(--vermelho); }
+  .callout p{ margin:0; font-family:'Source Serif 4'; font-size:8.2pt; line-height:1.34; }
+  .page.dark .callout{ background:rgba(201,162,39,.1); }
+  .page.dark .callout .t{ color:var(--dourado); }
+
+  /* stat block (NPC) */
+  .npc{ border:1pt solid var(--linha-2); border-left:2.4pt solid var(--verde); padding:1.6mm 2.4mm; margin-bottom:2.2mm; }
+  .npc.red{ border-left-color:var(--vermelho); }
+  .npc.gold{ border-left-color:var(--dourado); }
+  .npc .nm{ font-family:'Anton'; font-size:9.4pt; text-transform:uppercase; letter-spacing:.02em; color:var(--verde); line-height:1; }
+  .npc .nm small{ font-family:'Source Serif 4'; font-style:italic; font-weight:400; font-size:6.6pt; color:#7a7060; text-transform:none; letter-spacing:0; margin-left:1mm; }
+  .npc .ln{ font-family:'Source Serif 4'; font-size:7.8pt; line-height:1.34; margin-top:.8mm; }
+  .npc .ln b{ font-family:'Oswald'; font-weight:600; color:var(--vermelho); font-size:7pt; text-transform:uppercase; letter-spacing:.03em; }
+
+  /* carimbo (kit .stamp). variantes p/ dark */
+  .stamp.cream{ border-color:var(--creme); color:var(--creme); box-shadow:inset 0 0 0 1pt rgba(244,236,216,.25); }
+  .stamp.gold{ border-color:var(--dourado); color:var(--dourado); box-shadow:inset 0 0 0 1pt rgba(201,162,39,.25); }
+
+  /* watermark bicho */
+  .wmbicho{ position:absolute; right:11mm; bottom:13mm; --s:34mm; z-index:0; opacity:.07; }
+  .page:not(.dark) .wmbicho .ring,.page:not(.dark) .wmbicho .ring.inner{ border-color:var(--tinta); }
+  .page:not(.dark) .wmbicho .diam{ border-color:var(--tinta); }
+  .page:not(.dark) .wmbicho .grp{ color:var(--tinta); }
+  .page.dark .wmbicho{ opacity:.08; }
+  .page.dark .wmbicho .ring,.page.dark .wmbicho .ring.inner,.page.dark .wmbicho .diam{ border-color:var(--creme); }
+  .page.dark .wmbicho .grp{ color:var(--creme); }
+
+  /* ===================== CAPA ===================== */
+  .cover{ align-items:stretch; text-align:center; }
+  .cover .top{ font-family:'Anton'; color:#ef8e90; text-transform:uppercase; letter-spacing:.2em; font-size:7.6pt; }
+  .cover .word{ font-family:'Playfair Display',serif; font-style:italic; font-weight:700; color:var(--dourado); font-size:15pt; line-height:1; margin-top:2mm; }
+  .cover .title{ font-family:'Anton'; color:var(--creme); text-transform:uppercase; letter-spacing:.01em; font-size:40pt; line-height:.86; }
+  .cover .sub{ font-family:'Playfair Display'; font-style:italic; font-size:10.5pt; color:#cdc1a4; }
+  .spacer{ flex:1; }
+
+  /* ===================== CONTRACAPA — 25 BICHOS ===================== */
+  .bgrid{ display:grid; grid-template-columns:repeat(5,1fr); gap:2mm 1mm; }
+  .bcell{ display:flex; flex-direction:column; align-items:center; gap:.5mm; }
+  .bcell .bicho{ --s:15mm; position:relative; }
+  .bcell .ring,.bcell .ring.inner{ border-color:var(--creme); }
+  .bcell .diam{ border-color:var(--dourado); }
+  .bcell .grp{ color:var(--creme); }
+  .bcell .fg{ position:absolute; top:-.6mm; right:.4mm; font-family:'Oswald'; font-weight:700; font-size:5pt; color:var(--dourado); }
+  .bcell .bn{ font-family:'Anton'; font-size:6pt; text-transform:uppercase; letter-spacing:.02em; color:var(--creme); line-height:1; }
+  .bcell .bd{ font-family:'Oswald'; font-size:4.6pt; letter-spacing:.04em; color:var(--dourado); }
+
+  /* ===================== IMPOSIÇÃO ===================== */
+  .impose-view{ display:none; flex-direction:column; align-items:center; gap:24px; }
+  .impo-scale{ transform-origin:top left; }
+  .impo-sheet{ position:relative; width:297mm; height:210mm; background:#e7e1d2; display:flex;
+    box-shadow:0 10px 40px rgba(0,0,0,.6); overflow:hidden; }
+  .impo-half{ width:148.5mm; height:210mm; overflow:hidden; position:relative; }
+  .impo-half .page{ --w:148.5mm; box-shadow:none !important; }
+  .impo-fold{ position:absolute; left:50%; top:0; bottom:0; width:0; border-left:.5pt dashed rgba(0,0,0,.4); z-index:50; transform:translateX(-.25px); }
+  .impo-label{ position:absolute; top:4px; left:50%; transform:translateX(-50%); z-index:51;
+    font-family:'Special Elite',monospace; font-size:9px; color:#5a4a22; background:rgba(244,236,216,.85);
+    padding:2px 8px; letter-spacing:.06em; text-transform:uppercase; white-space:nowrap; }
+
+  @media print{
+    body{ background:#fff; }
+    .controls,.group-label{ display:none !important; }
+    .stage{ padding:0; }
+    .read-view{ display:none !important; }
+    .impose-view{ display:flex !important; gap:0 !important; }
+    .impo-scale{ transform:none !important; height:auto !important; width:auto !important; }
+    .impo-sheet{ box-shadow:none !important; page-break-after:always; }
+    .impo-sheet:last-child{ page-break-after:avoid; }
+    .impo-label{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="controls noprint">
+  <b>Livro do Banqueiro</b>
+  <div class="seg">
+    <button id="bRead" class="on" onclick="setMode('read')">Leitura · 16 págs</button>
+    <button id="bImp" onclick="setMode('impose')">Imposição · grampo canoa</button>
+  </div>
+  <span class="hint">A5 · A4 dobrado · imprima a Imposição em duplex (borda longa), dobre ao meio, grampeie</span>
+</div>
+
+<div class="stage">
+  <div class="group-label" id="modeLabel">▸ Leitura — páginas na ordem do booklet</div>
+
+  <!-- ================= LEITURA ================= -->
+  <div class="read-view" id="readView">
+
+  <!-- p1 CAPA -->
+  <div class="pscale"><section class="page dark cover" id="p1" data-screen-label="Livro · p1 Capa">
+    <div class="top">Material do Mestre · Confidencial</div>
+    <div class="spacer"></div>
+    <div class="word">Barões do Asfalto</div>
+    <div class="title">Livro<br>do<br>Banqueiro</div>
+    <div style="height:4mm;"></div>
+    <div class="sub">guia rápido de quem segura a banca</div>
+    <div class="spacer"></div>
+    <div style="display:flex; justify-content:center; gap:5mm; align-items:center; margin-bottom:3mm;">
+      <span class="stamp cf" style="transform:rotate(-4deg); font-size:8pt;">Confidencial</span>
+      <span class="stamp cream" style="transform:rotate(3deg); font-size:6.4pt;">Só o Banqueiro lê</span>
+    </div>
+    <div class="typed" style="text-align:center;">Nº 041892 · SÉRIE VB · BOOKLET A5 · 16 PÁGINAS · GRAMPO CANOA</div>
+  </section></div>
+
+  <!-- p2 O JOGO EM 1 PÁGINA -->
+  <div class="pscale"><section class="page dark" id="p2" data-screen-label="Livro · p2 O jogo em 1 página">
+    <div class="runhead"><span>Livro do Banqueiro</span><span>O jogo</span></div>
+    <div class="kick">A premissa</div>
+    <h1 class="h1">O Jogo em <span class="em">1 Página</span></h1>
+    <div class="body">
+      <p>Você narra o Rio do jogo do bicho — onde a pule da esquina banca o império, e o império se paga em suborno, silêncio e sangue. Os jogadores são bicheiros subindo na vida: tomam pontos, lavam dinheiro, compram polícia e tentam sobreviver de um mês pro outro sem acordar a cidade inteira.</p>
+    </div>
+    <div class="h2" style="margin-top:1mm;">Os três princípios</div>
+    <div class="steps">
+      <div class="step"><div class="num">1</div><div class="tt"><b>Violência é cara</b>Todo tiro tem fatura: Heat, vendetta, consequência que volta. Bala é a saída mais burra e mais cara.</div></div>
+      <div class="step"><div class="num">2</div><div class="tt"><b>Consequência é longa</b>O que se faz num mês cobra no outro. A mesa lembra. A cidade lembra. Ninguém esquece quem ficou devendo.</div></div>
+      <div class="step"><div class="num">3</div><div class="tt"><b>Estratégia &gt; força</b>Quem pensa, negocia e lava, dura. Quem só atira, morre cedo — e leva os outros junto.</div></div>
+    </div>
+    <div class="callout"><p style="font-family:'Playfair Display'; font-style:italic; font-size:9.4pt; color:var(--dourado);">Não conte uma história de bandido herói. Conte a conta que sempre chega.</p></div>
+    <div class="pfoot"><span class="serie">SÉRIE VB · O JOGO</span><span class="pageno">2</span></div>
+  </section></div>
+
+  <!-- p3 CHECKLIST -->
+  <div class="pscale"><section class="page" id="p3" data-screen-label="Livro · p3 Preparação">
+    <div class="wmbicho bicho"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div><div class="grp">13</div></div>
+    <div class="runhead"><span>Livro do Banqueiro</span><span>Preparação</span></div>
+    <div class="kick">Antes de sentar à mesa</div>
+    <h1 class="h1">Checklist de Preparação</h1>
+    <div class="lede">Cinco minutos com esta lista valem uma sessão inteira.</div>
+    <div class="check">
+      <div class="ci"><span class="box"></span><span><b>1 objetivo provável</b> dos jogadores neste mês — o que eles vão querer tomar, lavar ou cobrar.</span></div>
+      <div class="ci"><span class="box"></span><span><b>2 complicações prontas</b> (role a tabela 1d10 do escudo, ou anote as suas).</span></div>
+      <div class="ci"><span class="box"></span><span><b>1 NPC novo</b> pelo gerador 3×1d10 — nome, o que quer, a rachadura por onde quebra.</span></div>
+      <div class="ci"><span class="box"></span><span><b>1 oportunidade</b> na manga: ponto à venda, carga barata, favor pra cobrar.</span></div>
+      <div class="ci"><span class="box"></span><span><b>O Heat de cada jogador</b> anotado — quem está no vermelho começa a sessão sendo vigiado.</span></div>
+      <div class="ci"><span class="box"></span><span><b>Dívidas e favores vencendo</b> este mês — quem deve a quem, e o prazo.</span></div>
+    </div>
+    <div class="callout"><div class="t">▸ Regra de ouro da prep</div><p>Não prepare a solução — prepare a situação. Os jogadores acham o caminho; você só garante que toda saída tem preço.</p></div>
+    <div class="pfoot"><span class="serie">SÉRIE VB · PREPARAÇÃO</span><span class="pageno">3</span></div>
+  </section></div>
+
+  <!-- p4 ESTRUTURA DA SESSÃO -->
+  <div class="pscale"><section class="page" id="p4" data-screen-label="Livro · p4 Estrutura da sessão">
+    <div class="wmbicho bicho"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div><div class="grp">11</div></div>
+    <div class="runhead"><span>Livro do Banqueiro</span><span>A sessão</span></div>
+    <div class="kick">O ritmo da mesa</div>
+    <h1 class="h1">Estrutura da Sessão</h1>
+    <div class="lede">Quatro fases. Marque o relógio — tempo apertado é o que gera decisão.</div>
+    <div class="steps">
+      <div class="step"><div class="num">1</div><div class="tt"><b>Planejamento <span class="time">· 30–45 min</span></b>Testes aqui dão bônus à execução. Deixe planejar, mas não deixe planejar pra sempre — o mundo se move.</div></div>
+      <div class="step"><div class="num">2</div><div class="tt"><b>Execução <span class="time">· 60–90 min</span></b>O golpe acontece. Role aberto, escale a tensão e ofereça saídas antes do sangue.</div></div>
+      <div class="step"><div class="num">3</div><div class="tt"><b>Consequências <span class="time">· 20–30 min</span></b>Cobre o preço: Heat, lealdades, favores devidos, vendettas abertas.</div></div>
+      <div class="step"><div class="num">4</div><div class="tt"><b>Fase Econômica <span class="time">· 15–20 min</span></b>Os 6 passos do mês (p. 9). Vire o mês com uma carta de evento.</div></div>
+    </div>
+    <div class="callout red"><div class="t">▸ Não pule as consequências</div><p>É a fase que separa um filme de ação de uma história sobre o crime. Sem conta, não há tensão no mês seguinte.</p></div>
+    <div class="pfoot"><span class="serie">SÉRIE VB · A SESSÃO</span><span class="pageno">4</span></div>
+  </section></div>
+
+  <!-- p5 COMBATE I -->
+  <div class="pscale"><section class="page" id="p5" data-screen-label="Livro · p5 Combate I">
+    <div class="runhead"><span>Livro do Banqueiro</span><span>Combate · I</span></div>
+    <div class="kick">Quando parte pro pau</div>
+    <h1 class="h1">Combate Convertido <span style="color:var(--dourado)">I</span></h1>
+    <div class="body"><p>Mesmo sistema de sempre: <b>pool de d6</b>, 5 ou 6 conta, 6 explode. Combate é só uma sequência de testes contestados.</p></div>
+    <div class="h2">Sequência</div>
+    <table class="bt">
+      <tr><td class="n" style="width:30%">Iniciativa</td><td>Role <b style="color:var(--verde)">Instinto</b>; mais sucessos age primeiro. Emboscou <b style="color:var(--verde)">+2</b> dados · surpreendido <span class="em">−2</span>.</td></tr>
+      <tr><td class="n">Ataque</td><td><b style="color:var(--verde)">Operação + arma</b> contra defesa <b style="color:var(--verde)">Instinto + Fuga</b> (contestado).</td></tr>
+    </table>
+    <div class="h2 red" style="margin-top:3mm;">Margem <span class="sub">sucessos a mais do atacante</span></div>
+    <table class="bt zebra">
+      <tr><td class="n">1</td><td>Ferimento <b style="color:var(--verde)">Leve</b> — −1 dado em tudo</td></tr>
+      <tr><td class="n">2</td><td><b style="color:var(--verde)">Grave</b> — −2, precisa de médico</td></tr>
+      <tr><td class="n">3</td><td><b style="color:var(--verde)">Crítico</b> — −3, fora de combate, risco de morte</td></tr>
+      <tr><td class="n em">4+</td><td class="em">Mortal</td></tr>
+    </table>
+    <div class="callout"><div class="t">▸ Defesa</div><p>Cobertura: leve <b>+1</b> / sólida <b>+2</b> / total <b>+3</b> dados. Colete absorve <b>1</b> (nível I–II) ou <b>2</b> (III–IV) de margem.</p></div>
+    <div class="pfoot"><span class="serie">SÉRIE VB · COMBATE I</span><span class="pageno">5</span></div>
+  </section></div>
+
+  <!-- p6 COMBATE II -->
+  <div class="pscale"><section class="page" id="p6" data-screen-label="Livro · p6 Combate II">
+    <div class="runhead"><span>Livro do Banqueiro</span><span>Combate · II</span></div>
+    <div class="kick">Armas, sangue e fuga</div>
+    <h1 class="h1">Combate Convertido <span style="color:var(--dourado)">II</span></h1>
+    <div class="h2">Armas <span class="sub">o dano vira bônus de margem</span></div>
+    <table class="bt zebra">
+      <tr><td>Punho · faca · pistola</td><td class="n">+0</td></tr>
+      <tr><td>Calibre pesado</td><td class="n">+1</td></tr>
+      <tr><td>Fuzil · rajada</td><td class="n">+2</td></tr>
+    </table>
+    <div class="h2" style="margin-top:3mm;">Depois do tiro</div>
+    <div class="body small">
+      <p><b>Curar:</b> Medicina de Rua, dif. 2 (Grave) / 3 (Crítico), estabiliza. Sem médico, o Crítico vira Mortal em pouco tempo.</p>
+      <p><b>Limpar a cena:</b> Operação + Ocultação, dif. 3. Falhou? A evidência ficou — o Heat cobra depois.</p>
+    </div>
+    <div class="callout red"><div class="t">▸ Sempre ofereça a saída</div><p>Antes do sangue: intimidar, subornar, fugir, render. Combate dura <b>2–5 rodadas</b> — não vire açougue à toa. E lembre a fatura de Heat: público <b>+2</b>, fuzil <b>+3</b>, civil <b>+3</b>, PM <b>+4</b>, figura pública <b>+5</b>.</p></div>
+    <div class="pfoot"><span class="serie">SÉRIE VB · COMBATE II</span><span class="pageno">6</span></div>
+  </section></div>
+
+  <!-- p7 VENDETTA -->
+  <div class="pscale"><section class="page dark" id="p7" data-screen-label="Livro · p7 Vendetta">
+    <div class="wmbicho bicho"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div><div class="grp">09</div></div>
+    <div class="runhead"><span>Livro do Banqueiro</span><span>Regra nova</span></div>
+    <div class="kick">A memória longa da cidade</div>
+    <h1 class="h1">Vendetta</h1>
+    <div class="lede">Toda morte deixa alguém vivo. E quem fica, lembra.</div>
+    <div class="body">
+      <p>Toda morte gera um <b>marcador de vendetta</b>. Anote quem perdeu alguém — e por causa de quem.</p>
+    </div>
+    <div class="h2">Como age</div>
+    <div class="body">
+      <p>Uma vez por sessão, role <b>1d6 por vendetta ativa</b>. Em qualquer <b>1</b>, a vingança age neste arco: a mesa colhe o que plantou — no pior momento possível.</p>
+    </div>
+    <div class="h2">Como se resolve</div>
+    <table class="bt">
+      <tr><td>Dinheiro de sangue</td><td class="n">R$ 50 mil +</td></tr>
+      <tr><td>Mediação</td><td class="n">teste de Articulador</td></tr>
+      <tr><td>Mais sangue</td><td class="n em">gera nova vendetta</td></tr>
+    </table>
+    <div class="callout"><p style="font-family:'Playfair Display'; font-style:italic; font-size:9.2pt; color:var(--dourado);">Vendetta não tem pressa. Ela espera o dia em que você baixou a guarda.</p></div>
+    <div class="pfoot"><span class="serie">SÉRIE VB · VENDETTA</span><span class="pageno">7</span></div>
+  </section></div>
+
+  <!-- p8 HEAT NA PRÁTICA -->
+  <div class="pscale"><section class="page" id="p8" data-screen-label="Livro · p8 Heat na prática">
+    <div class="runhead"><span>Livro do Banqueiro</span><span>Heat</span></div>
+    <div class="kick">A polícia na mesa</div>
+    <h1 class="h1">Heat na Prática</h1>
+    <div class="lede">Avise o Heat subindo antes de bater. O medo trabalha melhor que a batida.</div>
+    <div class="h2">Três modelos de batida</div>
+    <div class="steps">
+      <div class="step"><div class="num">5+</div><div class="tt"><b>A geral</b>Ronda para, revista, pede propina. Dif. 2 de Lábia — ou um troco — resolve. Susto, não desastre.</div></div>
+      <div class="step"><div class="num">7+</div><div class="tt"><b>A operação</b>Viatura cerca o ponto, leva gente pra "averiguação". Ponto fecha dias; o advogado entra. Custa caro.</div></div>
+      <div class="step"><div class="num">9+</div><div class="tt"><b>A força-tarefa</b>Escuta, mandado, investigação montada. Não é cena — é arco. Aqui a Exposição vira inimiga mortal.</div></div>
+    </div>
+    <div class="callout red"><div class="t">▸ Como baixar</div><p>Suborno <b>−1</b> · mês quieto <b>−1</b> · bode expiatório <b>−2</b> · limpeza profissional <b>−3</b>. Heat não some sozinho — alguém paga.</p></div>
+    <div class="pfoot"><span class="serie">SÉRIE VB · HEAT</span><span class="pageno">8</span></div>
+  </section></div>
+
+  <!-- p9 ECONOMIA ENTRE SESSÕES -->
+  <div class="pscale"><section class="page" id="p9" data-screen-label="Livro · p9 Economia">
+    <div class="runhead"><span>Livro do Banqueiro</span><span>Economia</span></div>
+    <div class="kick">O fim do mês</div>
+    <h1 class="h1">Economia entre Sessões</h1>
+    <div class="lede">15–20 minutos, todo fim de sessão. O ritual que mantém o império vivo.</div>
+    <div class="steps" style="gap:1.2mm; margin-bottom:2.4mm;">
+      <div class="step"><div class="num">1</div><div class="tt">Renda dos pontos</div></div>
+      <div class="step"><div class="num">2</div><div class="tt">Proteção — paga quem manda</div></div>
+      <div class="step"><div class="num">3</div><div class="tt">Equipe &amp; contatos</div></div>
+      <div class="step"><div class="num">4</div><div class="tt">Lavagem do dinheiro sujo</div></div>
+      <div class="step"><div class="num">5</div><div class="tt">Investimentos</div></div>
+      <div class="step"><div class="num">6</div><div class="tt">Carta de evento do mês</div></div>
+    </div>
+    <div style="display:flex; gap:4mm;">
+      <div style="flex:1;">
+        <div class="h2" style="font-size:8pt;">Proteção <span class="sub">R$/mês</span></div>
+        <table class="bt" style="font-size:7pt;">
+          <tr><td>PM individual</td><td class="n">1,5k</td></tr>
+          <tr><td>Comandante</td><td class="n">20k</td></tr>
+          <tr><td>Delegado</td><td class="n">30k</td></tr>
+          <tr><td>Facção</td><td class="n">3–25k</td></tr>
+          <tr><td>Milícia</td><td class="n">5–30k</td></tr>
+        </table>
+      </div>
+      <div style="flex:1.1;">
+        <div class="h2" style="font-size:8pt;">Lavagem <span class="sub">efic.</span></div>
+        <table class="bt" style="font-size:7pt;">
+          <tr><td>Lava-rápido</td><td class="n">28%</td></tr>
+          <tr><td>Lanchonete</td><td class="n">25%</td></tr>
+          <tr><td>Construtora</td><td class="n">18%</td></tr>
+          <tr><td>Holding</td><td class="n">16%</td></tr>
+          <tr><td>Offshore</td><td class="n">10–12%</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="typed" style="margin-top:1.6mm;">Tabelas completas no Escudo do Mestre, Painel III. Risco de lavagem: role 1d6 — em 1, complicação.</div>
+    <div class="pfoot"><span class="serie">SÉRIE VB · ECONOMIA</span><span class="pageno">9</span></div>
+  </section></div>
+
+  <!-- p10 PRIMEIRA SESSÃO — abertura -->
+  <div class="pscale"><section class="page dark" id="p10" data-screen-label="Livro · p10 Madureira — abertura">
+    <div class="wmbicho bicho"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div><div class="grp">13</div></div>
+    <div class="runhead"><span>Primeira Sessão Pronta</span><span>Sessão 01</span></div>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div class="kick">Primeira sessão pronta</div>
+      <span class="stamp cf" style="transform:rotate(4deg); font-size:7pt;">Sessão 01</span>
+    </div>
+    <h1 class="h1">O Ponto de <span class="em">Madureira</span></h1>
+    <div class="lede">Os três barões abrem a porta. Falta a sociedade provar que merece entrar.</div>
+    <div class="body">
+      <p>Os três bicheiros da velha guarda convidam a sociedade dos jogadores a tomar seu <b>primeiro ponto</b>. O dono da Barraca do Seu Milton, em Madureira, quer se aposentar — e a milícia local quer engolir o ponto antes que alguém compre.</p>
+    </div>
+    <div class="h2">O objetivo</div>
+    <div class="body small"><p>Ficar com o ponto de Madureira <b>limpo</b>: sem acordar a cidade, sem começar a campanha no vermelho.</p></div>
+    <div class="h2">O que está em jogo</div>
+    <div class="body small"><p>O primeiro território da sociedade — a <b>Carta de Ponto #01</b> — e a reputação diante dos três barões que estão observando cada passo.</p></div>
+    <div class="pfoot"><span class="serie">SÉRIE VB · MADUREIRA</span><span class="pageno">10</span></div>
+  </section></div>
+
+  <!-- p11 OS TRÊS NÓS -->
+  <div class="pscale"><section class="page" id="p11" data-screen-label="Livro · p11 Madureira — os nós">
+    <div class="runhead"><span>O Ponto de Madureira</span><span>A missão</span></div>
+    <div class="kick">A missão tem três nós</div>
+    <h1 class="h1">Os Três Nós</h1>
+    <div class="steps">
+      <div class="step"><div class="num">1</div><div class="tt"><b>Negociar com Seu Milton</b>Lealdade 6, cansado e desconfiado, mas ama o ponto. Quer <b style="color:var(--verde)">R$ 60 mil + 5% vitalício</b>. Negociação ou Lábia abrem caminho; pressão demais o assusta.</div></div>
+      <div class="step"><div class="num">2</div><div class="tt"><b>Neutralizar o cobrador da milícia</b>Suborno? Intimidação? Acordo de divisa? Cada caminho tem um preço — Heat, dívida ou lealdade gasta.</div></div>
+      <div class="step"><div class="num">3</div><div class="tt"><b>Decidir a quem pagar proteção</b>Milícia local, um PM da área, ou ninguém (e arcar). Esta escolha define o Heat do ponto pelos próximos meses.</div></div>
+    </div>
+    <div class="callout"><div class="t">▸ Como fechar</div><p>O ponto é da sociedade quando <b>Milton aceitar</b> e a <b>milícia recuar</b> — paga, acordada ou afastada. Não exige tiro. Exige cabeça.</p></div>
+    <div class="pfoot"><span class="serie">SÉRIE VB · OS NÓS</span><span class="pageno">11</span></div>
+  </section></div>
+
+  <!-- p12 NPCs -->
+  <div class="pscale"><section class="page" id="p12" data-screen-label="Livro · p12 Madureira — NPCs">
+    <div class="runhead"><span>O Ponto de Madureira</span><span>Elenco</span></div>
+    <div class="kick">Quem está na mesa</div>
+    <h1 class="h1">NPCs-Chave</h1>
+    <div class="npc gold"><div class="nm">Seu Milton <small>dono cansado da barraca</small></div>
+      <div class="ln"><b>Quer</b> R$ 60k + 5% vitalício · <b>Leal</b> 6 · <b>Medo</b> morrer sem ver o neto crescer.</div></div>
+    <div class="npc red"><div class="nm">"Cobrador" Régis <small>braço da milícia</small></div>
+      <div class="ln"><b>Quer</b> o ponto, ou a taxa · <b>Combate</b> 5 · frio, metódico. Tem um superior pior que ele.</div></div>
+    <div class="npc"><div class="nm">Sgt. Damião <small>PM da área</small></div>
+      <div class="ln"><b>Quer</b> "taxa de inauguração" (R$ 5k) · ganancioso e medroso. Vira contato útil… ou problema crônico.</div></div>
+    <div class="npc gold"><div class="nm">Wesley <small>sobrinho do Milton</small></div>
+      <div class="ln"><b>Quer</b> status; acha que é o herdeiro · fala demais. Pode virar aliado leal ou o estopim de tudo.</div></div>
+    <div class="npc red"><div class="nm">O olheiro do CV <small>observa de longe</small></div>
+      <div class="ln"><b>Não age</b> nesta sessão · é a semente da próxima: a facção soube que a sociedade chegou.</div></div>
+    <div class="pfoot"><span class="serie">SÉRIE VB · ELENCO</span><span class="pageno">12</span></div>
+  </section></div>
+
+  <!-- p13 COMPLICAÇÕES / RECOMPENSA -->
+  <div class="pscale"><section class="page" id="p13" data-screen-label="Livro · p13 Madureira — fecho">
+    <div class="wmbicho bicho"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div><div class="grp">13</div></div>
+    <div class="runhead"><span>O Ponto de Madureira</span><span>Fecho</span></div>
+    <div class="kick">Pra apimentar e fechar</div>
+    <h1 class="h1">Complicações &amp; Ganchos</h1>
+    <div class="h2 red">Complicações prontas</div>
+    <div class="body small">
+      <p><b>O herdeiro:</b> Wesley acha que o ponto é dele e atravessa a negociação.</p>
+      <p><b>A taxa:</b> o Sgt. Damião aparece cobrando "inauguração" na pior hora.</p>
+      <p><b>O olheiro:</b> alguém do CV anota tudo de longe — e não esquece um rosto.</p>
+    </div>
+    <div class="h2" style="margin-top:1mm;">Recompensa</div>
+    <div class="body small"><p><b>Carta de Ponto #01 (Madureira)</b> — renda base garantida; a Exposição inicial depende do método que usaram pra tomá-lo.</p></div>
+    <div class="callout red"><div class="t">▸ Dica de Heat</div><p>Tiroteio em Madureira já nesta sessão = começar a campanha no vermelho. Deixe-os sentir o peso antes de puxar a arma.</p></div>
+    <div class="typed" style="margin-top:1.6mm;">Ganchos: a milícia não esquece (vendetta?) · o CV marcou a sociedade · Wesley quer um lugar à mesa.</div>
+    <div class="pfoot"><span class="serie">SÉRIE VB · FECHO</span><span class="pageno">13</span></div>
+  </section></div>
+
+  <!-- p14 COLA DO BANQUEIRO -->
+  <div class="pscale"><section class="page" id="p14" data-screen-label="Livro · p14 Cola do Banqueiro">
+    <div class="runhead"><span>Livro do Banqueiro</span><span>Cola de mesa</span></div>
+    <div class="kick">Tudo num relance</div>
+    <h1 class="h1">Cola do Banqueiro</h1>
+    <div class="h2" style="font-size:8.4pt;">O teste</div>
+    <div class="body small"><p>Pool de <b>d6</b> = Atributo + Perícia + mod. <b>5 ou 6</b> = sucesso; <b>6</b> explode. Dificuldade <b>1–5</b> sucessos.</p></div>
+    <table class="bt zebra" style="font-size:7.4pt; margin-bottom:2mm;">
+      <tr><td>Sucesso parcial <span class="typed" style="font-size:5.4pt">(dif −1)</span></td><td>"Sim, mas…"</td></tr>
+      <tr><td>Sucesso total <span class="typed" style="font-size:5.4pt">(≥ dif)</span></td><td>limpo</td></tr>
+      <tr><td>Crítico <span class="typed" style="font-size:5.4pt">(dif +2)</span></td><td>+ 1 bônus</td></tr>
+    </table>
+    <div class="h2" style="font-size:8.4pt;">Métricas 0–10</div>
+    <div class="body small"><p><b>Heat</b> polícia · <b>Pressão</b> (10 = colapso, 1d6) · <b>Lealdade</b> por NPC · <b>Exposição</b> → inv. = 5 − (Exp÷2).</p></div>
+    <div class="h2 red" style="font-size:8.4pt;">Heat de combate</div>
+    <div class="body small"><p>Público <b style="color:var(--vermelho)">+2</b> · fuzil <b style="color:var(--vermelho)">+3</b> · civil <b style="color:var(--vermelho)">+3</b> · PM <b style="color:var(--vermelho)">+4</b> · figura pública <b style="color:var(--vermelho)">+5</b>.</p></div>
+    <div class="h2" style="font-size:8.4pt;">Combate</div>
+    <div class="body small" style="margin-bottom:0;"><p>Op + arma vs Ins + Fuga. Margem <b>1</b> Leve · <b>2</b> Grave · <b>3</b> Crítico · <b>4+</b> Mortal.</p></div>
+    <div class="pfoot"><span class="serie">SÉRIE VB · COLA</span><span class="pageno">14</span></div>
+  </section></div>
+
+  <!-- p15 A VOZ DA CIDADE -->
+  <div class="pscale"><section class="page" id="p15" data-screen-label="Livro · p15 A voz da cidade">
+    <div class="runhead"><span>Livro do Banqueiro</span><span>Tom &amp; voz</span></div>
+    <div class="kick">Como narrar</div>
+    <h1 class="h1">A Voz da Cidade</h1>
+    <div class="body"><p>Frases curtas. Calor, suor, o cheiro do asfalto molhado. A cidade é personagem — deixe ela falar.</p></div>
+    <div class="h2">Gíria na medida</div>
+    <table class="bt zebra" style="font-size:7.4pt;">
+      <tr><td>tá no forno</td><td>tá sendo preparado</td></tr>
+      <tr><td>deu ruim</td><td>deu errado, feio</td></tr>
+      <tr><td>na lábia</td><td>na conversa, sem força</td></tr>
+      <tr><td>morar na jogada</td><td>entender a real</td></tr>
+      <tr><td>x9</td><td>informante, dedo-duro</td></tr>
+      <tr><td>qual é a fita?</td><td>qual é o plano?</td></tr>
+    </table>
+    <div class="callout red"><div class="t">▸ O que NÃO fazer</div><p>Não glorifique. Mostre o medo da mãe, o velório, a conta que não fecha. Aqui o crime <b>custa</b> — e a mesa precisa sentir o preço.</p></div>
+    <div class="typed" style="margin-top:1.6mm;">Escalada de consequência: avise → ameace → cobre. Nunca puna o que não foi avisado.</div>
+    <div class="pfoot"><span class="serie">SÉRIE VB · VOZ</span><span class="pageno">15</span></div>
+  </section></div>
+
+  <!-- p16 CONTRACAPA — 25 BICHOS -->
+  <div class="pscale"><section class="page dark" id="p16" data-screen-label="Livro · p16 Contracapa — 25 bichos">
+    <div class="kick" style="text-align:center;">A tabela do bicho</div>
+    <h1 class="h1" style="text-align:center; color:var(--creme);">Os Vinte e Cinco</h1>
+    <div class="lede" style="text-align:center; color:var(--dourado);">Desde 1892, todo carioca tem um bicho.</div>
+    <div class="bgrid" id="bichoGrid"></div>
+    <div class="spacer"></div>
+    <div class="typed" style="text-align:center;">Nº 041892 · SÉRIE VB · BARÕES DO ASFALTO™ · LIVRO DO BANQUEIRO</div>
+  </section></div>
+
+  </div><!-- /read-view -->
+
+  <!-- ================= IMPOSIÇÃO (montada por JS) ================= -->
+  <div class="impose-view" id="imposeView"></div>
+
+</div><!-- /stage -->
+
+<script>
+/* ===================== 25 BICHOS ===================== */
+const BICHOS = [
+  [1,"Avestruz","01·02·03·04"],[2,"Águia","05·06·07·08"],[3,"Burro","09·10·11·12"],
+  [4,"Borboleta","13·14·15·16"],[5,"Cachorro","17·18·19·20"],[6,"Cabra","21·22·23·24"],
+  [7,"Carneiro","25·26·27·28"],[8,"Camelo","29·30·31·32"],[9,"Cobra","33·34·35·36"],
+  [10,"Coelho","37·38·39·40"],[11,"Cavalo","41·42·43·44"],[12,"Elefante","45·46·47·48"],
+  [13,"Galo","49·50·51·52"],[14,"Gato","53·54·55·56"],[15,"Jacaré","57·58·59·60"],
+  [16,"Leão","61·62·63·64"],[17,"Macaco","65·66·67·68"],[18,"Porco","69·70·71·72"],
+  [19,"Pavão","73·74·75·76"],[20,"Peru","77·78·79·80"],[21,"Touro","81·82·83·84"],
+  [22,"Tigre","85·86·87·88"],[23,"Urso","89·90·91·92"],[24,"Veado","93·94·95·96"],
+  [25,"Vaca","97·98·99·00"]
+];
+document.getElementById('bichoGrid').innerHTML = BICHOS.map(([g,n,d])=>`
+  <div class="bcell">
+    <div class="bicho"><div class="ring"></div><div class="ring inner"></div><div class="diam"></div>
+      <div class="grp">${String(g).padStart(2,'0')}</div><span class="fg">${String(g).padStart(2,'0')}</span></div>
+    <div class="bn">${n}</div><div class="bd">${d}</div>
+  </div>`).join('');
+
+/* ===================== IMPOSIÇÃO GRAMPO CANOA (16 págs) ===================== */
+const SHEETS = [
+  [16,1,'Folha 1 · externa'], [2,15,'Folha 1 · interna'],
+  [14,3,'Folha 2 · externa'], [4,13,'Folha 2 · interna'],
+  [12,5,'Folha 3 · externa'], [6,11,'Folha 3 · interna'],
+  [10,7,'Folha 4 · externa'], [8,9,'Folha 4 · interna']
+];
+function buildImpose(){
+  const host = document.getElementById('imposeView');
+  host.innerHTML='';
+  SHEETS.forEach(([L,R,label])=>{
+    const wrap=document.createElement('div'); wrap.className='impo-scale';
+    const sheet=document.createElement('div'); sheet.className='impo-sheet';
+    const pl=document.getElementById('p'+L), pr=document.getElementById('p'+R);
+    const hl=document.createElement('div'); hl.className='impo-half'; hl.innerHTML=cloneHalf(pl);
+    const hr=document.createElement('div'); hr.className='impo-half'; hr.innerHTML=cloneHalf(pr);
+    sheet.appendChild(hl); sheet.appendChild(hr);
+    sheet.insertAdjacentHTML('beforeend', `<div class="impo-fold"></div><div class="impo-label">${label} · pág. ${L} | ${R}</div>`);
+    wrap.appendChild(sheet); host.appendChild(wrap);
+  });
+}
+function cloneHalf(page){
+  const c = page.cloneNode(true);
+  c.removeAttribute('id');
+  return c.outerHTML;
+}
+
+/* ===================== MODOS + ESCALA ===================== */
+function setMode(m){
+  document.getElementById('readView').style.display = m==='read' ? 'flex' : 'none';
+  document.getElementById('imposeView').style.display = m==='impose' ? 'flex' : 'none';
+  document.getElementById('bRead').classList.toggle('on', m==='read');
+  document.getElementById('bImp').classList.toggle('on', m==='impose');
+  document.getElementById('modeLabel').textContent = m==='read'
+    ? '▸ Leitura — páginas na ordem do booklet'
+    : '▸ Imposição — 4 folhas A4 duplex · dobre ao meio e grampeie';
+  requestAnimationFrame(fit);
+}
+function fit(){
+  const avail = window.innerWidth - 40;
+  // leitura: 2 páginas A5 por linha
+  const a5w = 148*96/25.4, a5h = 210*96/25.4;
+  const sRead = Math.min(1, ((avail-20)/2)/a5w);
+  document.querySelectorAll('.read-view .pscale').forEach(sc=>{
+    sc.style.transform=`scale(${sRead})`;
+    sc.style.width=(a5w*sRead)+'px'; sc.style.height=(a5h*sRead)+'px';
+  });
+  // imposição: 1 folha A4 paisagem por linha
+  const a4w = 297*96/25.4, a4h = 210*96/25.4;
+  const sImp = Math.min(1, avail/a4w);
+  document.querySelectorAll('.impo-scale').forEach(sc=>{
+    sc.style.transform=`scale(${sImp})`;
+    sc.style.width=(a4w*sImp)+'px'; sc.style.height=(a4h*sImp)+'px';
+  });
+}
+buildImpose();
+window.addEventListener('resize', fit);
+fit();
+</script>
+</body>
+</html>
